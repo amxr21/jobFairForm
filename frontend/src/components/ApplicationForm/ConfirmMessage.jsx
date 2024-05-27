@@ -3,8 +3,8 @@ import QRCode from 'qrcode.react';
 
 const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
     return (
-        <div ref={confirmMessageRef} className="opacity-0 h-0 confirmMessageRef flex flex-col gap-y-6 md:flex-row gap-x-16 items-center justify-center bg-white rounded-2xl shadow-2xl px-8 md:px-16 py-6 md:py-12 my-4 overflow-hidden">
-            <div className="qr-code w-full md:w-4/12 flex flex-col items-center">
+        <div ref={confirmMessageRef} className="confirmMessageRef opacity-0 flex flex-row gap-x-16 items-center justify-center bg-white rounded-2xl shadow-2xl px-16 py-12 my-4 h-0 overflow-hidden">
+            <div className="qr-code w-4/12 flex flex-col items-center">
                 <div className="qr-code w-48 flex flex-col items-center mb-6">
                     {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
                     {qrCodeSrc && <QRCode value={`${qrCodeSrc}`} />}
@@ -15,11 +15,11 @@ const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
                     <span>123456</span>
                 </div>
             </div>
-            <div className="confirmation-message w-full md:w-8/12">
-                <h2 className="text-2xl md:text-4xl font-bold mb-1">Confirmed !</h2>
-                <p>Check your email to have your ticket. Check your email to have your ticket. Check your email to have your ticket. Check your email to have your ticket. </p>
+            <div className="confirmation-message w-8/12">
+                <h2 className="text-4xl font-bold mb-1">Confirmed !</h2>
+                <p>Congtratulations in applying for your first company!!. Check your email to have your ticket.</p>
                 <br /><br />
-                <h5 className="text-xl font-semibold" >Best of Luck !!</h5>
+                <h5 className="text-2xl font-semibold" >Best of Luck !!</h5>
             </div>
         </div>
     )
