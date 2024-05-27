@@ -27,7 +27,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* <Route path="/" element={<Home />} /> */}
-          <Route path="/applicationForm" element={<ApplicationForm />} />
+          <Route path="/" element={<ApplicationForm />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
           <Route path="/applicant" element={<ApplicantPage />} />
