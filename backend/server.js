@@ -11,7 +11,7 @@ dotenv.config();
 
 
 app.use(cors({
-    origin: "https://job-fair-cd5j.onrender.com"
+    origin: ["https://job-fair-cd5j.onrender.com/", "https://jobfairform-frontend.onrender.com/"]
 }))
 
 
