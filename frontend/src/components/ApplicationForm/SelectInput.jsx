@@ -14,8 +14,8 @@ const SelectInput = ({ label, options }) => {
 
     let i = 0;
     return (
-        <div className="flex flex-col grow">
-            <h2 className="text-lg mb-2">{label} :-</h2>
+        <div className="flex flex-col grow mb-4 md:my-0">
+            <h2 className="text-md md:text-lg mb-2">{label} :-</h2>
             <select onClick={getOption} ref={refSelect} className="bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" name={label} id={label}>
             <option defaultChecked> -- select a {label} -- </option>
                 {
