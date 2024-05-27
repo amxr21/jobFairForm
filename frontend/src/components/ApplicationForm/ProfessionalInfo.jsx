@@ -30,7 +30,7 @@ const ProfessionalInfo = () => {
                     <Languages />
                     <Skills label={"Experience"}/>
                     <div className="flex flex-col grow mb-4 md:my-0">
-                        <h2 className="text-lg mb-2">CV:-</h2>
+                        <h2 className="text-md md:text-lg mb-2">CV:-</h2>
                         <input id="CV" onChange={uploadCV} type="file" name="cvfile" className="bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" />
                     </div>
                     <Input name={"Portfolio"} label={"Portfolio"} type={"text"} />

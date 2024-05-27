@@ -55,14 +55,14 @@ const PersonalInfo = () => {
 
 
                     <div onChange={specifyColleges} className="flex flex-col grow mb-4 md:my-0">
-                        <h2 className="text-lg mb-2">{"College"} :-</h2>
+                        <h2 className="text-md md:text-lg mb-2">{"College"} :-</h2>
                         <select onChange={getCollegeOption} ref={college} className="bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" name={"College"} id={"College"}>
                             <option className=""  defaultChecked> -- select a/an {"College"} -- </option>
                             {
                                 colleges.map((option)=>{
                                     i++;
                                     return (
-                                        <option key={i} className="my-2" value={option}>{option}</option>
+                                        <option key={i} className="text-md md:text-lg mb-2 md:my-2" value={option}>{option}</option>
                                     )
                                 })
                             }
@@ -70,14 +70,14 @@ const PersonalInfo = () => {
                     </div>
 
                     <div className="flex flex-col grow mb-4 md:my-0">
-                        <h2 className="text-lg mb-2">{"Major"} :-</h2>
+                        <h2 className="text-md md:text-lg mb-2">{"Major"} :-</h2>
                         <select onChange={getMajorOption} ref={major} className="bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" name={"Major"} id={"Major"}>
                             <option defaultChecked> -- select a/an {"Major"} -- </option>
                             {
                                 a?.map((major)=>{
                                     i++;
                                     return (
-                                        <option key={i} className="my-2" value={major}>{major}</option>
+                                        <option key={i} className="text-md md:text-lg mb-2 md:my-2" value={major}>{major}</option>
                                     )
                                 })
                             }
