@@ -26,7 +26,7 @@ function App() {
       <NavBar/>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* <Route path="/" element={<Home />} /> */}
           <Route path="/applicationForm" element={<ApplicationForm />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
