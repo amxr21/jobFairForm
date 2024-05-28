@@ -75,7 +75,7 @@ const Form = () => {
                         form.current.classList.replace("md:h-fit", "h-0");
                         form.current.classList.replace("h-[36em]", "h-0");
                         // form.current.style.height = "fit-content";
-                        setTimeout(()=>{form.current.style.display = "hidden";},500)
+                        setTimeout(()=>{form.current.style.display = "none";},500)
                         // document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
                         // document.getElementById("Form").classList.replace("h-0", "h-fit");
 
@@ -87,8 +87,8 @@ const Form = () => {
 
 
                         setTimeout(()=>{form.current.style.display = "hidden";},500);
-                        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
-                        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
+                        // document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
+                        // document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
 
 
                         let confirmationResponse;
