@@ -147,6 +147,8 @@ const Form = () => {
             // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
             document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
             document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
+            document.querySelector(".confirmMessageRef").classList.add("md:h-fit");
+            document.querySelector(".confirmMessageRef").classList.replace("py-0", "py-12");
 
 
             // const confirmationResponse = await axios.post("http://localhost:2000/applicants/qr", formDataReq);

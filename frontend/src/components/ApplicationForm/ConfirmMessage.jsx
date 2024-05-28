@@ -3,7 +3,7 @@ import QRCode from 'qrcode.react';
 
 const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
     return (
-        <div ref={confirmMessageRef} className="confirmMessageRef opacity-0 flex flex-col md:flex-row gap-x-16 gap-y-4 md:gap-y-0 items-center justify-center bg-white rounded-2xl shadow-2xl px-10 md:px-16 py-12 my-4 h-0 md:h-fit overflow-hidden">
+        <div ref={confirmMessageRef} className="confirmMessageRef opacity-0 flex flex-col md:flex-row gap-x-16 gap-y-4 md:gap-y-0 items-center justify-center bg-white rounded-2xl shadow-2xl px-10 md:px-16 py-0 my-4 h-0 overflow-hidden">
             <div className="qr-code w-full md:w-4/12 flex flex-col items-center">
                 <div className="qr-code w-48 flex flex-col items-center mb-6">
                     {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
@@ -11,8 +11,8 @@ const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
                     {!qrCodeSrc && <h2>Loading the QR code...</h2>}
                 </div>
                 <div className="ticket-id flex font-semibold">
-                    <h6>Ticket no.</h6>
-                    <span>123456</span>
+                    <h6>Ticket id:</h6>
+                    <span>{qrCodeSrc}</span>
                 </div>
             </div>
             <div className="confirmation-message w-full md:w-8/12">
