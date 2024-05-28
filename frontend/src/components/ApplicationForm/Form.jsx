@@ -138,17 +138,17 @@ const Form = () => {
             form.current.classList.replace("h-fit", "h-0");
             form.current.classList.replace("h-fit", "h-0");
             
-            form.current.classList.replace("py-10", "py-0");
+            form.current.classList.replace("py-10", "py-2");
 
-            setTimeout(()=>{form.current.style.display = "none";},500)
+            setTimeout(()=>{form.current.style.display = "none";}, 500)
             // document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
             // document.getElementById("Form").classList.replace("h-0", "h-fit");
     
             // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
-            document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1")
-            document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit")
-    
-    
+            document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
+            document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
+
+
             // const confirmationResponse = await axios.post("http://localhost:2000/applicants/qr", formDataReq);
             // setQRCodeSrc(confirmationResponse.data);
             // console.log(confirmationResponse);
