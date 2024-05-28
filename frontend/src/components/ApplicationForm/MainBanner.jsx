@@ -10,8 +10,8 @@ const MainBanner = () => {
         startButton.current.parentElement.parentElement.classList.add("opacity-0");
 
         document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
-        document.getElementById("Form").classList.replace("h-0", "h-fit");
-        document.getElementById("Form").classList.add("md:h-[36em]");
+        document.getElementById("Form").classList.replace("h-0", "md:h-fit");
+        document.getElementById("Form").classList.add("h-[36em]");
         
         startButton.current.parentElement.parentElement.classList.replace("h-fit", "h-0");
         startButton.current.parentElement.parentElement.classList.add("overflow-hidden");
