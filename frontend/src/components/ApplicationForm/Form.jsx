@@ -66,33 +66,35 @@ const Form = () => {
                 if(Object.values(formData).length == 17){
                         // setFormDataReq(formDataToSend);
                         console.log("Application submitted successfully");
-    
+
                         setFull(true);
-    
+
                         e.preventDefault();
-                        form.current.style.opacity = "0";
-                        form.current.style.height = "fit-content";
+                        form.current.classList.replace("opacity-100", "opacity-0");
+                        // form.current.style.opacity = "0";
+                        form.current.classList.replace("md:h-fit", "h-0");
+                        form.current.classList.replace("h-[36em]", "h-0");
+                        // form.current.style.height = "fit-content";
                         setTimeout(()=>{form.current.style.display = "hidden";},500)
                         // document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
                         // document.getElementById("Form").classList.replace("h-0", "h-fit");
-        
+
                         // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
-                        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
+                        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
                         document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
-    
-    
-    
-                        form.current.style.opacity = "0";
-                        form.current.style.height = "fit-content";
+
+
+
+
                         setTimeout(()=>{form.current.style.display = "hidden";},500);
                         document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
                         document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
-    
-    
+
+
                         let confirmationResponse;
                         if(!user?.token){
                             confirmationResponse = await axios.post(`${link}/applicants`, formDataToSend);
-    
+
                         }
                         else{
                             confirmationResponse = await axios.post(`${link}/applicants`, formDataToSend,
