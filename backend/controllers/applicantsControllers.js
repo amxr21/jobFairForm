@@ -95,7 +95,7 @@ const addApplicant =  async (req, res) => {
 
                 `${req.body.email}`,
 
-                "🥲 <ammar211080@gmail.com>",
+                `CASTO Office 🏢🚨 <${process.env.USER_EMAIL}>`,
             )
         
     });
