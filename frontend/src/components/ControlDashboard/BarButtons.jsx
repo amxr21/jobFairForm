@@ -89,18 +89,20 @@ const BarButtons = () => {
 
                 if(result[0] == '\"') setScannerResult(result.slice(1, length-2))
                 setScannerResult(result)
-
+                console.log(result);
                 // const aaa = async () => {
                 try {
 
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
                     const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result, {
                         attended: true
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${user.token}`
-                        }
-                    })
+                    }
+                    // , {
+                    //     headers: {
+                    //         Authorization: `Bearer ${user.token}`
+                    //     }
+                    // }
+                )
 
                     console.log(patchResponse);
 

@@ -341,7 +341,7 @@ const confirmAttendant = async (req, res) => {
 
         let updateData = {};
         if(req.body.hasOwnProperty("attended")){
-            updateData.$addToSet = { attended: true }
+            updateData.$set = { attended: true }
         };
 
 
