@@ -76,7 +76,7 @@ const BarButtons = () => {
 
     useEffect(() => {
         if(isCameraOn2){
-            scanner = new Html5QrcodeScanner("reader", {
+            scanner = new Html5QrcodeScanner("reader2", {
                 qrbox: { width : 150, height: 150 },
                 fps: 10,
             })
@@ -104,6 +104,10 @@ const BarButtons = () => {
                     // }
                 )
 
+                    confirmAttendanceButton.current.textContent = "Confirmed";
+                    setTimeout(()=>{confirmAttendanceButton.current.textContent = "Confirm attendance";}, 5000)
+
+
                     console.log(patchResponse);
 
                     // const json = scannedApplicant.json()
@@ -128,7 +132,7 @@ const BarButtons = () => {
 const aaa2 = () => {
     setIsCameraOn2(prev => {
         if(!prev){
-            confirmAttendanceButton.current.textContent = "Confirmed";
+            confirmAttendanceButton.current.textContent = "Camera is ON";
         }
         else{
             confirmAttendanceButton.current.textContent = "Confirm attendant";
