@@ -1,3 +1,4 @@
+import { ProgressProvider } from "../../Context/ProgressContext";
 import { NavBar, MainBanner, Form } from "./index";
 // import "./style.css"
 
@@ -5,13 +6,13 @@ const ApplicationForm = () => {
   let a = localStorage.getItem("user")
 
   return (
-    <div>
+    <div className="relative bg-[rgb(252,252,252)] p-4 md:p-8 h-[90vh]">
       {/* <NavBar /> */}
-      {
+      {/* {
       a
       ?
       JSON.parse(a)?.email &&
-        <div className="text-left">You are now logged in as {"\t"}
+        <div className="text-center">You are now logged in as {"\t"}
           <span className="font-bold underline uppercase">
           {
             
@@ -21,17 +22,19 @@ const ApplicationForm = () => {
         </div>
       :
       <>
-        <div className="text-left">You are now logged in as {"\t"}
+        <div className="text-center">You are now logged in as {"\t"}
           <span className="font-bold underline uppercase">
           guest
           </span>
         </div>
       </>
 
-      }
+      } */}
 
-      <MainBanner/>
-      <Form/>
+      {/* <MainBanner/> */}
+      {/* <ProgressProvider> */}
+        <Form/>
+      {/* </ProgressProvider> */}
     </div>
   )
 }

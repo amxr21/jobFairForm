@@ -1,26 +1,36 @@
-import { useRef } from "react"
 import QRCode from 'qrcode.react';
+import ReturnHome from "../SuccessPage/ReturnHome";
+
+import CelebrateEmoji from "../../assets/images/celebrateEmoji.png"
+import SuitcaseEmoji from "../../assets/images/suitEmoji.png"
+
+import ConfirmMessage from "../SuccessPage/ConfirmMessage";
+import TicketText from "../SuccessPage/TicketText";
+
 
 const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
     return (
-        <div ref={confirmMessageRef} className="confirmMessageRef opacity-0 flex flex-col md:flex-row gap-x-16 gap-y-4 md:gap-y-0 items-center justify-center bg-white rounded-2xl shadow-2xl px-10 md:px-16 py-8 my-4 h-0 overflow-hidden">
-            <div className="qr-code w-full md:w-4/12 flex flex-col items-center">
-                <div className="qr-code w-48 flex flex-col items-center mb-6">
-                    {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
-                    {qrCodeSrc && <QRCode value={`${qrCodeSrc}`} />}
-                    {!qrCodeSrc && <h2>Loading the QR code...</h2>}
+        <div ref={confirmMessageRef} className="confirmMessageRef flex flex-col p-0 gap-y-5 rounded-3xl border overflow-hidden gap-x-20 h-0 opacity-0">
+            <div className="bg-primary flex md:flex-row flex-col px-6 md:px-12 py-8 md:py-10 gap-x-24 gap-y-4 rounded-3xl h-fit">
+                <ConfirmMessage emoji={CelebrateEmoji} />
+
+                <div className="qr-code flex md:flex-row flex-col items-center md:items-start p-8 rounded-3xl w-full md:w-7/12 bg-white md:gap-x-14 gap-y-5">
+                    <div className="qr-code min-w-44 min-h-44 w-44 h-44 border flex flex-col items-center justify-center">
+                        {qrCodeSrc && <QRCode style={{ height: '88%', width: '88%' }} value={`${qrCodeSrc}`} />}
+                        {!qrCodeSrc && <h2>Loading the QR code...</h2>}
+                    </div>
+
+                    <TicketText QrCodeSrc={qrCodeSrc} />
+
                 </div>
-                <div className="ticket-id flex font-semibold">
-                    <h6>Ticket id:</h6>
-                    <span>{qrCodeSrc}</span>
-                </div>
+
             </div>
-            <div className="confirmation-message w-full md:w-8/12">
-                <h2 className="text-4xl font-bold mb-1">Confirmed !</h2>
-                <p>Congtratulations in applying for your first company!!. Check your email to have your ticket.</p>
-                <br /><br />
-                <h5 className="text-2xl font-semibold" >Best of Luck !!</h5>
+
+            <div>
+                <ReturnHome />
             </div>
+
+
         </div>
     )
 }

@@ -12,7 +12,10 @@ import { ApplicationForm } from "./components/ApplicationForm";
 
 import ApplicantPage from "./pages/ApplicantPage";
 
+import Intro from "./pages/Intro"
+
 const link = "https://jobfair-1.onrender.com"
+
 
 
 function App() {
@@ -22,8 +25,9 @@ function App() {
 
   return (
 
-    <div className="App px-10 py-20 md:px-40 md:py-10">
-      <NavBar/>
+    <div className="App">
+      {/* <NavBar/> */}
+      {/* <Intro/> */}
       <BrowserRouter>
         <Routes>
           {/* <Route path="/" element={<Home />} /> */}
