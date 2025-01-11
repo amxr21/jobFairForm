@@ -6,8 +6,8 @@
   "scripts": {
     "install-server": "cd backend && npm install",
     "start-server": "cd backend && node server.js",
-    "install-client": "cd frontend && npm install",
-    "build-client": "cd frontend && npm run build",
+    "install-client": "cd frontend && npm install --legacy-peer-deps && npm install",
+    "build-client": "cd frontend && npm install --legacy-peer-deps && npm run build",
     "start-client": "cd frontend && npm run dev"
   },
   "keywords": [],
