@@ -225,16 +225,11 @@ const Form = () => {
 
     return (
         <>
-
-
             <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[100%] md:h-[90vh] p-6 md:p-10 opacity-100 overflow-hidden`}>
 
             {
-
-            isLoading && <LoadingPage />
-
+                isLoading && <LoadingPage />
             }
-
                 <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-6 md:gap-x-12 h-full">
                     <ProgressSection status={full} />
                     <div className="information-part border h-fit md:h-full px-6 py-8 md:px-12 md:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-y-scroll">
@@ -247,17 +242,7 @@ const Form = () => {
                 </div>
 
 
-                {/* <SubmitFormBtn /> */}
-
-                {/*
-                //this button will be responsible to hide the registration dialog and send registration confirmation message
-                */}
-                {/* <button onClick={confirmRegistration} className="bg-red-500">Test button</button> */}
-                {/* <button onClick={()=>{document.getElementById("dialogg").showModal()}}>Hala</button> */}
-                {/* <dialog id="dialogg" >
-                    <h2>Congrats!</h2>
-                    <h5>Your applicantion has been submitted, and it is gonna be reviewed by the authorized employee</h5>
-                </dialog> */}
+              
             </form>
 
 

@@ -14,7 +14,7 @@ const Languages = ({ classes }) => {
         <div className={`flex flex-col grow min-h-28 mb-4 md:my-0 ${classes}`}>
             <h2 className="text-md md:text-lg mb-2">Languages:-</h2>
             <div className="flex flex-col md:flex-row md:h-16">
-                <div id="Languages" className="checkboxes grid grid-cols-2 grid-rows-2 gap-2 md:gap-0  justify-between mb-2 w-full h-fit">
+                <div id="Languages" className="checkboxes grid grid-cols-2 grid-rows-2 gap-2 md:gap-2  justify-between mb-2 w-full h-fit">
                     <Language lang={"Arabic"} />
                     <Language lang={"English"} />
                     <Language lang={"Chinese"} />
