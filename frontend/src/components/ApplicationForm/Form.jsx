@@ -44,9 +44,6 @@ const Form = () => {
     }
 
 
-
-
-
     const FormProvider = ( {children} ) => {
 
         const { user } = useAuthContext()
@@ -54,9 +51,7 @@ const Form = () => {
         const [formData, setFormData] = useState({});
         const updateFormData = (inputName, value) => {
             setFormData((prevData) => ( {...prevData, [inputName]: value} ) )
-            // console.log(formData);
         }
-
 
         const handleSubmit = async (e) => {
 
@@ -160,8 +155,6 @@ const Form = () => {
 
         }
 
-
-
         const confirmRegistration = (e) => {
             // e.preventDefault();
             // form.current.style.opacity = "0";
@@ -197,9 +190,6 @@ const Form = () => {
             // }
     
         }
-
-
-
 
 
         return (

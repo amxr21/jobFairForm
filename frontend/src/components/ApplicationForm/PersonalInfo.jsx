@@ -58,7 +58,7 @@ const PersonalInfo = () => {
             <div id="PersonalInfo" className="md:mb-12 flex flex-col w-full items-end">
                 <div className="md:grid md:grid-cols-12 w-full gap-x-8 overflow-x-hidden">
                     <Input fieldClasses="col-span-12 md:col-span-8" label={"Full Name"} type={"text"} />
-                    <Input fieldClasses="col-span-12 md:col-span-4" label={"University ID"} type={"text"} />
+                    <Input fieldClasses="col-span-12 md:col-span-4" label={"University ID"} type={"number"} />
                 </div>
                 <div className="w-full md:grid md:grid-cols-12 gap-x-8 gap-y-8 my-6">
                     <Input fieldClasses="col-span-4" label={"Date Of Birth"} type={"date"} />

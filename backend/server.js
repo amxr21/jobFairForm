@@ -44,6 +44,7 @@ app.use((req, res, next)=>{
 const connection = mongoose.connection;
 
 connection.once("open", ()=> {
+    console.log("Database connected Successfully");
     app.use("/",routers);
     app.use("/user", userRoutes);
 })

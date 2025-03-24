@@ -5,7 +5,7 @@ import PeopleIllustration from "../IntroPage/PeopleIllustration";
 
 const UpperPart = () => {
     return (
-        <div className="upper-part flex flex-col md:flex-row justify-between md:items-end w-full md:h-[16em]">
+        <div className="upper-part flex flex-col md:flex-row justify-between md:items-end w-full md:h-[18em]">
             <div className="flex flex-col justify-between gap-4 md:w-[30em] h-full">
                 <Logos/>
                 <img src={Feb} alt="" className="hidden md:flex w-full" />
