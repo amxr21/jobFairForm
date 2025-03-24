@@ -27,11 +27,7 @@ function App() {
 
     <div className="App">
       {/* <NavBar/> */}
-<<<<<<< HEAD
-       <Intro/>  
-=======
       <Intro/>
->>>>>>> 4eb916b6c5ea20ac86340fdf7ea13949e2270216
       <BrowserRouter>
         <Routes>
           {/* <Route path="/" element={<Home />} /> */}
