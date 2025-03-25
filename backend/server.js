@@ -11,7 +11,7 @@ dotenv.config();
 app.use((req, res, next) => {
     res.setHeader(
       "Access-Control-Allow-Origin",
-      "http://localhost:3001"
+      "https://jobfairform-frontend.onrender.com"
     );
     res.setHeader(
       "Access-Control-Allow-Methods",

@@ -14,7 +14,7 @@ import ApplicantPage from "./pages/ApplicantPage";
 
 import Intro from "./pages/Intro"
 
-const link = "https://jobfair-1.onrender.com"
+const link = "https://jobfairform-backend.onrender.com"
 
 
 
