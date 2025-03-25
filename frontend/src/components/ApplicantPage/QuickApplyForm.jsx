@@ -5,7 +5,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 
 import { CheckId, QrScanner, IdContext } from "./index"
 
-const linkUrl = 'https://jobfair-91pd.onrender.com'
+const linkUrl = 'http://localhost:2000'
 
 const QuickApplyForm = () => {
     const [applicant, setApplicant] = useState({id: "", name: "Ammar"});
