@@ -21,8 +21,12 @@ const Languages = ({ classes }) => {
                     <Language lang={"Other"} />
                 </div>
                 {
-                    formData['languages']?.includes('Other') && <Input headerClasses="mb-0" fieldClasses="col-span-7 gap-0 min-w-64" label={"Others, if any"} />
+                    document.getElementById("Other")?.checked &&
+                    <Input headerClasses="mb-0" fieldClasses="otherlangs-field col-span-7 gap-0 min-w-64" label={"Others, if any"} />
                 }
+                {/* {
+                    formData['languages']?.includes('Other') && <Input headerClasses="mb-0" fieldClasses="col-span-7 gap-0 min-w-64" label={"Others, if any"} />
+                } */}
 
             </div>
             

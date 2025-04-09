@@ -22,10 +22,90 @@ const CountriesList = [
 
 
 
-const Colleges = {
-    "College of Engineering": ["Civil Engineering", "Electrical Engineering", "Mechanical Engineering"],
-    "College of Business Administration": ["Finance", "Marketing", "Management"],
-    "College of Arts, Humanities and Social Sciences": ["Psychology", "History", "Communication"]
-    }
+  const Colleges = {
+    "College of Engineering": [
+        "Architectural Engineering",
+        "Civil and Environmental Engineering",
+        "Electrical Engineering",
+        "Industrial Engineering and Engineering Management",
+        "Mechanical and Nuclear Engineering",
+        "Sustainable and Renewable Energy Engineering"
+    ],
+    "College of Business Administration": [
+        "Accounting",
+        "Finance and Economics",
+        "Management"
+    ],
+    "College of Arts, Humanities and Social Sciences": [
+        "History",
+        "Sociology",
+        "Psychology",
+        "Arabic Language and Literature",
+        "English Language and Literature",
+        "International Relations"
+    ],
+    "College of Sciences": [
+        "Mathematics",
+        "Physics",
+        "Chemistry",
+        "Applied Biology",
+        "Environmental Sciences"
+    ],
+    "College of Health Sciences": [
+        "Medical Laboratory Sciences",
+        "Medical Diagnostic Imaging",
+        "Physiotherapy",
+        "Health Services Administration",
+        "Environmental Health Sciences",
+        "Clinical Nutrition and Dietetics"
+    ],
+    "College of Law": [
+        "Public Law",
+        "Private Law"
+    ],
+    "College of Fine Arts and Design": [
+        "Fine Arts",
+        "Interior Architecture and Design",
+        "Visual Communication",
+        "Fashion Design with Textiles"
+    ],
+    "College of Communication": [
+        "Mass Communication",
+        "Public Relations",
+        "Graphic Design and Multimedia"
+    ],
+    "College of Medicine": [
+        "Basic Medical Sciences",
+        "Clinical Sciences"
+    ],
+    "College of Dental Medicine": [
+        "Oral and Craniofacial Health Sciences",
+        "Preventive and Restorative Dentistry",
+        "Surgical Sciences"
+    ],
+    "College of Pharmacy": [
+        "Pharmacy Practice and Pharmacotherapeutics",
+        "Pharmaceutical Sciences",
+        "Medicinal Chemistry"
+    ],
+    "College of Computing and Informatics": [
+        "Computer Science",
+        "Information Systems",
+        "Computer Engineering"
+    ],
+    "College of Sharia and Islamic Studies": [
+        "Foundations of Religion",
+        "Jurisprudence and its Foundations"
+    ],
+    "College of Graduate Studies": [
+        "Master's Programs",
+        "Doctoral Programs"
+    ],
+    "College of Public Policy": [
+        "Public Administration",
+        "International Relations"
+    ]
+};
+
 
 export {CountriesList, Colleges}

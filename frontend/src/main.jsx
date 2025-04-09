@@ -12,6 +12,12 @@ ReactDOM.render(
       </AuthContextProvidor>
       ,app
     )
+// ReactDOM.render(
+//       <AuthContextProvidor>
+//         <App/>
+//       </AuthContextProvidor>
+//       ,app
+//     )
 
 
 // React 18

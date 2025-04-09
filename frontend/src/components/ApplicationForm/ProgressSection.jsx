@@ -3,11 +3,11 @@ import Progress from "./Progress";
 import { useRef, useContext } from "react";
 
 
-const ProgressSection = ({ status }) => {
+const ProgressSection = ({ status, missing }) => {
 
     const header = useRef()
 
-    console.log(header?.current?.textContent);
+    // console.log(header?.current?.textContent);
 
 
 
@@ -25,6 +25,7 @@ const ProgressSection = ({ status }) => {
             {
                 !status && <div className="border border-red-500 py-2 px-3  rounded-md">
                                 All fields are required
+                                <p>{missing}</p>
                             </div>
             }
             

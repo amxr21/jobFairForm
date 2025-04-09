@@ -25,7 +25,7 @@ const PersonalInfo = () => {
 
     const scrollToNextSection = (e) => {
         e.preventDefault();
-        e.target.parentElement.parentElement.parentElement.scrollBy({top: window.innerHeight});
+        e.target.parentElement.parentElement.scrollBy({top: window.innerHeight});
         // console.log(e.target.parentElement.parentElement.parentElement);
         
         document.querySelector('.section-header').textContent = 'Professional Information'
@@ -57,11 +57,11 @@ const PersonalInfo = () => {
             {/* <FormHeader header={"1. Personal Information"} /> */}
             <div id="PersonalInfo" className="md:mb-12 flex flex-col w-full items-end">
                 <div className="md:grid md:grid-cols-12 w-full gap-x-8 overflow-x-hidden">
-                    <Input fieldClasses="col-span-12 md:col-span-8" label={"Full Name"} type={"text"} />
-                    <Input fieldClasses="col-span-12 md:col-span-4" label={"University ID"} type={"number"} />
+                    <Input fieldClasses="col-span-12 md:col-span-8" label={"Full Name"} />
+                    <Input fieldClasses="col-span-12 md:col-span-4" label={"University ID"} />
                 </div>
                 <div className="w-full md:grid md:grid-cols-12 gap-x-8 gap-y-8 my-6">
-                    <Input fieldClasses="col-span-4" label={"Date Of Birth"} type={"date"} />
+                    <Input fieldClasses="col-span-4" label={"Date Of Birth"} />
                     <SelectInput fieldClasses="col-span-4" label={"Gender"} options={["Male", "Female"]} />
                     <SelectInput fieldClasses="col-span-4" label={"Nationality"} options={CountriesList} />
 
@@ -70,9 +70,9 @@ const PersonalInfo = () => {
 
 
 
-                    <Input fieldClasses="col-span-4" label={"Email"} type={"email"} />
-                    <Input fieldClasses="col-span-4" label={"Phone number"} type={"number"} />
-                    <Input fieldClasses="col-span-4" label={"CGPA"} type={"number"} />
+                    <Input fieldClasses="col-span-4" label={"Email"} />
+                    <Input fieldClasses="col-span-4" label={"Phone number"} />
+                    <Input fieldClasses="col-span-4" label={"CGPA"} />
 
 
                     <Languages classes="col-span-12"/>

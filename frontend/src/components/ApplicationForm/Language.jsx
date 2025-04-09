@@ -8,7 +8,8 @@ const Language = ({lang}) => {
     const { formData, updateFormData } = useFormContext();
     const getLang = () => {
         // console.log([...document.getElementById("Languages").childNodes]);
-        updateFormData("languages", [...document.getElementById("Languages").childNodes].filter((checkbx)=> checkbx.firstChild.checked).map((html) => html.textContent));
+        updateFormData("languages", [...document.getElementById("Languages").childNodes].filter((checkbx)=> checkbx.firstChild.checked).map((html) => html.textContent
+    ));
 
     }
 
