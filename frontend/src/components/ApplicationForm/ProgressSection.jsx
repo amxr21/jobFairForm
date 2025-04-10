@@ -23,7 +23,7 @@ const ProgressSection = ({ status, missing }) => {
             </div>
 
             {
-                !status && <div className="border border-red-500 py-2 px-3  rounded-md">
+                !status && <div className="border border-red-500 bg-red-200 py-2 px-3  rounded-md">
                                 All fields are required
                                 <p>{missing}</p>
                             </div>

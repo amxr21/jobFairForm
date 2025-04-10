@@ -24,7 +24,7 @@ const Progress = ( {secton} ) => {
     return (
         <div className="progress h-fit md:h-full">
             <div className="h-2 w-full md:h-full md:w-2 rounded-full border border-white bg-primary">
-            <div className={`progress-bar w-0 h-full md:h-0 md:w-full rounded-full bg-white`}></div>
+                <div className={`progress-bar w-0 h-full md:h-0 md:w-full rounded-full bg-white`}></div>
             </div>
         </div>
     )

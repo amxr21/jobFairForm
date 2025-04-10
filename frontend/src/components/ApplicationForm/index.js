@@ -10,5 +10,7 @@ export {default as NavBar} from "./NavBar";
 export {default as PersonalInfo} from "./PersonalInfo";
 export {default as ProfessionalInfo} from "./ProfessionalInfo";
 export {default as SelectInput} from "./SelectInput";
-export {default as Skills} from "./Skills";
+export {default as Experiences} from "./Experiences";
 export {default as SubmitFormBtn} from "./SubmitFormBtn";
+export {default as FocusedState} from "./FocusedState";
+export {default as RequiredAstrik} from "./RequiredAstrik";

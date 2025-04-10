@@ -1,114 +1,129 @@
-import { useState, useRef } from "react";
-
-import { CountriesList, Colleges } from "./CountriesList";
-
-
-import { FormHeader, Input, Languages, Skills } from "./index";
+import { useState, useRef, useEffect } from "react";
+import { CountriesList, DegreePrograms } from "../../CountriesList";
+import { FormHeader, Input, Languages, Experiences, SelectInput, RequiredAstrik } from "./index";
 import useFormContext from "../../Hooks/useFormContext";
-
-import { SelectInput } from "./index";
 
 const ProfessionalInfo = () => {
     const [cv, setCV] = useState(null);
+    const [majors, setMajors] = useState([]);
+    const [colleges, setColleges] = useState([]);
+
+    const [selectedProgram, setSelectedProgram] = useState('Select');
+    const [selectedCollege, setSelectedCollege] = useState('Select');
+    const [selectedMajor, setSelectedMajor] = useState('Select');
 
     const { formData, updateFormData } = useFormContext();
 
-    const major = useRef();
-        const getCollegeOption = () => {
-            updateFormData("College", college.current.value);
+    // When program changes, update college list
+    useEffect(() => {
+        if (DegreePrograms[selectedProgram]) {
+            setColleges(Object.keys(DegreePrograms[selectedProgram]));
+        } else {
+            setColleges([]);
         }
 
-    const getMajorOption = () => {
-        updateFormData("Major", major.current.value);
-    }
+        // Reset downstream values
+        setSelectedCollege('Select');
+        setSelectedMajor('Select');
+        setMajors([]);
+        updateFormData("College", "");
+        updateFormData("Major", "");
+    }, [selectedProgram]);
 
-    const colleges = Object.keys(Colleges);
-    const collegesObject = Colleges;
+    // When college changes, update majors list
+    useEffect(() => {
+        if (DegreePrograms[selectedProgram] && DegreePrograms[selectedProgram][selectedCollege]){
+            setMajors(DegreePrograms[selectedProgram][selectedCollege]);
+        }
+        else {
+            setMajors([]);
+        }
 
-    const college = useRef()
+        // Reset major
+        setSelectedMajor('Select');
+        updateFormData("Major", "");
+    }, [selectedCollege, selectedProgram]);
 
-    const specifyColleges = () => {
-        setA([]);
-        setA(collegesObject[college.current.value]);
-    }
+    const handleCollegeChange = (value) => {
+        // const value = e?.target?.value;
+        setSelectedCollege(value);
+        // updateFormData("College", value);
+    };
 
+    const handleMajorChange = (value) => {
+        // const value = e?.target?.value;
+        setSelectedMajor(value);
+        // updateFormData("Major", value);
+    };
 
     const uploadCV = (e) => {
-        setCV(e.target.files[0]);
-        updateFormData("CV", e.target.files[0]);
-        console.log("File uploaded successfully ");
-        console.log(e.target.files[0]);
-    }
-    const [a, setA] = useState([])
+        const file = e.target.files[0];
+        setCV(file);
+        updateFormData("CV", file);
+        console.log("File uploaded successfully:", file);
+    };
 
-
-    let i = 0;
-
-    return(
+    return (
         <>
-            {/* <FormHeader header={"2. Professional Information"} /> */}
-            <div id="ProfessionalInfo" className=" md:mb-20 md:grid md:grid-cols-12 gap-x-8 gap-y-8 my-6 h-full md:h-[24em]">
-                    <SelectInput label={"Study Program"} options={["Diploma", "Bachelor", "Master", "PhD"]} fieldClasses="col-span-4" />
-                    <div onChange={specifyColleges} className="flex flex-col grow mb-4 md:my-0 col-span-4">
-                        <h2 className="text-md md:text-lg mb-2">{"College"}:</h2>
-                        <select onChange={getCollegeOption} ref={college} className="bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" name={"College"} id={"College"}>
-                            <option className=""  defaultChecked> -- select a/an {"College"} -- </option>
-                            {
-                                colleges.map((option)=>{
-                                    i++;
-                                    return (
-                                        <option key={i} className="text-md md:text-lg mb-2 md:my-2" value={option}>{option}</option>
-                                    )
-                                })
-                            }
-                        </select>
+            <div id="ProfessionalInfo" className="md:mb-20 md:grid md:grid-cols-12 gap-x-8 gap-y-8 my-6 h-fit md:h-[24em]">
+                <SelectInput
+                    label={"Study Program"}
+                    options={Object.keys(DegreePrograms)}
+                    handleChange={setSelectedProgram}
+                    fieldClasses="col-span-3"
+                />
+
+                {/* College Select */}
+                <SelectInput
+                    label={"College"}
+                    options={colleges}
+                    value={selectedCollege}
+                    handleChange={handleCollegeChange}
+                    fieldClasses="flex flex-col grow mb-4 md:my-0 col-span-3"
+                    selectClasses=''
+                />
+                 
+                {/* Major Select */}
+                <SelectInput
+                    label={"Major"}
+                    options={majors}
+                    value={selectedMajor}
+                    handleChange={handleMajorChange}
+                    fieldClasses="flex flex-col grow mb-4 md:my-0 col-span-4"
+                    selectClasses=''
+                />
+
+
+
+                <Input fieldClasses="col-span-2" label="CGPA" />
+
+                
+                <Experiences label="Experience" classes="col-span-6 h-fit md:h-56" />
+
+                <div className="col-span-6 md:h-56 overflow-hidden">
+                    <div className="flex flex-col grow justify-between gap-y-2 mb-4 md:my-0">
+                        {/* <Languages /> */}
+                        <Input label="Technical Skills" type="text" />
+                        <Input label="Non-Technical Skills" type="text" />
                     </div>
-                    <div className="flex flex-col grow mb-4 md:my-0 col-span-4">
-                        <h2 className="text-md md:text-lg mb-2">{"Major"}:</h2>
-                        <select onChange={getMajorOption} ref={major} className="bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" name={"Major"} id={"Major"}>
-                            <option defaultChecked> -- select a/an {"Major"} -- </option>
-                            {
-                                a?.map((major)=>{
-                                    i++;
-                                    return (
-                                        <option key={i} className="text-md md:text-lg mb-2 md:my-2" value={major}>{major}</option>
-                                    )
-                                })
-                            }
-                        </select>
-                    </div>
-
-
-
-
-                    <Input label={"LinkedIn URL"} type={"text"} fieldClasses="col-span-5" />
-                    <Input label={"Personal Website (if any)"} type={"text"} fieldClasses="col-span-7" />
-
-
-
-
-                    <Skills label={"Experience"} classes="col-span-6 h-24 md:h-48" />
-
-
-                    <div className="col-span-6">
-                        <div className="flex flex-col grow gap-8 mb-4 md:my-0">
-                            {/* <Languages /> */}
-                            <Input label={"Skills"} type={"text"} />
-                            <div className="flex flex-col md:flex-row h-16 items-center justify-between gap-x-4">
-                                <h2 className="text-md md:text-lg mb-2">CV:</h2>
-                                <input id="CV" onChange={uploadCV} type="file" name="cvfile" className="text-sm w-64 bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" />
-
-                            </div>
-                        </div>
-                        {/* <Input name={"Portfolio"} label={"Portfolio"} type={"text"} /> */}
+                </div>
+                <div className="flex flex-col md:flex-row md:h-16 items-center justify-between gap-x-4 col-span-6">
+                    <h2 className="text-md md:text-lg mb-2">Attach your resume:</h2>
+                    <div>
+                        <input
+                            id="CV"
+                            onChange={uploadCV}
+                            type="file"
+                            name="cvfile"
+                            className="text-sm w-full md:max-w-56 bg-transparent border border-gray-700 rounded-lg py-1.5 px-2"
+                        />
+                        <RequiredAstrik />
 
                     </div>
-
-
-            </div> 
+                </div>
+            </div>
         </>
-    )
-}
-
+    );
+};
 
 export default ProfessionalInfo;

@@ -8,14 +8,14 @@ const TicketText = ({QrCodeSrc}) => {
         <div className="ticket-id flex flex-col font-bold gap-y-4">
             <div className="text-[1.3em] md:text-3xl font-bold">
                 <p className="w-full text-justify">
-                    Here is your ticket :
+                    Here is your QR Code ticket:
                 </p>
                 <div className="flex">
                     <Emoji imageSrc={doneEmoji} imageAlt={'doneEmoji'} classes="w-6 md:w-8 mr-1" />
                     <Emoji imageSrc={SuitcaseEmoji} imageAlt={'SuitcaseEmoji'} classes="w-6 md:w-8 mr-1" />
                 </div>
             </div>
-                <span className="font-light text-xs text-justify md:text-lg">You can show it to managers to share your profile. Check your email too 📥</span>
+                <span className="font-light text-xs text-justify md:text-lg">Show the QR Code for entry and to share your profile with more than 70 companies!</span>
             {/* <span className="text-sm font-light">{QrCodeSrc}</span> */}
         </div>
     )

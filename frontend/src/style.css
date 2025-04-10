@@ -105,3 +105,11 @@ body {
 .information-part::-webkit-scrollbar {
   display: none;
 }
+
+
+
+::placeholder{
+  font-style: italic;
+  font-size: .9rem;
+  color: rgba(0, 0, 0, 0.15) !important;
+}

@@ -19,21 +19,24 @@ import LoadingPage from "../../pages/LoadingPage";
 const keyMap = {
     uniId: "University ID",
     fullName: "Full Name",
-    birthdate: "Date Of Birth",
+    birthdate: "Date of Birth",
     gender: "Gender",
     nationality: "Nationality",
     studyLevel: "Study Program",
     college: "College",
     major: "Major",
-    email: "Email",
-    phoneNumber: "Phone number",
+    email: "Email address",
+    phoneNumber: "Mobile number",
     cgpa: "CGPA",
+    city: "City",
     linkedIn: "LinkedIn URL",
-    skills: "Skills",
+    technicalSkills: "Technical Skills",
+    nonTechnicalSkills: "Non-Technical Skills",
     experience: "Experience",
     cvfile: "CV",
-    portfolio: "Portfolio",
+    // portfolio: "Personal Website (if any)",
     languages: "languages",
+    ExpectedToGraduate: "Expected to Graduate",
   };
 
 
@@ -217,12 +220,12 @@ const Form = () => {
                 <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-6 md:gap-x-12 h-full">
                     <ProgressSection status={full} missing={fieldMissing} />
                     <div className="information-part border h-fit md:h-full px-6 py-8 md:px-12 md:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em]  overflow-y-scroll lg:overflow-y-hidden">
-                            <PersonalInfo />
-                            <ProfessionalInfo />
-                            <div className="w-full flex justify-between">
-                                <button onClick={scrollToPrevSection} className="border rounded-xl w-12 h-12">{'<'}</button>
-                                <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-xl w-fit">Submit</button>
-                            </div>
+                        <PersonalInfo />
+                        <ProfessionalInfo />
+                        <div className="w-full flex justify-between">
+                            <button onClick={scrollToPrevSection} className="border rounded-xl w-12 h-12">{'<'}</button>
+                            <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-xl w-fit">Submit</button>
+                        </div>
                     </div>
 
                 </div>
