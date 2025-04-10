@@ -151,7 +151,10 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
           <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
               <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-              <input inputMode="numeric" pattern="[0-9]+" ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
+              <input onFocus={focusedInput} inputMode="numeric" pattern="[0-9]+" ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
+              {
+                  isFocused && <FocusedState label={'Uni ID'} />
+              }
           </div>
 
         )
@@ -202,7 +205,6 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         )
       case 'CGPA': 
         return (
-          <>
             <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
                 <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
                 <input onFocus={focusedInput} ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
@@ -210,7 +212,6 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
                   isFocused && <FocusedState label={'CGPA'} />
                 }
             </div>
-          </>
         )
       case 'Technical Skills': case 'Non-Technical Skills': 
         return (
