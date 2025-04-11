@@ -237,68 +237,70 @@ const addApplicantPublic = async (req, res) => {
 
             res.status(200).json( {url: url ,applicantProfile: applicantProfile } );
             sendEmail(
-                `JobFair ticket #${req.body.uniId}`,//u22200731
-
+                `Your Entry Confirmation – Ticket #${req.body.uniId}`,
+              
                 `<div style="max-width:600px;margin:auto;padding:30px;background-color:#ffffff;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.08);font-family:Arial,sans-serif;">
-                    <h2 style="color:#2c3e50;text-align:center;">Job Fair 2025 – Ticket Confirmation</h2>
-                    
-                    <p style="color:#34495e;font-size:16px;line-height:1.6;">
-                        Dear <strong>${req.body.fullName}</strong>,
-                    </p>
-
-                    <p style="color:#34495e;font-size:16px;line-height:1.6;">
-                        Thank you for registering in the <strong>University of Sharjah internship & Career Fair 2025</strong>. We are pleased to confirm your ticket and participation.
-                    </p>
-
-                    <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f9f9f9;">
-                        <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">📍 Event Details</h3>
-                        <ul style="list-style-type:none;padding-left:0;color:#555;">
-                        <li><strong>📅 Date:</strong> April 22, 2025</li>
-                        <li><strong>🕙 Time:</strong> 10:00 AM – 2:00 PM</li>
-                        <li><strong>🏢 Location:</strong> M11 – University of Sharjah</li>
-                        <li><strong>👥 Companies Participating:</strong> Over 70 companies</li>
-                        </ul>
-                    </div>
-
-                    <div style="margin-bottom:20px;">
-                        <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">🧾 Your Ticket Info</h3>
-                        <ul style="list-style-type:none;padding-left:0;color:#555;">
-                        <li><strong>Full Name:</strong> ${req.body.fullName}</li>
-                        <li><strong>ID Number:</strong> ${req.body.uniId}</li>
-                        <li><strong>Email:</strong> ${req.body.email}</li>
-                        <li><strong>Major:</strong> ${req.body.major}</li>
-                        <li><strong>College:</strong> ${req.body.college}</li>
-                        <li><strong>Study Level:</strong> ${req.body.studyLevel}</li>
-                        <li><strong>Expected to Graduate:</strong> ${req.body.ExpectedToGraduate}</li>
-                        <li><strong>GPA:</strong> ${req.body.cgpa}</li>
-                        ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : ''}
-                        </ul>
-                    </div>
-
-                    <div style="text-align:center;margin-bottom:20px;">
-                        <img src="${url}" alt="QR Code" style="max-width:200px;border-radius:6px;">
-                        <p style="color:#999;font-size:14px;margin-top:8px;">Scan this QR code at the entrance for check-in</p>
-                    </div>
-
-                    <div style="margin-top:20px;">
-                        <p style="color:#34495e;font-size:16px;">Please make sure to:</p>
-                        <ul style="color:#555;padding-left:20px;">
-                        <li>Arrive early for smoother check-in.</li>
-                        <li>Dress professionally and be prepared to engage with employers.</li>
-                        </ul>
-                    </div>
-
-                    <footer style="text-align:center;margin-top:30px;border-top:1px solid #e0e0e0;padding-top:15px;">
-                        <p style="color:#999;font-size:14px;">Best regards,</p>
-                        <p style="color:#999;font-size:14px;">CASTO Office – University of Sharjah</p>
-                    </footer>
-                    </div>`
-    ,
-
-                `${req.body.email}`,
-
-                "🥲 <ammar211080@gmail.com>",
-            )
+                  <h2 style="color:#0E7F41;text-align:center;font-weight:bold;">🎓 Your Entry Confirmation</h2>
+              
+                  <p style="color:#34495e;font-size:16px;line-height:1.6;">
+                    Dear <strong>${req.body.fullName}</strong>,
+                  </p>
+              
+                  <p style="color:#34495e;font-size:16px;line-height:1.6;">
+                    The <strong>Career Advancement and Student Training Office (CASTO)</strong> is excited to welcome you to our annual <strong>Internship and Career Fair</strong>!
+                  </p>
+              
+                  <p style="color:#2c3e50;font-size:16px;">Please keep your QR code handy on the day of the event for entry and to share your profile with employers.</p>
+              
+                  <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f9f9f9;">
+                    <h3 style="color:#2c3e50;margin-bottom:10px;">📌 Your Registration Details</h3>
+                    <ul style="list-style-type:none;padding-left:0;color:#555;">
+                      <li><strong>Name:</strong> ${req.body.fullName}</li>
+                      <li><strong>University ID:</strong> ${req.body.uniId}</li>
+                      <li><strong>Email:</strong> ${req.body.email}</li>
+                      <li><strong>Major:</strong> ${req.body.major}</li>
+                      <li><strong>College:</strong> ${req.body.college}</li>
+                      <li><strong>Study Level:</strong> ${req.body.studyLevel}</li>
+                      <li><strong>Expected Graduation:</strong> ${req.body.ExpectedToGraduate}</li>
+                      <li><strong>GPA:</strong> ${req.body.cgpa}</li>
+                      ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : ''}
+                    </ul>
+                  </div>
+              
+                  <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f4fef7;">
+                    <h3 style="color:#2c3e50;margin-bottom:10px;">📍 Event Details</h3>
+                    <ul style="list-style-type:none;padding-left:0;color:#555;">
+                      <li><strong>Date:</strong> 22 - Apr - 2025 (Tuesday)</li>
+                      <li><strong>Time:</strong> 10:00 AM – 2:00 PM</li>
+                      <li><strong>Venue:</strong> Main Building M11 – University of Sharjah</li>
+                      <li><strong>Companies Participating:</strong> 70+ Employers</li>
+                    </ul>
+                  </div>
+              
+                  <div style="text-align:center;margin:30px 0;">
+                    <img src="${url}" alt="QR Code" style="max-width:200px;border-radius:6px;" />
+                    <p style="color:#777;font-size:14px;margin-top:8px;">Scan this QR code at the entrance</p>
+                  </div>
+              
+                  <div style="margin-top:20px;">
+                    <p style="color:#34495e;font-size:16px;">✅ Quick Tips:</p>
+                    <ul style="color:#555;padding-left:20px;">
+                      <li>Arrive early to avoid the crowd.</li>
+                      <li>Dress professionally and be confident!</li>
+                    </ul>
+                  </div>
+              
+                  <footer style="text-align:center;margin-top:30px;border-top:1px solid #e0e0e0;padding-top:15px;">
+                    <p style="color:#999;font-size:14px;">Best of Luck!</p>
+                    <p style="color:#999;font-size:14px;">CASTO Team – University of Sharjah</p>
+                  </footer>
+                </div>`,
+              
+                req.body.email,
+              
+                "CASTO – Internship Fair <ammar211080@gmail.com>"
+              )
+              
         })
 
 
