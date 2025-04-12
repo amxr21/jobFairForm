@@ -11,7 +11,8 @@ dotenv.config();
 app.use((req, res, next) => {
     res.setHeader(
       "Access-Control-Allow-Origin",
-      "https://jobfairform-frontend.onrender.com"
+      // "https://jobfairform-frontend.onrender.com"
+      "https://job-fair-form.vercel.app/"
     );
     res.setHeader(
       "Access-Control-Allow-Methods",
