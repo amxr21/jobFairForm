@@ -27,7 +27,7 @@ function App() {
 
     <div className="App relative">
       {/* <NavBar/> */}
-      {/* <Intro/> */}
+      <Intro/>
       <BrowserRouter>
         <Routes>
           {/* <Route path="/" element={<Home />} /> */}
