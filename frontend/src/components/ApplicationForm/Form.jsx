@@ -171,10 +171,11 @@ const Form = () => {
         // e.preventDefault();
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
-        form.current.classList.replace("md:p-10", "p-0");
-        form.current.classList.replace("p-6", "p-0");
-        form.current.classList.replace("md:h-[90vh]", "md:h-0");
-        form.current.classList.replace("h-[100%]", "h-0");
+        form.current.classList.replace("md:p-8", "p-0");
+        form.current.classList.replace("xl:p-10", "p-0");
+        form.current.classList.replace("p-5", "p-0");
+        form.current.classList.replace("h-[86vh]", "h-0");
+        // form.current.classList.replace("h-[100%]", "h-0");
         form.current.classList.replace("border", "border-none");
         // form.current.style.height = "fit-content";
         // form.current.classList.replace("h-fit", "h-0");
@@ -188,10 +189,10 @@ const Form = () => {
 
         // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
         document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
-        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[90vh]");
+        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[86vh]");
         document.querySelector(".confirmMessageRef").classList.add("md:h-fit");
-        document.querySelector(".confirmMessageRef").classList.replace("md:p-0", "md:p-10");
-        document.querySelector(".confirmMessageRef").classList.replace("p-0", "md:p-5");
+        document.querySelector(".confirmMessageRef").classList.replace("md:p-0", "md:p-8");
+        document.querySelector(".confirmMessageRef").classList.replace("p-0", "p-5");
 
 
         // const confirmationResponse = await axios.post("http://localhost:2000/applicants/qr", formDataReq);
@@ -213,14 +214,14 @@ const Form = () => {
 
     return (
         <>
-            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] p-5 md:p-8 xl:p-10 opacity-100 overflow-hidden`}>
-
             {
                 isLoading && <LoadingPage />
             }
+            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] p-5 md:p-8 xl:p-10 opacity-100 overflow-hidden`}>
+
                 <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-12 h-full">
                     <ProgressSection status={full} missing={fieldMissing} />
-                    <div className="information-part border h-fit md:h-full px-6 py-6 md:px-9 md:py-9 xl:px-12 xl:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-y-hidden lg:overflow-y-auto">
+                    <div className="information-part border h-fit md:h-full px-6 py-6 md:px-9 md:py-9 xl:px-12 xl:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden lg:overflow-y-auto">
                         <PersonalInfo />
                         <div className="h-full flex flex-col justify-between">
                             <ProfessionalInfo />
