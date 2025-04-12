@@ -61,7 +61,8 @@ const Form = () => {
 
     const scrollToPrevSection = (e) => {
         e.preventDefault();
-        e.target.parentElement.parentElement.scrollBy({top: -window.innerHeight});
+        e.target.parentElement.parentElement.parentElement.scrollBy({top: -window.innerHeight});
+        
         // console.log(e.target.parentElement.parentElement.parentElement);
 
         document.querySelector('.section-header').textContent = 'Personal Information'
@@ -212,19 +213,22 @@ const Form = () => {
 
     return (
         <>
-            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[100%] md:h-[90vh] p-6 md:p-10 opacity-100 overflow-hidden`}>
+            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] p-5 md:p-8 xl:p-10 opacity-100 overflow-hidden`}>
 
             {
                 isLoading && <LoadingPage />
             }
-                <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-6 md:gap-x-12 h-full">
+                <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-12 h-full">
                     <ProgressSection status={full} missing={fieldMissing} />
-                    <div className="information-part border h-fit md:h-full px-6 py-8 md:px-12 md:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em]  overflow-y-scroll lg:overflow-y-hidden">
+                    <div className="information-part border h-fit md:h-full px-6 py-6 md:px-9 md:py-9 xl:px-12 xl:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-y-hidden lg:overflow-y-auto">
                         <PersonalInfo />
-                        <ProfessionalInfo />
-                        <div className="w-full flex justify-between">
-                            <button onClick={scrollToPrevSection} className="border rounded-xl w-12 h-12">{'<'}</button>
-                            <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-xl w-fit">Submit</button>
+                        <div className="h-full flex flex-col justify-between">
+                            <ProfessionalInfo />
+                            <div className="w-full flex justify-between">
+                                <button onClick={scrollToPrevSection} className="border rounded-xl min-w-12 min-h-12">{'<'}</button>
+                                <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-xl w-fit">Submit</button>
+                            </div>
+
                         </div>
                     </div>
 

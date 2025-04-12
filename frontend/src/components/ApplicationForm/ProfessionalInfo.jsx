@@ -65,7 +65,7 @@ const ProfessionalInfo = () => {
 
     return (
         <>
-            <div id="ProfessionalInfo" className="md:mb-20 md:grid md:grid-cols-12 gap-x-8 gap-y-8 my-6 h-fit md:h-[24em]">
+            <div id="ProfessionalInfo" className="overflow-y-auto md:grid mb-2 md:mb-0 md:grid-cols-12 gap-x-8 gap-y-8 h-full">
                 <SelectInput
                     label={"Study Program"}
                     options={Object.keys(DegreePrograms)}

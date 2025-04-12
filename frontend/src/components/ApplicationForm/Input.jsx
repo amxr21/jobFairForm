@@ -143,14 +143,14 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
       case 'First Name': case 'Last Name': 
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
                 <input ref={refLabel} onChange={getInput} type='text' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
             </div>
         )
       case 'University ID': 
         return (
-          <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-              <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+          <div className={`relative flex flex-col grow mb-1 md:my-0 ${fieldClasses} max-w-full`}>
+              <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
               <input onFocus={focusedInput} inputMode="numeric" pattern="[0-9]+" ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
               {
                   isFocused && <FocusedState label={'Uni ID'} />
@@ -168,45 +168,29 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
       
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-                <input ref={refLabel} onChange={getInput} type='date' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} max={get20YearsAgo()} />
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <input ref={refLabel} onChange={getInput} type='date' name={name} className="min-h-10 w-full bg-transparent border border-gray-700 rounded-lg md:py-1.5 px-2 " placeholder={label} value={get20YearsAgo()} max={get20YearsAgo()} />
             </div>
         )
-
-      // case 'Gender': 
-      //   return (
-      //       <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-      //           <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}:</h2>
-      //           <input ref={refLabel} onChange={getInput} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label}/>
-      //       </div>
-      //   )
-
-      // case 'Nationality': 
-      //   return (
-      //       <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-      //           <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}:</h2>
-      //           <input ref={refLabel} onChange={getInput} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
-      //       </div>
-      //   )
 
       case 'Email address': 
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
                 <input ref={refLabel} onChange={getInput} type='email' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
             </div>
         )
       case 'Mobile number': 
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
                 <input ref={refLabel} onChange={getInput}  pattern="[0-9]{10}" maxLength="10" type='tel' min={0} max={0} step={0.1} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
             </div>
         )
       case 'CGPA': 
         return (
-            <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
+            <div className={`relative flex flex-col grow mb-6 md:my-0 ${fieldClasses} max-w-full`}>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
                 <input onFocus={focusedInput} ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
                 {
                   isFocused && <FocusedState label={'CGPA'} />
@@ -216,22 +200,21 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
       case 'Technical Skills': case 'Non-Technical Skills': 
         return (
             <div className={`flex flex-col grow  md:my-0 ${fieldClasses} max-w-full min-h-28`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-                <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Technical Skills' ? "Include skills such as C++, Python, JaveScript, etc..." : "Include skills such as Attentive to Details, Adaptability, Time management, etc..."}></textarea>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-0.5 md:mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Technical Skills' ? "Include skills such as C++, Python, JaveScript, etc..." : "Include skills such as Attentive to Details, Adaptability, Time management, etc..."}></textarea>
             </div>
         )
 
       case 'Expected to Graduate':
         return (
-            <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}:<RequiredAstrik required={true} /></h2>
+            <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full `}>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}:<RequiredAstrik required={true} /></h2>
                 <input disabled={!isFocused} ref={refLabel} onChange={getInput} type='date' name={name} 
-                className={`bg-gray-200 min-h-8 w-full bg-transparent border ${!isFocused ? 'border-gray-200 text-gray-200' : 'border-gray-700 text-black'} rounded-lg py-1.5 px-2`}
+                className={`bg-gray-200 min-h-10 w-full bg-transparent border ${!isFocused ? 'border-gray-200 text-gray-200' : 'border-gray-700 text-black'} rounded-lg py-1.5 px-2`}
                 placeholder={label} />
-                {/* {isFocused && <FocusedState label={'Expected to Graduate'} />} */}
-                <div className="flex flex-row gap-x-2">
-                  <input type='checkbox' onChange={(e) => {setIsFocused(e.target.checked)}} id="c" name={'c'} className="min-h-2 bg-transparent border border-gray-200 rounded-lg py-1.5 px-2" />
-                  <label htmlFor="c" >Are you a current student?</label>
+                <div className="flex flex-row items-center gap-x-2 mt-2">
+                  <input type='checkbox' onChange={(e) => {setIsFocused(e.target.checked)}} id="c" name={'c'} className="min-h-1 md:min-h-2 bg-transparent border border-gray-200 rounded-lg py-1.5 px-2" />
+                  <label htmlFor="c" className=" text-sm md:text-base" >Are you a current student?</label>
                 </div>
             </div>
 
@@ -240,7 +223,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
       case 'Others, if any':
         return (
           <div className={`flex md:flex-row flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-              <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
+              <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
               <input ref={refLabel} onChange={getInput} type={type} name={name} className="min-h-fit h-10 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
           </div>
       )
@@ -250,7 +233,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
       default:
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
                 <input ref={refLabel} onChange={getInput} type={type} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
             </div>
         )

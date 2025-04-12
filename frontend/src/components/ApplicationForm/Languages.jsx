@@ -12,7 +12,7 @@ const Languages = ({ classes }) => {
 
     return (
         <div className={`flex flex-col grow min-h-28 mb-4 md:my-0 ${classes}`}>
-            <h2 className="text-md md:text-lg mb-2">Languages:- <RequiredAstrik required={true} /></h2>
+            <h2 className="text-xs md:text-base xl:text-lg mb-2">Languages:- <RequiredAstrik required={true} /></h2>
             <div className="flex flex-col md:flex-row md:h-16">
                 <div id="Languages" className="checkboxes grid grid-cols-2 grid-rows-2 gap-2 md:gap-2  justify-between mb-2 w-full md:w-1/2 h-fit">
                     <Language lang={"Arabic"} />
