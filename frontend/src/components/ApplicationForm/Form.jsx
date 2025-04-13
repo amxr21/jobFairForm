@@ -69,8 +69,8 @@ const Form = () => {
         document.querySelector('.section-icon').src = PersonalIcon
 
         // updateProgress(0)
-        document.querySelector('.progress-bar').classList.replace('md:h-1/2', 'md:h-0')
-        document.querySelector('.progress-bar').classList.replace('w-1/2', 'w-0')
+        document.querySelector('.progress-bar').classList.replace('md:h-full', 'md:h-1/2')
+        document.querySelector('.progress-bar').classList.replace('w-full', 'w-1/2')
 
     }
 

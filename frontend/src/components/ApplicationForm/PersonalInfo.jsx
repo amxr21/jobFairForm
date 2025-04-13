@@ -39,8 +39,8 @@ const PersonalInfo = () => {
         document.querySelector('.section-header').textContent = 'Professional Information'
         document.querySelector('.section-icon').src = SuitIcon
 
-        document.querySelector('.progress-bar').classList.replace('md:h-0', 'md:h-1/2')
-        document.querySelector('.progress-bar').classList.replace('w-0', 'w-1/2')
+        document.querySelector('.progress-bar').classList.replace('md:h-1/2', 'md:h-full')
+        document.querySelector('.progress-bar').classList.replace('w-1/2', 'w-full')
 
     }
 

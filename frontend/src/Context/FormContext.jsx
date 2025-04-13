@@ -8,7 +8,7 @@ export const FormProvider = ( {children} ) => {
 
     const [formData, setFormData] = useState({});
 
-    const [ fieldMissing, setFieldMissing ] = useState('ba')
+    const [ fieldMissing, setFieldMissing ] = useState('')
 
     const updateFormData = (inputName, value) => {
         setFormData((prevData) => ( {...prevData, [inputName]: value} ) )
