@@ -10,6 +10,19 @@ import { useProgressContext } from "../../Context/ProgressContext";
 
 const PersonalInfo = () => {
 
+
+    const [ isAtBottom, setIsAtBottom ] = useState(false)
+
+    const handleScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target
+
+        setIsAtBottom(scrollTop + clientHeight >= scrollHeight - 10 )
+
+    }
+
+
+
+
     const scrollToNextSection = (e) => {
         e.preventDefault();
 
@@ -35,7 +48,18 @@ const PersonalInfo = () => {
         <>
             {/* <FormHeader header={"1. Personal Information"} /> */}
             <div id="PersonalInfo" className="md:h-full flex flex-col gap-y-2 justify-between w-full items-end mb-12">
-                <div className="flex flex-col gap-y-8 w-full h-[45vh] overflow-y-auto md:overflow-hidden">
+                <div onScroll={handleScroll} className="flex flex-col gap-y-8 w-full h-[45vh] md:h-full overflow-y-auto md:overflow-hidden relative">
+
+                    {
+                        !isAtBottom &&
+                        <div className="fixed self-start bottom-28 left-16 bg-red-200 flex md:hidden items-center justify-center w-10 h-10 rounded-full">
+                            +
+                        </div>
+
+                    }
+
+
+
                     <div className="md:grid md:grid-cols-12 w-full gap-x-8 h-fit">
                         {/* <Input fieldClasses="col-span-12 md:col-span-8" label={"Full Name"} /> */}
                         <Input fieldClasses="col-span-12 md:col-span-4" label={"First Name"} />

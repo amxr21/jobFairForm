@@ -107,9 +107,9 @@ const ProfessionalInfo = () => {
                         <Input label="Non-Technical Skills" type="text" />
                     </div>
                 </div>
-                <div className="flex flex-col md:flex-row md:h-16 items-center justify-between gap-x-4 col-span-6">
+                <div className="relative flex flex-col md:flex-row md:h-16 items-center justify-between gap-x-4 col-span-8">
                     <h2 className="text-md md:text-lg mb-2">Attach your resume:</h2>
-                    <div>
+                    <div className="">
                         <input
                             id="CV"
                             onChange={uploadCV}

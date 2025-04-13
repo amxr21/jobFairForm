@@ -18,7 +18,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
 
     return (
         <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses}`}>
-            <h2 className={`${label == 'Gender' || label == 'City' || label == 'Nationality'  ? "" : 'h-14'} xl:h-fit text-xs md:text-base xl:text-lg mb-2`}>{label}: <RequiredAstrik required={true} /></h2>
+            <h2 className={`${label == 'Gender' || label == 'City' || label == 'Nationality'  ? "" : 'lg:h-10'} xl:h-fit text-base xl:text-lg mb-2`}>{label}: <RequiredAstrik required={true} /></h2>
             <select onChange={func} ref={refSelect} className={`bg-transparent border min-h-10 border-gray-700 rounded-lg py-1.5 px-2 ${selectClasses}`} name={label} value={value} id={label}>
             <option defaultChecked>Select a {label == "Study Program" ? "Program" : label}</option>
                 {

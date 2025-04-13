@@ -189,8 +189,8 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         )
       case 'CGPA': 
         return (
-            <div className={`relative flex flex-col grow mb-6 md:my-0 ${fieldClasses} max-w-full`}>
-                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
+            <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
+                <h2 className={`text-md relative md:text-lg mb-0.5 md:mb-2 lg:h-10 xl:h-fit ${headerClasses}`}>{label}:</h2>
                 <input onFocus={focusedInput} ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
                 {
                   isFocused && <FocusedState label={'CGPA'} />
