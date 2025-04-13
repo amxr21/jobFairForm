@@ -10,7 +10,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
   
   const refLabel = useRef();
   
-  const [ isFocused,setIsFocused] = useState(false)
+  const [ isFocused, setIsFocused] = useState(false)
   
   
   const { formData, updateFormData, setFormData, setFieldMissing } = useFormContext();
@@ -52,7 +52,30 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
           }
           break;
     
+        case 'University ID':
+
+          if(parseInt(refLabel.current.value.slice(0,1)) > 2) refLabel.current.value = 18000000
+
+          if(parseInt(refLabel.current.value.slice(0,2)) < 18 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 18000000
+          if(parseInt(refLabel.current.value.slice(0,2)) > 25 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 25999999
+
+
+          if(String(refLabel.current.value).length > 8) refLabel.current.value = 259999999
+          console.log(value);
+          break
+
+
         case 'CGPA':
+
+          if(parseFloat(refLabel.current.value) > 4) refLabel.current.value = 4
+          else if(parseFloat(refLabel.current.value) < 0) refLabel.current.value = 0
+
+          if(String(refLabel.current.value).length > 4) refLabel.current.value = parseFloat(value).toFixed(2)
+
+          console.log(value);
+          
+
+
           const cgpa = parseFloat(value);
           if (isNaN(cgpa) || cgpa < 0 || cgpa > 4) {
             setFieldMissing('CGPA')
@@ -131,7 +154,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
     const focusedInput = () => {
       setIsFocused(p => !p)
 
-      setTimeout(() => {setIsFocused(false)}, 2000)
+      setTimeout(() => {setIsFocused(false)}, 5000)
       
 
     }
@@ -151,7 +174,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
           <div className={`relative flex flex-col grow mb-1 md:my-0 ${fieldClasses} max-w-full`}>
               <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-              <input onFocus={focusedInput} inputMode="numeric" pattern="[0-9]+" ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
+              <input onFocus={focusedInput} inputMode="numeric" pattern="[0-9]+" ref={refLabel} onChange={getInput} type='number' maxLength={8} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
               {
                   isFocused && <FocusedState label={'Uni ID'} />
               }
@@ -169,7 +192,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
                 <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-                <input ref={refLabel} onChange={getInput} type='date' name={name} className="min-h-10 w-full bg-transparent border border-gray-700 rounded-lg md:py-1.5 px-2 " placeholder={label} value={get20YearsAgo()} max={get20YearsAgo()} />
+                <input ref={refLabel} onChange={getInput} type='date' name={name} className="min-h-10 w-full bg-transparent border border-gray-700 rounded-lg md:py-1.5 px-2" placeholder={label} value={get20YearsAgo()} max={get20YearsAgo()} />
             </div>
         )
 
@@ -191,7 +214,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
             <div className={`relative flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
                 <h2 className={`text-md relative md:text-lg mb-0.5 md:mb-2 lg:h-10 xl:h-fit ${headerClasses}`}>{label}:</h2>
-                <input onFocus={focusedInput} ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
+                <input onFocus={focusedInput} ref={refLabel} onChange={getInput} type='number' min={0.00} max={4.00} step={0.01} maxLength={4} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2" placeholder={label} />
                 {
                   isFocused && <FocusedState label={'CGPA'} />
                 }
