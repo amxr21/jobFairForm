@@ -171,10 +171,11 @@ const Form = () => {
         // e.preventDefault();
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
-        form.current.classList.replace("md:p-8", "p-0");
         form.current.classList.replace("xl:p-10", "p-0");
+        form.current.classList.replace("md:p-6", "p-0");
         form.current.classList.replace("p-5", "p-0");
         form.current.classList.replace("h-[86vh]", "h-0");
+        form.current.classList.replace("xl:h-[90vh]", "h-0");
         // form.current.classList.replace("h-[100%]", "h-0");
         form.current.classList.replace("border", "border-none");
         // form.current.style.height = "fit-content";
