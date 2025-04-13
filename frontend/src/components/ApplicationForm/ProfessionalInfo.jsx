@@ -98,12 +98,13 @@ const ProfessionalInfo = () => {
                 <Input fieldClasses="col-span-2" label="CGPA" />
 
                 
-                <Experiences label="Experience" classes="col-span-6 h-fit md:h-56" />
+                <Experiences label="Technical Skills" classes="col-span-6 h-fit md:h-56 grow" />
 
                 <div className="col-span-6 md:h-56 overflow-hidden">
-                    <div className="flex flex-col grow justify-between gap-y-2 mb-4 md:my-0">
+                    <div className="flex flex-col grow justify-between gap-y-1 mb-4 md:my-0">
                         {/* <Languages /> */}
-                        <Input label="Technical Skills" type="text" />
+                        {/* <Input label="Technical Skills" type="text" /> */}
+                        <Input label="Experience" type="text" />
                         <Input label="Non-Technical Skills" type="text" />
                     </div>
                 </div>
