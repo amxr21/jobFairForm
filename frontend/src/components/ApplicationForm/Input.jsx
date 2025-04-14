@@ -220,11 +220,11 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
                 }
             </div>
         )
-      case 'Experience': case 'Non-Technical Skills': 
+      case 'Experience': case 'Non-technical skills': 
         return (
             <div className={`flex flex-col grow md:my-0 ${fieldClasses} max-w-full min-h-28`}>
-                <h2 className={`text-md md:text-lg mb-0.5 md:mb-1  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-                <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-0.5 md:mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Technical Skills' ? "Include skills such as C++, Python, JaveScript, etc..." : "Start with the latest to the oldest. You may inckude part-time and internship opportunies"}></textarea>
+                <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
+                <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-0.5 md:mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Non-Technical Skills' ? "Include skills such as Attentive to details, Adaptability, Empathy" : "Start with the latest to the oldest. You may include part-time and internship opportunies"}></textarea>
             </div>
         )
 
@@ -248,6 +248,14 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
           <div className={`flex md:flex-row flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
               <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={false} /></h2>
               <input ref={refLabel} onChange={getInput} type={type} name={name} className="min-h-fit h-10 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
+          </div>
+      )
+      
+      case 'LinkedIn URL':
+        return (
+          <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
+              <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}:</h2>
+              <input ref={refLabel} onChange={getInput} type={type} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label} />
           </div>
       )
         

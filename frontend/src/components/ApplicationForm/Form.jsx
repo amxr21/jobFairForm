@@ -3,7 +3,8 @@ import axios from "axios";
 import { useRef, createContext, useState, useContext } from "react";
 import { PersonalInfo, ProfessionalInfo, SubmitFormBtn, ConfirmMessageDiv } from "./index";
 
-const link = "https://jobfairform-backend.onrender.com"
+// const link = "https://jobfairform-backend.onrender.com"
+const link = "https://jobfairform-backend-production.up.railway.app"
 
 import { useAuthContext } from "../../Hooks/useAuthContext"
 import useFormContext from "../../Hooks/useFormContext";

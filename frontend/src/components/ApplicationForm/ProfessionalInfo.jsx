@@ -105,7 +105,7 @@ const ProfessionalInfo = () => {
                         {/* <Languages /> */}
                         {/* <Input label="Technical Skills" type="text" /> */}
                         <Input label="Experience" type="text" />
-                        <Input label="Non-Technical Skills" type="text" />
+                        <Input label="Non-technical skills" type="text" />
                     </div>
                 </div>
                 <div className="relative flex flex-col md:flex-row md:h-16 items-center justify-between gap-x-4 col-span-8">

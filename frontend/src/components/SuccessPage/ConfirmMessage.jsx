@@ -6,7 +6,7 @@ const ConfirmMessage = ({ emoji }) => {
             </div>
             <div className="text italic flex flex-col gap-2">
                 <h2 className="text-3xl md:text-6xl font-bold">You are all Set!</h2>
-                <p>See you on Tuesday, 22ed April at M11 from 10:00AM-02:00PM</p>
+                <p>See you on Tuesday, 22nd April at M11 from 10:00AM-02:00PM</p>
             </div>
         </div>
     )
