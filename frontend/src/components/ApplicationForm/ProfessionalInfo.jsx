@@ -57,10 +57,19 @@ const ProfessionalInfo = () => {
     };
 
     const uploadCV = (e) => {
-        const file = e.target.files[0];
-        setCV(file);
-        updateFormData("CV", file);
-        console.log("File uploaded successfully:", file);
+        let file = e.target.files[0];
+
+        if(file?.size <= 2 * 1024 *1024){
+            setCV(file);
+            updateFormData("CV", file);
+            console.log("File uploaded successfully:", file);
+        }
+        else{
+            alert("Can't exceed 2MB !")
+            file = ''
+
+        }
+        
     };
 
     return (
