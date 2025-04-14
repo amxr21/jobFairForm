@@ -60,7 +60,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
           if(parseInt(refLabel.current.value.slice(0,2)) > 25 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 25999999
 
 
-          if(String(refLabel.current.value).length > 8) refLabel.current.value = 259999999
+          if(String(refLabel.current.value).length > 8) {let a = refLabel.current.value; refLabel.current.value = a.slice(0,8)}
           console.log(value);
           break
 
