@@ -17,12 +17,17 @@ const ActionPart = () => {
 
     return (
         <div ref={inroCover} className="flex items-center gap-x-4 mt-4 md:mt-10">
-            <div className="md:block hidden arrow">
-                <img src={Arrow} alt="" />
-            </div>
-            <button onClick={hideCover} className="w-full md:w-72 rounded-xl border p-2 text-xl">Get Started 🚀</button>
+            <button onClick={hideCover} className="w-full md:w-72 rounded-xl border p-2 text-xl">Regsiter now ! سجل الان</button>
         </div>
     )
+    // return (
+    //     <div ref={inroCover} className="flex items-center gap-x-4 mt-4 md:mt-10">
+    //         <div className="md:block hidden arrow">
+    //             <img src={Arrow} alt="" />
+    //         </div>
+    //         <button onClick={hideCover} className="w-full md:w-72 rounded-xl border p-2 text-xl">Get Started 🚀</button>
+    //     </div>
+    // )
 }
 
 export default ActionPart;

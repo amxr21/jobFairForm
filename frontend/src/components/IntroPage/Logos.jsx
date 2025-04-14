@@ -1,5 +1,5 @@
-import UniversityLogo from "../../assets/images/uniLogo-white.svg";
-import CastoLogo from "../../assets/images/castoLogo-white.svg";
+import UniversityLogo from "../../assets/images/UniLogoSvg.svg";
+import CastoLogo from "../../assets/images/OfficeLogoSvg.svg";
  
 
 
@@ -9,12 +9,12 @@ import UniLogoSVG from "./UniLogo";
 
 const Logos = () => {
     return (
-        <div className="logos flex gap-x-4 w-full md:w-fit">
-            <div className="university-logo flex gap-x-4 w-4/12">
-                <img src={UniversityLogo} alt="" className="" />
+        <div className="logos flex gap-x-16">
+            <div className="university-logo flex gap-x-4 items-center h-[4.5rem] justify-center">
+                <img src={UniversityLogo} alt="" className="h-full" />
             </div>
-            <div className="casto-office-logo w-11/12 md:w-fit  overflow-hidden">
-                <img src={CastoLogo} alt="" className=" " />
+            <div className="casto-office-logo flex items-center h-[4.5rem] justify-center overflow-hidden">
+                <img src={CastoLogo} alt="" className=" h-[90%] w-fit" />
             </div>
         </div>
     )

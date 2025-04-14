@@ -221,7 +221,7 @@ const Form = () => {
             }
             <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-5 md:p-6 xl:p-10 opacity-100 overflow-hidden`}>
 
-                <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-6 xl:gap-x-12 h-full">
+                <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-6 xl:gap-x-8 h-full">
                     <ProgressSection status={full} missing={fieldMissing} />
                     <div className="information-part border h-fit md:h-full px-6 py-6 md:px-9 md:py-9 xl:px-12 xl:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden lg:overflow-y-hidden">
                         <PersonalInfo />
