@@ -193,7 +193,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
             <div className={`flex flex-col grow mb-4 md:my-0 ${fieldClasses} max-w-full`}>
                 <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-                <input ref={refLabel} onChange={getInput} type='date' name={name} className="min-h-10 w-full bg-transparent border border-gray-700 rounded-lg md:py-1.5 px-2" placeholder={label} value={get20YearsAgo()} max={get20YearsAgo()} />
+                <input ref={refLabel} onChange={getInput} type='date' name={name} className="min-h-10 w-full bg-transparent border border-gray-700 rounded-lg md:py-1.5 px-2" placeholder={label} max={get20YearsAgo()} />
             </div>
         )
 
