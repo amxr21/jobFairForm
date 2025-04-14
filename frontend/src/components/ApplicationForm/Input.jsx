@@ -11,7 +11,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
   const refLabel = useRef();
   
   const [ isFocused, setIsFocused] = useState(false)
-  
+  const [ age, setAge ] = useState()
   
   const { formData, updateFormData, setFormData, setFieldMissing } = useFormContext();
   
@@ -89,6 +89,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
           const minAgeDate = new Date();
           minAgeDate.setFullYear(today.getFullYear() - 20);
           if (dob > minAgeDate) {
+            setAge(dob)
             return;
           }
           break;
