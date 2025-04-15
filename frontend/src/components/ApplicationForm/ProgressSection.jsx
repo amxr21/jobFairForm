@@ -1,4 +1,5 @@
 import PersonalInfoIcon from "../../assets/images/personal.svg"
+import GridLeft from "../IntroPage/GridLeft";
 import Progress from "./Progress";
 import { useRef, useContext } from "react";
 
@@ -13,6 +14,10 @@ const ProgressSection = ({ status, missing }) => {
 
     return (
         <div className="flex flex-col gap-4 md:gap-8 md:w-3/12 border py-6 px-8 md:py-10 md:px-12 md:h-full bg-[#2959A6] rounded-t-[2.75em] rounded-b-2xl md:rounded-l-[4em] md:rounded-r-3xl">
+
+            
+            <GridLeft mark={false} otherClasses={'-left-10'} />
+
             <div className="flex md:flex-col justify-between w-full">
                 <div className="text-white flex items-center justify-center icon min-w-14 md:min-w-16 md:w-16 min-h-14 md:min-h-16 md:h-16 border border-white rounded-2xl mb-4">
                     <img className="section-icon " src={PersonalInfoIcon} alt="" />

@@ -32,7 +32,7 @@ const keyMap = {
     city: "City",
     linkedIn: "LinkedIn URL",
     technicalSkills: "Technical Skills",
-    nonTechnicalSkills: "Non-Technical Skills",
+    nonTechnicalSkills: "Non-technical skills",
     experience: "Experience",
     cvfile: "CV",
     // portfolio: "Personal Website (if any)",

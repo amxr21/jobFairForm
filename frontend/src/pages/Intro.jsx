@@ -18,7 +18,7 @@ const Intro = () => {
                 <UpperPart />
                 <LowerPart />
 
-                <GridLeft />
+                <GridLeft mark={true} />
                 <SloganImage />
             </div>
 

@@ -55,9 +55,12 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         case 'University ID':
 
           if(parseInt(refLabel.current.value.slice(0,1)) > 2) refLabel.current.value = 18000000
-
-          if(parseInt(refLabel.current.value.slice(0,2)) < 18 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 18000000
-          if(parseInt(refLabel.current.value.slice(0,2)) > 25 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 25999999
+          let idRegex = /^[0-9]+/g 
+          if(!idRegex.test(refLabel.current.value.trim())) {
+            refLabel.current.value = ''
+          }
+          // if(parseInt(refLabel.current.value.slice(0,2)) < 18 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 18000000
+          // if(parseInt(refLabel.current.value.slice(0,2)) > 25 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 25999999
 
 
           if(String(refLabel.current.value).length > 8) {let a = refLabel.current.value; refLabel.current.value = a.slice(0,8)}
@@ -175,7 +178,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
           <div className={`relative flex flex-col grow mb-1 md:my-0 ${fieldClasses} max-w-full`}>
               <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-              <input onFocus={focusedInput} inputMode="numeric" pattern="[0-9]+" ref={refLabel} onChange={getInput} type='number' maxLength={8} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
+              <input onFocus={focusedInput} inputMode="numeric" pattern="\d*" ref={refLabel} onChange={getInput} type='number' maxLength={8} name={name} className="min-h-8 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label+' without U'} min={18000000} max={25999999} /> 
               {
                   isFocused && <FocusedState label={'Uni ID'} />
               }
@@ -225,7 +228,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         return (
             <div className={`flex flex-col grow md:my-0 ${fieldClasses} max-w-full min-h-28`}>
                 <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
-                <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-0.5 md:mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Non-Technical Skills' ? "Include skills such as Attentive to details, Adaptability, Empathy" : "Start with the latest to the oldest. You may include part-time and internship opportunies"}></textarea>
+                <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-0.5 md:mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Non-technical skills' ? "Include skills such as Attentive to details, Adaptability, Empathy" : "Start with the latest to the oldest. You may include part-time and internship opportunies"}></textarea>
             </div>
         )
 
