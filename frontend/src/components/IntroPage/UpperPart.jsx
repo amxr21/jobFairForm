@@ -6,7 +6,7 @@ import Header from "./Header";
 
 const UpperPart = () => {
     return (
-        <div className="upper-part flex flex-col gap-10 md:items-center w-full md:h-1/2">
+        <div className="upper-part flex flex-col gap-8 md:gap-10 md:items-center w-full md:h-1/2">
             <Logos/>
             <Header />
         

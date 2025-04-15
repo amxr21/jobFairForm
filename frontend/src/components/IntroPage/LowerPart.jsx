@@ -11,7 +11,7 @@ const LowerPart = () => {
             <PeopleImage />
 
 
-            <div className="flex flex-col items-end w-[60%]">
+            <div className="flex flex-col md:items-end md:w-[60%]">
                 <FairText />
                 
                 <ActionPart />
