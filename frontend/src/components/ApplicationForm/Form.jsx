@@ -225,7 +225,7 @@ const Form = () => {
                     <ProgressSection status={full} missing={fieldMissing} />
                     <div className="information-part border h-fit md:h-full px-6 py-6 md:px-9 md:py-9 xl:px-12 xl:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden lg:overflow-y-hidden">
                         <PersonalInfo />
-                        <div className="h-full flex flex-col justify-between">
+                        <div className="h-full flex flex-col justify-between z-[999]">
                             <ProfessionalInfo />
                             <div className="w-full flex justify-between">
                                 <button onClick={scrollToPrevSection} className="border rounded-xl min-w-12 min-h-12">{'<'}</button>
