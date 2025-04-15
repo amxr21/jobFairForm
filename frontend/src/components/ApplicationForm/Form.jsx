@@ -172,11 +172,11 @@ const Form = () => {
         // e.preventDefault();
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
-        form.current.classList.replace("xl:p-10", "p-0");
-        form.current.classList.replace("md:p-6", "p-0");
-        form.current.classList.replace("p-5", "p-0");
         form.current.classList.replace("h-[86vh]", "h-0");
         form.current.classList.replace("xl:h-[90vh]", "h-0");
+        form.current.classList.replace("p-5", "p-0");
+        form.current.classList.replace("md:p-6", "p-0");
+        form.current.classList.replace("xl:p-8", "p-0");
         // form.current.classList.replace("h-[100%]", "h-0");
         form.current.classList.replace("border", "border-none");
         // form.current.style.height = "fit-content";
@@ -219,7 +219,7 @@ const Form = () => {
             {
                 isLoading && <LoadingPage />
             }
-            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-5 md:p-6 xl:p-10 opacity-100 overflow-hidden`}>
+            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-5 md:p-6 xl:p-8 opacity-100 overflow-hidden`}>
 
                 <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-6 xl:gap-x-8 h-full">
                     <ProgressSection status={full} missing={fieldMissing} />
