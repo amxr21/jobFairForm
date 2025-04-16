@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
 
 // const link = "https://jobfair-1.onrender.com"
+// const link = "http://localhost:2001"
 const link = "https://jobfairform-backend-production.up.railway.app"
 
 

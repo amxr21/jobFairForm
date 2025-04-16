@@ -13,7 +13,7 @@ app.use((req, res, next) => {
       "Access-Control-Allow-Origin",
       // "https://jobfairform-frontend.onrender.com"
       "https://job-fair-form.vercel.app"
-      // "http://localhost:3001"
+      //"http://localhost:3000"
     );
     res.setHeader(
       "Access-Control-Allow-Methods",

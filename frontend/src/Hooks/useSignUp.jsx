@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
 import QRCode from "qrcode.react";
 
+// const link = "http://localhost:2001"
+const link = "https://jobfairform-backend-production.up.railway.app"
+
 export const useSignUp = () => {
     const [ error, setError ] = useState(null);
     const [ isLoading, setIsLoading ] = useState(null)

@@ -5,6 +5,7 @@ import { PersonalInfo, ProfessionalInfo, SubmitFormBtn, ConfirmMessageDiv } from
 
 // const link = "https://jobfairform-backend.onrender.com"
 const link = "https://jobfairform-backend-production.up.railway.app"
+// const link = "http://localhost:2001"
 
 import { useAuthContext } from "../../Hooks/useAuthContext"
 import useFormContext from "../../Hooks/useFormContext";
