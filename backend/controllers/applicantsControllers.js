@@ -301,7 +301,7 @@ const addApplicantPublic = async (req, res) => {
               
                 req.body.email,
               
-                "CASTO – Internship Fair <ammar211080@gmail.com>"
+                "CASTO – Internship Fair <internshipfair@sharjah.ac.ae>"
               )
               
         })
@@ -357,7 +357,7 @@ const emailRequest = async (req, res) => {
         
                 `${req.body.email}`,
         
-                "🥲 <ammar211080@gmail.com>",
+                "🥲 <internshipfair@sharjah.ac.ae>",
             )
             break;
         case "rejection":
@@ -367,7 +367,7 @@ const emailRequest = async (req, res) => {
         
                 `${req.body.email}`,
         
-                "🥲 <ammar211080@gmail.com>",
+                "🥲 <internshipfair@sharjah.ac.ae>",
             )
             break;
         case "other":
@@ -377,7 +377,7 @@ const emailRequest = async (req, res) => {
         
                 `${req.body.email}`,
         
-                "🥲 <ammar211080@gmail.com>",
+                "🥲 <internshipfair@sharjah.ac.ae>",
             )
     }
 
