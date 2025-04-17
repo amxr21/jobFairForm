@@ -4,6 +4,9 @@ const applicantSchema = mongoose.Schema;
 // { uniId ,fullName ,birthdate ,gender ,nationality ,studyLevel, college , major ,email ,phoneNumber, cgpa , linkedIn,skills ,languages ,brief ,cv ,portfolio}
 
 const applicantModel = new applicantSchema ({
+    flags: {
+        type: Array
+    },
     applicantDetails: {
         type: Object
     },

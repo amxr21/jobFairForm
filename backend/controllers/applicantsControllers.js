@@ -221,6 +221,7 @@ const addApplicantPublic = async (req, res) => {
     try{
         
         const applicantProfile = await ApplicantModel.create({
+            flags: [],
             cv: req.file,
             applicantDetails: req.body,
             user_id: [],
