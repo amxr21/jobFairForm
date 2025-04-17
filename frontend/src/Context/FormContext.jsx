@@ -51,10 +51,10 @@ export const FormProvider = ( {children} ) => {
       const [fieldMissing, setFieldMissing] = useState(
         Object.entries(formData)
           .filter(([key, value]) =>
-            key !== "Expected to Graduate" &&
-            key !== "CGPA" &&
-            key !== "LinkedIn URL" &&
-            key !== "CV" &&
+            key != "Expected to Graduate" &&
+            key != "CGPA" &&
+            key != "LinkedIn URL" &&
+            key != "CV" &&
             isEmptyValue(value)
           )
           .map(([key]) => key)
@@ -72,7 +72,7 @@ export const FormProvider = ( {children} ) => {
         const missingFields = Object.entries(updatedData)
           .filter(([key, value]) =>
             key != "Expected to Graduate" &&
-            key !== "CGPA" &&
+            key != "CGPA" &&
             key != "LinkedIn URL" &&
             key != "CV" &&
             isEmptyValue(value)
