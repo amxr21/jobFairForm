@@ -42,7 +42,7 @@ const sendEmail = async (subject, message, send_to, sent_from) => {
 
 
 const testFunc =  async (req, res) => {
-    res.json("Make it works dump");
+    res.json("Make it work");
 }
 
 const getAllApplicants = async (req, res) => {
