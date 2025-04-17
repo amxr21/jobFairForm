@@ -40,18 +40,15 @@ const keyMap = {
     languages: "languages",
     ExpectedToGraduate: "Expected to Graduate",
   };
+
+
+
   
-  
-  
-  
-  
-  
-  
-  const Form = () => {
-      
-      const { formData, fieldMissing } = useFormContext()
-      
-        
+
+
+const Form = () => {
+    
+    const { formData, fieldMissing } = useFormContext()
     
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
@@ -81,65 +78,6 @@ const keyMap = {
 
 
 
-    const keyMap = {
-        uniId: "University ID",
-        fullName: "Full Name",
-        birthdate: "Date of Birth",
-        gender: "Gender",
-        nationality: "Nationality",
-        studyLevel: "Study Program",
-        college: "College",
-        major: "Major",
-        email: "Email address",
-        phoneNumber: "Mobile number",
-        cgpa: "CGPA",
-        city: "City",
-        linkedIn: "LinkedIn URL",
-        technicalSkills: "Technical Skills",
-        nonTechnicalSkills: "Non-technical skills",
-        experience: "Experience",
-        cvfile: "CV",
-        // portfolio: "Personal Website (if any)",
-        languages: "languages",
-        ExpectedToGraduate: "Expected to Graduate",
-      };
-
-    const requiredKeys = [
-        "uniId",
-        "fullName",
-        "birthdate",
-        "gender",
-        "nationality",
-        "studyLevel",
-        "college",
-        "major",
-        "email",
-        "phoneNumber",
-        "city",
-        "technicalSkills",
-        "nonTechnicalSkills",
-        "experience",
-        "languages"
-      ];
-      const allRequiredFieldsFilled = requiredKeys.every(key => {
-        const value = formData[key];
-      
-        if (typeof value === "string") {
-          return value.trim() !== "";
-        }
-      
-        if (Array.isArray(value)) {
-          return value.length > 0;
-        }
-      
-        if (typeof value === "object" && value !== null) {
-          // For file uploads or objects (like cvfile)
-          return Object.keys(value).length > 0;
-        }
-      
-        return false; // undefined, null, or unsupported type
-      });
-      
 
 
     const handleSubmit = async (e) => {
@@ -167,9 +105,8 @@ const keyMap = {
               
               const filledFields = Object.values(formData).filter(isFieldFilled);
               
-            //   if (filledFields.length >= 18 && formData["Email address"].trim() != "") {
-                // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
-            if (allRequiredFieldsFilled) {
+              if (filledFields.length >= 18 && formData["Email address"].trim() != "") {
+            // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
                     // setFormDataReq(formDataToSend);
                     e.preventDefault();
 
