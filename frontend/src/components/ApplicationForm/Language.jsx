@@ -17,7 +17,7 @@ const Language = ({lang}) => {
 
     return (
         <div className="checkbox h-5 flex items-center md:mr-14">
-            <input  ref={refLabel} onChange={getLang} type="checkbox" name={lang} id={lang} className="md:min-w-2 lg:min-w-3 xl:min-w-4  xl:min-h-4 mr-2 z-50 accent-primary"/>
+            <input  ref={refLabel} onChange={getLang} type="checkbox" name={lang} id={lang} className="md:min-w-2 lg:min-w-3 xl:min-w-4  xl:min-h-4 mr-2 z-50 accent-blue-800"/>
             <label htmlFor={lang} className="text-xs md:text-base xl:text-lg">{lang}</label>
         </div>
     )
