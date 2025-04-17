@@ -123,15 +123,15 @@ const addApplicant =  async (req, res) => {
                     <div style="margin-bottom:20px;">
                         <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">🧾 Your Ticket Info</h3>
                         <ul style="list-style-type:none;padding-left:0;color:#555;">
-                        <li><strong>Full Name:</strong> ${req.body.fullName}</li>
-                        <li><strong>ID Number:</strong> ${req.body.uniId}</li>
-                        <li><strong>Email:</strong> ${req.body.email}</li>
-                        <li><strong>Major:</strong> ${req.body.major}</li>
-                        <li><strong>College:</strong> ${req.body.college}</li>
-                        <li><strong>Study Level:</strong> ${req.body.studyLevel}</li>
-                        <li><strong>Expected to Graduate:</strong> ${req.body.ExpectedToGraduate}</li>
-                        <li><strong>GPA:</strong> ${req.body.cgpa}</li>
-                        ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : ''}
+                        <li><strong>Full Name:</strong> ${req.body.fullName ? req.body.fullName : 'Not specified' }</li>
+                        <li><strong>ID Number:</strong> ${req.body.uniId ? req.body.uniId : 'Not specified' }</li>
+                        <li><strong>Email:</strong> ${req.body.email ? req.body.email : 'Not specified' }</li>
+                        <li><strong>Major:</strong> ${req.body.major ? req.body.major : 'Not specified' }</li>
+                        <li><strong>College:</strong> ${req.body.college ? req.body.college : 'Not specified' }</li>
+                        <li><strong>Study Level:</strong> ${req.body.studyLevel ? req.body.studyLevel : 'Not specified' }</li>
+                        <li><strong>Expected to Graduate:</strong> ${req.body.ExpectedToGraduate? req.body.ExpectedToGraduate : 'Graduted'}</li>
+                        <li><strong>GPA:</strong> ${req.body.cgpa? req.body.cgpa : ''}</li>
+                        ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : 'No uploaded CV'}
                         </ul>
                     </div>
 
