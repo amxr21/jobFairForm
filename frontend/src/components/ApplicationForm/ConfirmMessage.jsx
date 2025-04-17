@@ -12,7 +12,7 @@ const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
     return (
         <div ref={confirmMessageRef} className="confirmMessageRef flex flex-col p-0 gap-y-5 rounded-3xl border overflow-hidden gap-x-20 h-0 opacity-0">
             <div className="bg-[#2959A6] flex md:flex-row flex-col px-6 md:px-12 py-8 md:py-10 gap-x-24 gap-y-4 rounded-3xl h-fit">
-                {/* <ConfirmMessage emoji={CelebrateEmoji} /> */}
+                <ConfirmMessage emoji={CelebrateEmoji} />
 
                 <div className="qr-code flex md:flex-row flex-col items-center md:items-start p-8 rounded-3xl w-full md:w-7/12 bg-white md:gap-x-14 gap-y-5">
                     <div className="qr-code min-w-44 min-h-44 w-44 h-44 border flex flex-col items-center justify-center">

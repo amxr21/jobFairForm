@@ -41,6 +41,29 @@ const keyMap = {
     ExpectedToGraduate: "Expected to Graduate",
   };
 
+  const allRequiredFieldsFilled = requiredKeys.every(
+    key => formData[key]?.trim() !== ""
+  );
+
+
+  const requiredKeys = [
+    "uniId",
+    "fullName",
+    "birthdate",
+    "gender",
+    "nationality",
+    "studyLevel",
+    "college",
+    "major",
+    "email",
+    "phoneNumber",
+    "city",
+    "technicalSkills",
+    "nonTechnicalSkills",
+    "experience",
+    "languages"
+  ];
+
 
 
   
@@ -105,8 +128,9 @@ const Form = () => {
               
               const filledFields = Object.values(formData).filter(isFieldFilled);
               
-              if (filledFields.length >= 18 && formData["Email address"].trim() != "") {
-            // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
+            //   if (filledFields.length >= 18 && formData["Email address"].trim() != "") {
+                // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
+                    if (allRequiredFieldsFilled) {
                     // setFormDataReq(formDataToSend);
                     e.preventDefault();
 
