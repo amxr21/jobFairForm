@@ -249,25 +249,26 @@ const addApplicantPublic = async (req, res) => {
                   </p>
               
                   <p style="color:#34495e;font-size:16px;line-height:1.6;">
-                    The <strong>Career Advancement and Student Training Office (CASTO)</strong> is excited to welcome you to our annual <strong>Internship and Career Fair</strong>!
+                    The <strong>Career Advancement and Student Training Office (CASTO)</strong> is excited to welcome you to our annual <strong>Internship and Career Fair 2025</strong>!
                   </p>
               
                   <p style="color:#2c3e50;font-size:16px;">Please keep your QR code handy on the day of the event for entry and to share your profile with employers.</p>
               
-                  <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f9f9f9;">
-                    <h3 style="color:#2c3e50;margin-bottom:10px;">📌 Your Registration Details</h3>
+                  <div style="margin-bottom:20px;">
+                    <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">🧾 Your Ticket Info</h3>
                     <ul style="list-style-type:none;padding-left:0;color:#555;">
-                      <li><strong>Name:</strong> ${req.body.fullName}</li>
-                      <li><strong>University ID:</strong> ${req.body.uniId}</li>
-                      <li><strong>Email:</strong> ${req.body.email}</li>
-                      <li><strong>Major:</strong> ${req.body.major}</li>
-                      <li><strong>College:</strong> ${req.body.college}</li>
-                      <li><strong>Study Level:</strong> ${req.body.studyLevel}</li>
-                      <li><strong>Expected Graduation:</strong> ${req.body.ExpectedToGraduate}</li>
-                      <li><strong>GPA:</strong> ${req.body.cgpa}</li>
-                      ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : ''}
+                        <li><strong>Full Name:</strong> ${req.body.fullName ? req.body.fullName : 'Not specified' }</li>
+                        <li><strong>ID Number:</strong> ${req.body.uniId ? req.body.uniId : 'Not specified' }</li>
+                        <li><strong>Email:</strong> ${req.body.email ? req.body.email : 'Not specified' }</li>
+                        <li><strong>Major:</strong> ${req.body.major ? req.body.major : 'Not specified' }</li>
+                        <li><strong>College:</strong> ${req.body.college ? req.body.college : 'Not specified' }</li>
+                        <li><strong>Study Level:</strong> ${req.body.studyLevel ? req.body.studyLevel : 'Not specified' }</li>
+                        <li><strong>Expected to Graduate:</strong> ${req.body.ExpectedToGraduate ? req.body.ExpectedToGraduate : 'Graduted'}</li>
+                        ${req.body.cgpa && req.body.cgpa != 0 ? `<li><strong>GPA:</strong> ${req.body.cgpa}</li>` : ''}
+                        ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : 'No uploaded CV'}
                     </ul>
-                  </div>
+                </div>
+
               
                   <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f4fef7;">
                     <h3 style="color:#2c3e50;margin-bottom:10px;">📍 Event Details</h3>
