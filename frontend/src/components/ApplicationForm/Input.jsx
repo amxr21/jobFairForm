@@ -30,11 +30,11 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
       // console.log(fieldMissing);
       console.log(formData);
       
-      // General required field check
-      if (!value) {
-        setFieldMissing(label)
-        return;
-      }
+      // // General required field check
+      // if (!value) {
+      //   setFieldMissing(label)
+      //   return;
+      // }
     
       // Field-specific validations
       switch (label) {
