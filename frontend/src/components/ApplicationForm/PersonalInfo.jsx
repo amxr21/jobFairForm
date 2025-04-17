@@ -48,7 +48,7 @@ const PersonalInfo = () => {
         <>
             {/* <FormHeader header={"1. Personal Information"} /> */}
             <div id="PersonalInfo" className="h-full flex flex-col gap-y-2 justify-between w-full items-end mb-12">
-                <div onScroll={handleScroll} className="relative flex flex-col gap-y-8 w-full h-[45vh] md:h-full overflow-y-auto md:overflow-hidden">
+                <div onScroll={handleScroll} className="relative flex flex-col gap-y-8 w-full h-[45vh] md:h-full overflow-x-hidden overflow-y-auto md:overflow-hidden">
 
                     
 
