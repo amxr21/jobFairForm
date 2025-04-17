@@ -29,7 +29,7 @@ export const FormProvider = ( {children} ) => {
             "LinkedIn URL": "",
             languages: [],
             "Study Program": "",
-            CGPA: "",
+            CGPA: 0,
             "Expected to Graduate": "",
             "Technical Skills": "",
             Experience: "",

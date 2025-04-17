@@ -81,6 +81,29 @@ const keyMap = {
 
 
 
+    const keyMap = {
+        uniId: "University ID",
+        fullName: "Full Name",
+        birthdate: "Date of Birth",
+        gender: "Gender",
+        nationality: "Nationality",
+        studyLevel: "Study Program",
+        college: "College",
+        major: "Major",
+        email: "Email address",
+        phoneNumber: "Mobile number",
+        cgpa: "CGPA",
+        city: "City",
+        linkedIn: "LinkedIn URL",
+        technicalSkills: "Technical Skills",
+        nonTechnicalSkills: "Non-technical skills",
+        experience: "Experience",
+        cvfile: "CV",
+        // portfolio: "Personal Website (if any)",
+        languages: "languages",
+        ExpectedToGraduate: "Expected to Graduate",
+      };
+
     const requiredKeys = [
         "uniId",
         "fullName",
@@ -146,7 +169,7 @@ const keyMap = {
               
             //   if (filledFields.length >= 18 && formData["Email address"].trim() != "") {
                 // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
-                    if (allRequiredFieldsFilled) {
+            if (allRequiredFieldsFilled) {
                     // setFormDataReq(formDataToSend);
                     e.preventDefault();
 
