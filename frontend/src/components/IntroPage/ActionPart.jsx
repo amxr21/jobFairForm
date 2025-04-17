@@ -17,7 +17,7 @@ const ActionPart = () => {
 
     return (
         <div ref={inroCover} className="flex items-center gap-x-4 mt-4 md:mt-10 z-50">
-            <button onClick={hideCover} className="register-button w-full md:w-72 rounded-xl border p-2 md:text-xl">Regsiter Now ! سجل الان</button>
+            <button onClick={hideCover} className="register-button w-full md:w-72 rounded-xl border p-2 md:text-xl">Register Now ! سجل الان</button>
         </div>
     )
     // return (
