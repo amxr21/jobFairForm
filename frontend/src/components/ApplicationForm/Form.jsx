@@ -93,15 +93,20 @@ const Form = () => {
             for (const [apiKey, formKey] of Object.entries(keyMap)) {
                 formDataToSend.append(apiKey, formData[formKey]);
               }
-            // formDataToSend.append("portfolio", formData["Portfolio"]);
-            //REVIEW IT LATER TO INLCUDE LANGUAGES LIST. REVIEW IT LATER TO INLCUDE LANGUAGES LIST.
-            // formDataToSend.append("languages", formData["languages"]);
-            //REVIEW IT LATER TO INLCUDE LANGUAGES LIST. REVIEW IT LATER TO INLCUDE LANGUAGES LIST.
+            
+              
 
-
-            // document.querySelectorAll("input").forEach((element) => {element.value =""})
-            // try{
-            if(Object.values(formData).length >= 15){
+              const isFieldFilled = (value) => {
+                if (typeof value === "string") return value.trim() !== "";
+                if (Array.isArray(value)) return value.length > 0;
+                if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
+                return value !== null && value !== undefined;
+              };
+              
+              const filledFields = Object.values(formData).filter(isFieldFilled);
+              
+              if (filledFields.length >= 19 && formData["Email address"].trim() != "") {
+            // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
                     // setFormDataReq(formDataToSend);
                     e.preventDefault();
 
@@ -217,9 +222,7 @@ const Form = () => {
 
     return (
         <>
-            {
-                isLoading && <LoadingPage />
-            }
+            {isLoading && <LoadingPage />}
             <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-5 md:p-6 xl:p-8 opacity-100 overflow-hidden`}>
 
                 <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-6 xl:gap-x-8 h-full">

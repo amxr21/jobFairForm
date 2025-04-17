@@ -28,7 +28,7 @@ const MainBanner = () => {
                 <p className="md:text-3xl text-md text-justify">Connect with top employers, discover exciting career opportunities, and take the next step in your professional journey</p>
             </div>
             <div className="start-button flex md:mt-10 mt-8">
-                <button ref={startButton} onClick={startForm} className="w-full w-1/2 md:w-4/12 md:py-4 py-2 px-1 md:px-3 border border-black rounded-lg text-lg md:text-2xl">Lets Start</button>
+                <button ref={startButton} onClick={startForm} className="w-1/2 md:w-4/12 md:py-4 py-2 px-1 md:px-3 border border-black rounded-lg text-lg md:text-2xl">Lets Start</button>
             </div>
         </div>
     )

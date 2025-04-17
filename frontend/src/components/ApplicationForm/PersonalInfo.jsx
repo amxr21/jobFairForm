@@ -1,4 +1,4 @@
-import { Input, FormHeader, SelectInput, Languages } from "./index";
+import { Input, FormHeader, SelectInput, Languages, DownArrow } from "./index";
 import { CountriesList } from "../../CountriesList";
 import { useEffect, useRef, useState, useContext } from "react";
 
@@ -27,10 +27,10 @@ const PersonalInfo = () => {
         e.preventDefault();
 
         if(window.innerWidth < 1000){
-            e.target.parentElement.parentElement.scrollBy({top: window.innerHeight*0.65});
+            e.target.parentElement.parentElement.parentElement.scrollBy({top: window.innerHeight*0.65});
         }
         else{
-            e.target.parentElement.parentElement.scrollBy({top: window.innerHeight});
+            e.target.parentElement.parentElement.parentElement.scrollBy({top: window.innerHeight});
 
         }
 
@@ -47,20 +47,10 @@ const PersonalInfo = () => {
     return (
         <>
             {/* <FormHeader header={"1. Personal Information"} /> */}
-            <div id="PersonalInfo" className="md:h-full flex flex-col gap-y-2 justify-between w-full items-end mb-12">
-                <div onScroll={handleScroll} className="flex flex-col gap-y-8 w-full h-[45vh] md:h-full overflow-y-auto md:overflow-hidden relative">
+            <div id="PersonalInfo" className="h-full flex flex-col gap-y-2 justify-between w-full items-end mb-12">
+                <div onScroll={handleScroll} className="relative flex flex-col gap-y-8 w-full h-[45vh] md:h-full overflow-y-auto md:overflow-hidden">
 
-                    {
-                        !isAtBottom &&
-                        <div className="fixed self-start bottom-[7rem] left-16 bg-white shadow-lg opacity-50 flex md:hidden items-center justify-center w-10 h-10 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m9 12.75 3 3m0 0 3-3m-3 3v-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-
-                        </div>
-
-                    }
-
+                    
 
 
                     <div className="md:grid md:grid-cols-12 w-full gap-x-8 h-fit">
@@ -92,8 +82,10 @@ const PersonalInfo = () => {
 
                 </div>
 
-
-                <button onClick={scrollToNextSection} className="min-w-12 min-h-12 border rounded-xl right-0">{'>'}</button>
+                <div className={`w-full flex ${isAtBottom ? '' : 'justify-between'} justify-end items-start`}>
+                    { !isAtBottom && <DownArrow /> }
+                    <button onClick={scrollToNextSection} className="min-w-12 min-h-12 border rounded-xl right-0">{'>'}</button>
+                </div>
             </div>
         </>
     )

@@ -14,3 +14,4 @@ export {default as Experiences} from "./Experiences";
 export {default as SubmitFormBtn} from "./SubmitFormBtn";
 export {default as FocusedState} from "./FocusedState";
 export {default as RequiredAstrik} from "./RequiredAstrik";
+export {default as DownArrow} from "./DownArrow";

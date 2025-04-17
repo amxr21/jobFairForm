@@ -13,9 +13,9 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
   const [ isFocused, setIsFocused] = useState(false)
   const [ age, setAge ] = useState()
   
-  const { formData, updateFormData, setFormData, setFieldMissing } = useFormContext();
+  const { formData, updateFormData, setFormData, fieldMissing , setFieldMissing } = useFormContext();
   
-  console.log(formData);
+  // console.log(formData);
     
     const capitalize = (str) => {
       if(!str) return ""
@@ -27,6 +27,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
 
     const getInput = () => {
       let value = refLabel?.current?.value?.trim();
+      // console.log(fieldMissing);
       console.log(formData);
       
       // General required field check
@@ -80,10 +81,10 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
 
 
           const cgpa = parseFloat(value);
-          if (isNaN(cgpa) || cgpa < 0 || cgpa > 4) {
-            setFieldMissing('CGPA')
-            return;
-          }
+          // if (isNaN(cgpa) || cgpa < 0 || cgpa > 4) {
+          //   setFieldMissing('CGPA')
+          //   return;
+          // }
           break;
     
         case 'Date Of Birth':
@@ -148,7 +149,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         updateFormData(label, value);
         //this is the key to solve the issue of unupdated asynchronus states 
         const { tempFirst, tempLast, ...finalData } = formData
-        console.log(finalData);
+        // console.log(finalData);
         
       }
     };
