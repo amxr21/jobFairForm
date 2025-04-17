@@ -40,38 +40,18 @@ const keyMap = {
     languages: "languages",
     ExpectedToGraduate: "Expected to Graduate",
   };
-
-  const allRequiredFieldsFilled = requiredKeys.every(
-    key => formData[key]?.trim() !== ""
-  );
-
-
-  const requiredKeys = [
-    "uniId",
-    "fullName",
-    "birthdate",
-    "gender",
-    "nationality",
-    "studyLevel",
-    "college",
-    "major",
-    "email",
-    "phoneNumber",
-    "city",
-    "technicalSkills",
-    "nonTechnicalSkills",
-    "experience",
-    "languages"
-  ];
-
-
-
   
-
-
-const Form = () => {
-    
-    const { formData, fieldMissing } = useFormContext()
+  
+  
+  
+  
+  
+  
+  const Form = () => {
+      
+      const { formData, fieldMissing } = useFormContext()
+      
+        
     
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
@@ -101,6 +81,42 @@ const Form = () => {
 
 
 
+    const requiredKeys = [
+        "uniId",
+        "fullName",
+        "birthdate",
+        "gender",
+        "nationality",
+        "studyLevel",
+        "college",
+        "major",
+        "email",
+        "phoneNumber",
+        "city",
+        "technicalSkills",
+        "nonTechnicalSkills",
+        "experience",
+        "languages"
+      ];
+      const allRequiredFieldsFilled = requiredKeys.every(key => {
+        const value = formData[key];
+      
+        if (typeof value === "string") {
+          return value.trim() !== "";
+        }
+      
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+      
+        if (typeof value === "object" && value !== null) {
+          // For file uploads or objects (like cvfile)
+          return Object.keys(value).length > 0;
+        }
+      
+        return false; // undefined, null, or unsupported type
+      });
+      
 
 
     const handleSubmit = async (e) => {
