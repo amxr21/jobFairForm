@@ -10,10 +10,10 @@ const TicketText = ({QrCodeSrc}) => {
                 <p className="w-full text-justify">
                     Here is your QR Code ticket:
                 </p>
-                <div className="flex">
+                {/* <div className="flex">
                     <Emoji imageSrc={doneEmoji} imageAlt={'doneEmoji'} classes="w-6 md:w-8 mr-1" />
                     <Emoji imageSrc={SuitcaseEmoji} imageAlt={'SuitcaseEmoji'} classes="w-6 md:w-8 mr-1" />
-                </div>
+                </div> */}
             </div>
                 <span className="font-light text-xs text-justify md:text-lg">Show the QR Code for entry and to share your profile with more than 70 companies!</span>
             {/* <span className="text-sm font-light">{QrCodeSrc}</span> */}
