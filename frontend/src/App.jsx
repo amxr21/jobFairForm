@@ -13,6 +13,7 @@ import { ApplicationForm } from "./components/ApplicationForm";
 // import ApplicantPage from "./pages/ApplicantPage";
 
 import Intro from "./pages/Intro"
+import PrivacyPopup from "./components/IntroPage/PrivacyPolicy";
 
 // const link = "https://jobfairform-backend.onrender.com"
 
@@ -26,6 +27,7 @@ function App() {
   return (
 
     <div className="App relative">
+      <PrivacyPopup />
       {/* <NavBar/> */}
       <Intro/>
       <BrowserRouter>
