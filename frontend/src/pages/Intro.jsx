@@ -3,6 +3,7 @@ import UpperPart from "../components/IntroPage/UpperPart";
 
 import GridLeft from "../components/IntroPage/GridLeft"
 import SloganImage from "../components/IntroPage/SloganImage";
+import PrivacyPopup from "../components/IntroPage/PrivacyPolicy";
 
 
 
@@ -14,6 +15,8 @@ const Intro = () => {
 
     return (
         <div id="intro" className={`intro fixed p-4 md:p-6 w-[100vw] md:w-full h-[${actualHeight}%] md:h-[100vh] top-0 left-0 bg-white z-[999999] overflow-hidden`}>
+            <PrivacyPopup />
+            
             <div id="intro" className={`relative bg-[#2959A6] text-white flex flex-col gap-8 px-6 py-4 md:px-14 md:py-12 h-full rounded-[2em] md:rounded-t-[4em] md:rounded-b-[2em] overflow-y-auto overflow-x-hidden`}>
                 <UpperPart />
                 <LowerPart />
