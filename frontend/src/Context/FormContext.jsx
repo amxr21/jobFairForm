@@ -70,16 +70,55 @@ export const FormProvider = ( {children} ) => {
         setFormData(updatedData);
       
         const missingFields = Object.entries(updatedData)
-          .filter(([key, value]) =>
-            key != "Expected to Graduate" &&
-            key != "CGPA" &&
-            key != "LinkedIn URL" &&
-            key != "CV" &&
+        .filter(([key, value]) => {
+          if (key === "University ID") {
+            return !value || String(value).trim().length !== 8;
+          }
+
+          if (key === "Phone number") {
+            return !value || !/^\d+$/.test(value.trim()) || value.trim().length < 9;
+          }
+
+          if (key === "Email address") {
+            return !value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+          }
+
+          return (
+            key !== "Expected to Graduate" &&
+            key !== "CGPA" &&
+            key !== "LinkedIn URL" &&
+            key !== "CV" &&
             isEmptyValue(value)
-          )
-          .map(([key]) => key).join(', ');
-      
-        setFieldMissing(missingFields);
+          );
+        })
+        .map(([key, value]) => {
+          if (key === "University ID") {
+            if (!value || value.trim().length !== 8) {
+              return `${key} must be exactly 8 digits`;
+            }
+          }
+
+          if (key === "Phone number") {
+            if (!value || value.trim().length < 9) {
+              return `${key} must be at least 9 digits`;
+            }
+            if (!/^\d+$/.test(value.trim())) {
+              return `${key} must contain only digits`;
+            }
+          }
+
+          if (key === "Email address") {
+            if (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+              return `${key} is not a valid email`;
+            }
+          }
+
+          return `${key} is required`;
+        })
+        .join(", ");
+
+      setFieldMissing(missingFields);
+
       };
       
     // const updateFormData = (inputName, value) => {

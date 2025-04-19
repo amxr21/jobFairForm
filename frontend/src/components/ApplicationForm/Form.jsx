@@ -119,6 +119,7 @@ const Form = () => {
               const isFieldFilled = (value) => {
                 if (typeof value === "string") return value.trim() !== "";
                 if (Array.isArray(value)) return value.length > 0;
+                if (value instanceof File) return value.size > 0;
                 if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
                 return value !== null && value !== undefined;
               };
@@ -143,7 +144,7 @@ const Form = () => {
             console.log(formData["University ID"].length);
             console.log('====================================');
 
-            if (filledFields.length >= 15 ) {
+            if (filledFields.length >= 16 && formData["University ID"] && formData["University ID"].length == 8 ) {
                     e.preventDefault();
 
                     document.querySelector('.progress-bar').classList.replace('h-1/2', 'h-full')
