@@ -131,14 +131,19 @@ const Form = () => {
               
 
 
-            const requiredFieldsFilled = Object.values(requiredKey).every(key => requiredKey[key]?.trim() !== "");
-            const validEmail = formData["Email address"]?.trim() !== "";
-            const validUniversityId = formData["University ID"]?.trim().length === 8;
+            // const requiredFieldsFilled = Object.values(requiredKey).every(key => requiredKey[key]?.trim() !== "");
+            // const validEmail = formData["Email address"]?.trim() !== "";
+            // const validUniversityId = formData["University ID"]?.trim().length === 8;
 
-            if (requiredFieldsFilled && validEmail && validUniversityId) {
-            // if (filledFields.length >= 17 && formData["Email address"].trim() != "" && formData["University ID"].trim().length == 8) {
-            // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
-                    // setFormDataReq(formDataToSend);
+            // if (requiredFieldsFilled && validEmail && validUniversityId) {
+
+            console.log('====================================');
+            console.log(filledFields);
+            console.log(formData["Email address"]);
+            console.log(formData["University ID"].length);
+            console.log('====================================');
+
+            if (filledFields.length >= 15 && formData["Email address"] != "" && formData["University ID"].length == 8) {
                     e.preventDefault();
 
                     document.querySelector('.progress-bar').classList.replace('h-1/2', 'h-full')
