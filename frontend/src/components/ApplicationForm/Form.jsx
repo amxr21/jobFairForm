@@ -105,7 +105,7 @@ const Form = () => {
               
               const filledFields = Object.values(formData).filter(isFieldFilled);
               
-              if (filledFields.length >= 18 && formData["Email address"].trim() != "" && formData["University ID"].trim().length == 8) {
+              if (filledFields.length >= 17 && formData["Email address"].trim() != "" && formData["University ID"].trim().length == 8) {
             // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
                     // setFormDataReq(formDataToSend);
                     e.preventDefault();
