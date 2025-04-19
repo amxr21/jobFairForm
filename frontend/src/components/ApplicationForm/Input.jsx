@@ -227,7 +227,7 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         )
       case 'Experience': case 'Non-technical skills': 
         return (
-            <div className={`flex flex-col grow md:my-0 ${fieldClasses} max-w-full min-h-28`}>
+            <div className={`flex flex-col grow md:my-0 ${fieldClasses} max-w-full md:min-h-28 min-h-40 mb-2 md:0`}>
                 <h2 className={`text-md md:text-lg mb-0.5 md:mb-2  ${headerClasses}`}>{label}: <RequiredAstrik required={true} /></h2>
                 <textarea ref={refLabel} onChange={getInput} type='number' name={name} className="min-h-5 mb-0.5 md:mb-2 grow w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 " placeholder={label == 'Non-technical skills' ? "Include skills such as Attentive to details, Adaptability, Empathy" : "Start with the latest to the oldest. You may include part-time and internship opportunies"}></textarea>
             </div>
