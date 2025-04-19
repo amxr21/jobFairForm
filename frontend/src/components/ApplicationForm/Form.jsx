@@ -41,6 +41,26 @@ const keyMap = {
     ExpectedToGraduate: "Expected to Graduate",
   };
 
+const requiredKey = {
+    uniId: "University ID",
+    fullName: "Full Name",
+    birthdate: "Date of Birth",
+    gender: "Gender",
+    nationality: "Nationality",
+    studyLevel: "Study Program",
+    college: "College",
+    major: "Major",
+    email: "Email address",
+    phoneNumber: "Mobile number",
+    city: "City",
+    technicalSkills: "Technical Skills",
+    nonTechnicalSkills: "Non-technical skills",
+    experience: "Experience",
+    cvfile: "CV",
+    // portfolio: "Personal Website (if any)",
+    languages: "languages",
+  };
+
 
 
   
@@ -104,8 +124,19 @@ const Form = () => {
               };
               
               const filledFields = Object.values(formData).filter(isFieldFilled);
+
+              console.log('====================================');
+              console.log(filledFields);
+              console.log('====================================');
               
-              if (filledFields.length >= 17 && formData["Email address"].trim() != "" && formData["University ID"].trim().length == 8) {
+
+
+            const requiredFieldsFilled = Object.values(requiredKey).every(key => requiredKey[key]?.trim() !== "");
+            const validEmail = formData["Email address"]?.trim() !== "";
+            const validUniversityId = formData["University ID"]?.trim().length === 8;
+
+            if (requiredFieldsFilled && validEmail && validUniversityId) {
+            // if (filledFields.length >= 17 && formData["Email address"].trim() != "" && formData["University ID"].trim().length == 8) {
             // if(Object.values(formData).filter((e) => e != "" || e != '' || e != [] || e != {} ).length >= 18 && formData["Email address"] != ""  ){
                     // setFormDataReq(formDataToSend);
                     e.preventDefault();
