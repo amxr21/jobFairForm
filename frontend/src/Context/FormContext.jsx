@@ -93,7 +93,7 @@ export const FormProvider = ( {children} ) => {
         })
         .map(([key, value]) => {
           if (key === "University ID") {
-            if (!value || value.trim().length !== 8) {
+            if (!value || String(value.trim()).length !== 8) {
               return `${key} must be exactly 8 digits`;
             }
           }

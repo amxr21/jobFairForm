@@ -56,10 +56,12 @@ const Input = ({label, type, name, fieldClasses, headerClasses}) => {
         case 'University ID':
 
           if(parseInt(refLabel.current.value.slice(0,1)) > 2) refLabel.current.value = 18000000
-          let idRegex = /^[0-9]+/g 
-          if(!idRegex.test(refLabel.current.value.trim())) {
-            refLabel.current.value = ''
-          }
+          // let idRegex = /^[0-9]+/g 
+          // if(!idRegex.test(refLabel.current.value.trim())) {
+          //   refLabel.current.value = ''
+          // }
+          let a = refLabel.current.value
+          refLabel.current.value = String(a).slice(0,8)
           // if(parseInt(refLabel.current.value.slice(0,2)) < 18 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 18000000
           // if(parseInt(refLabel.current.value.slice(0,2)) > 25 && String(parseInt(refLabel.current.value.slice(0,2))).length == 2) refLabel.current.value = 25999999
 
