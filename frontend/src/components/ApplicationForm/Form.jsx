@@ -144,7 +144,7 @@ const Form = () => {
             console.log(formData["University ID"].length);
             console.log('====================================');
 
-            if (filledFields.length >= 16 && formData["University ID"] && formData["University ID"].length == 8 && formData["Nationality"] != '' ) {
+            if (filledFields.length >= 16 && formData["University ID"] && formData["University ID"].length == 8 && formData["Nationality"] != '' && formData["Major"] != '' ) {
                     e.preventDefault();
 
                     document.querySelector('.progress-bar').classList.replace('h-1/2', 'h-full')
