@@ -15,7 +15,7 @@ const TicketText = ({QrCodeSrc}) => {
                     <Emoji imageSrc={SuitcaseEmoji} imageAlt={'SuitcaseEmoji'} classes="w-6 md:w-8 mr-1" />
                 </div> */}
             </div>
-                <span className="font-light text-xs text-justify md:text-lg">Show the QR Code for entry and to share your profile with more than 70 companies!</span>
+                <span className="font-light text-xs text-justify md:text-lg">Please screenshot this QR Code  for the entry and to share your profile with more than 70 companies!</span>
             {/* <span className="text-sm font-light">{QrCodeSrc}</span> */}
         </div>
     )
