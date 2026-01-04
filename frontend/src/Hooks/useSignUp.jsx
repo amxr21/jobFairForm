@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
-import QRCode from "qrcode.react";
 
-// const link = "http://localhost:2001"
-const link = "https://jobfairform-backend-production.up.railway.app"
+const link = import.meta.env.VITE_API_URL || "https://jobfairform-backend-production.up.railway.app";
 
 export const useSignUp = () => {
     const [ error, setError ] = useState(null);
     const [ isLoading, setIsLoading ] = useState(null)
     const { dispatch } = useAuthContext();
-    const [ QRCodeSrc, setQRCodeSrc ] = useState("");
 
     const signup = async (email, password) => {
         setIsLoading(true)
@@ -29,15 +26,9 @@ export const useSignUp = () => {
         if(response.ok){
             localStorage.setItem("user", JSON.stringify(json));
             dispatch({type: "LOGIN", payload: json})
-            
-            //generate a QR code for each company once it signs up and account is create
-            setQRCodeSrc(json.user_id);
-            
-
             setIsLoading(false)
         }
     }
-
 
     return { signup, isLoading, error };
 }
