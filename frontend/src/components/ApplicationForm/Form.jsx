@@ -1,11 +1,11 @@
 import axios from "axios";
 
 import { useRef, createContext, useState, useContext } from "react";
-import { PersonalInfo, ProfessionalInfo, SubmitFormBtn, ConfirmMessageDiv } from "./index";
+import { PersonalInfo, ProfessionalInfo, Preferences, SubmitFormBtn, ConfirmMessageDiv } from "./index";
 
 // const link = "https://jobfairform-backend.onrender.com"
-const link = "https://jobfairform-backend-production.up.railway.app"
-// const link = "http://localhost:2001"
+// const link = "https://jobfairform-backend-production.up.railway.app"
+const link = "http://localhost:2001"
 
 import { useAuthContext } from "../../Hooks/useAuthContext"
 import useFormContext from "../../Hooks/useFormContext";
@@ -63,13 +63,13 @@ const requiredKey = {
 
 
 
-  
+
 
 
 const Form = () => {
-    
+
     const { formData, fieldMissing } = useFormContext()
-    
+
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
 
@@ -80,21 +80,43 @@ const Form = () => {
 
     const form = useRef();
     const [full, setFull] = useState(true);
+    const [currentStep, setCurrentStep] = useState(1);
 
-    const scrollToPrevSection = (e) => {
+    const goToNextStep = (e) => {
         e.preventDefault();
-        e.target.parentElement.parentElement.parentElement.scrollBy({top: -window.innerHeight});
-        
-        // console.log(e.target.parentElement.parentElement.parentElement);
+        if (currentStep < 3) {
+            setCurrentStep(currentStep + 1);
+            updateProgressBar(currentStep + 1);
+        }
+    };
 
-        document.querySelector('.section-header').textContent = 'Personal Information'
-        document.querySelector('.section-icon').src = PersonalIcon
+    const goToPrevStep = (e) => {
+        e.preventDefault();
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1);
+            updateProgressBar(currentStep - 1);
+        }
+    };
 
-        // updateProgress(0)
-        document.querySelector('.progress-bar').classList.replace('md:h-full', 'md:h-1/2')
-        document.querySelector('.progress-bar').classList.replace('w-full', 'w-1/2')
+    const updateProgressBar = (step) => {
+        const progressBar = document.querySelector('.progress-bar');
+        const sectionHeader = document.querySelector('.section-header');
+        const sectionIcon = document.querySelector('.section-icon');
 
-    }
+        // Remove all progress classes
+        progressBar.classList.remove('md:h-1/3', 'md:h-2/3', 'md:h-full', 'w-1/3', 'w-2/3', 'w-full');
+
+        if (step === 1) {
+            progressBar.classList.add('md:h-1/3', 'w-1/3');
+            sectionHeader.textContent = 'Personal Information';
+        } else if (step === 2) {
+            progressBar.classList.add('md:h-2/3', 'w-2/3');
+            sectionHeader.textContent = 'Professional Information';
+        } else if (step === 3) {
+            progressBar.classList.add('md:h-full', 'w-full');
+            sectionHeader.textContent = 'Preferences (Optional)';
+        }
+    };
 
 
 
@@ -113,8 +135,8 @@ const Form = () => {
             for (const [apiKey, formKey] of Object.entries(keyMap)) {
                 formDataToSend.append(apiKey, formData[formKey]);
               }
-            
-              
+
+
 
               const isFieldFilled = (value) => {
                 if (typeof value === "string") return value.trim() !== "";
@@ -123,13 +145,13 @@ const Form = () => {
                 if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
                 return value !== null && value !== undefined;
               };
-              
+
               const filledFields = Object.values(formData).filter(isFieldFilled);
 
               console.log('====================================');
               console.log(filledFields);
               console.log('====================================');
-              
+
 
 
             // const requiredFieldsFilled = Object.values(requiredKey).every(key => requiredKey[key]?.trim() !== "");
@@ -202,7 +224,7 @@ const Form = () => {
 
 
 
-        
+
 
 
         // } catch(error){
@@ -225,7 +247,7 @@ const Form = () => {
         // form.current.style.height = "fit-content";
         // form.current.classList.replace("h-fit", "h-0");
         // form.current.classList.replace("h-fit", "h-0");
-        
+
         // form.current.classList.replace("py-10", "py-2");
 
         setTimeout(()=>{form.current.style.maxHeight = "none";}, 500)
@@ -253,31 +275,55 @@ const Form = () => {
 
 
 
-    
+
 
     const actualHeight = (window.innerHeight)/(window.screen.height) * 100
 
     return (
         <>
             {isLoading && <LoadingPage />}
-            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-5 md:p-6 xl:p-8 opacity-100 overflow-hidden`}>
+            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}>
 
-                <div className="flex md:flex-row flex-col md:w-fit w-full gap-y-4 md:gap-x-6 xl:gap-x-8 h-full">
-                    <ProgressSection status={full} missing={fieldMissing} />
-                    <div className="information-part border h-fit md:h-full px-6 py-6 md:px-9 md:py-9 xl:px-12 xl:py-10 md:w-9/12 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden lg:overflow-y-hidden">
-                        <PersonalInfo />
-                        <div className="h-full flex flex-col justify-between z-[999]">
-                            <ProfessionalInfo />
-                            <div className="w-full flex justify-between">
-                                <button onClick={scrollToPrevSection} className="border rounded-xl min-w-12 min-h-12">{'<'}</button>
-                                <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-6 py-3 rounded-xl w-fit">Submit</button>
+                <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">
+                    <div className="md:w-3/12 md:min-w-[240px] shrink-0">
+                        <ProgressSection status={full} missing={fieldMissing} currentStep={currentStep} />
+                    </div>
+                    <div className="information-part border h-fit md:h-full px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
+                        {/* Phase content with smooth transition */}
+                        <div className="h-full flex flex-col justify-between transition-opacity duration-300 ease-in-out">
+                            {/* Section 1: Personal Information */}
+                            {currentStep === 1 && <PersonalInfo />}
+
+                            {/* Section 2: Professional Information */}
+                            {currentStep === 2 && <ProfessionalInfo />}
+
+                            {/* Section 3: Preferences (Optional) */}
+                            {currentStep === 3 && <Preferences />}
+
+                            {/* Navigation buttons */}
+                            <div className="w-full flex justify-between mt-3 shrink-0">
+                                {currentStep > 1 ? (
+                                    <button onClick={goToPrevStep} className="border rounded-lg w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                    </button>
+                                ) : <div></div>}
+
+                                {currentStep < 3 ? (
+                                    <button onClick={goToNextStep} className="border rounded-lg w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                ) : (
+                                    <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg text-sm md:text-base w-fit transition-colors">Submit</button>
+                                )}
                             </div>
-
                         </div>
                     </div>
-
                 </div>
-              
+
             </form>
 
 
