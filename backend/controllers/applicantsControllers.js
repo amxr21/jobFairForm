@@ -75,16 +75,20 @@ const getAllApplicants = async (req, res) => {
 
 const addApplicant =  async (req, res) => {
     const userId = !req.user ? "662d20b4754626de2c3ac2b7" : req.user._id;
-    console.log("\n\n\n\n\n\n",req,"\n\n\n\n\n\n");
     try{
-        // const { uniId, name, birthdate, nationality, gender, email, college, major, cgpa, phoneNumber, studyLevel, experience, languages, skills, linkedIn, portfolio, brief } = req.body;
         console.log("Recieved POST request to /applicants");
         console.log("Request body: ",req.body);
         console.log("Uploaded applicant CV: ", req.file);
-        console.log("\n\n\n\n\n\n\n");
+
+        // Cloudinary file info - store URL and public_id
+        const cvData = req.file ? {
+            url: req.file.path,           // Cloudinary URL
+            public_id: req.file.filename, // Cloudinary public_id for deletion
+            originalname: req.file.originalname
+        } : null;
 
         const applicantProfile = await ApplicantModel.create({
-            cv: req.file,
+            cv: cvData,
             applicantDetails: req.body,
             user_id: userId
         })
@@ -219,10 +223,16 @@ const updateApplicant = async (req, res) => {
 
 const addApplicantPublic = async (req, res) => {
     try{
-        
+        // Cloudinary file info - store URL and public_id
+        const cvData = req.file ? {
+            url: req.file.path,           // Cloudinary URL
+            public_id: req.file.filename, // Cloudinary public_id for deletion
+            originalname: req.file.originalname
+        } : null;
+
         const applicantProfile = await ApplicantModel.create({
             flags: [],
-            cv: req.file,
+            cv: cvData,
             applicantDetails: req.body,
             user_id: [],
             attended: false
@@ -310,7 +320,8 @@ const addApplicantPublic = async (req, res) => {
 
 
     } catch(error){
-        res.status(401).json({error: error.essage})
+        console.log("Error in addApplicantPublic:", error);
+        res.status(500).json({error: error.message})
     }
 }
 
@@ -487,4 +498,156 @@ const confirmAttendant = async (req, res) => {
 
 
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant}
+// Function to send post-fair evaluation email
+const sendEvaluationEmail = async (req, res) => {
+    try {
+        const { applicantEmail, applicantName, uniId, surveyLink } = req.body;
+
+        if (!applicantEmail || !applicantName) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        const evaluationEmailTemplate = `
+        <div style="max-width:600px;margin:auto;padding:30px;background-color:#ffffff;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.08);font-family:Arial,sans-serif;">
+            <div style="text-align:center;margin-bottom:20px;">
+                <h2 style="color:#0E7F41;margin:0;">Thank You for Attending!</h2>
+                <p style="color:#666;font-size:14px;margin-top:5px;">Internship & Career Fair 2025</p>
+            </div>
+
+            <p style="color:#34495e;font-size:16px;line-height:1.6;">
+                Dear <strong>${applicantName}</strong>,
+            </p>
+
+            <p style="color:#34495e;font-size:16px;line-height:1.6;">
+                Thank you for attending the <strong>University of Sharjah Internship & Career Fair 2025</strong>. We hope you had a valuable experience connecting with potential employers.
+            </p>
+
+            <div style="margin:25px 0;padding:20px;border-radius:10px;background:linear-gradient(135deg, #f0fff4 0%, #e6f7ff 100%);border:1px solid #b7eb8f;">
+                <h3 style="color:#0E7F41;margin-top:0;">We Value Your Feedback!</h3>
+                <p style="color:#555;font-size:15px;margin-bottom:15px;">
+                    Your opinion matters to us. Please take a few minutes to share your experience and help us improve future events.
+                </p>
+                <a href="${surveyLink || 'https://forms.office.com/your-survey-link'}"
+                   style="display:inline-block;padding:12px 30px;background-color:#0E7F41;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;font-size:15px;">
+                    Complete the Survey
+                </a>
+            </div>
+
+            <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#fafafa;">
+                <h4 style="color:#2c3e50;margin-top:0;">What's Next?</h4>
+                <ul style="color:#555;padding-left:20px;margin-bottom:0;">
+                    <li>Companies will be reviewing applications and reaching out to shortlisted candidates.</li>
+                    <li>Keep an eye on your email for interview invitations.</li>
+                    <li>Update your LinkedIn profile with your job fair experience.</li>
+                    <li>Follow up with companies you're interested in.</li>
+                </ul>
+            </div>
+
+            <div style="margin-top:25px;padding:15px;background-color:#f8f9fa;border-radius:8px;">
+                <p style="color:#666;font-size:14px;margin:0;text-align:center;">
+                    Questions? Contact us at <a href="mailto:internshipfair@sharjah.ac.ae" style="color:#0E7F41;">internshipfair@sharjah.ac.ae</a>
+                </p>
+            </div>
+
+            <footer style="text-align:center;margin-top:30px;border-top:1px solid #e0e0e0;padding-top:15px;">
+                <p style="color:#999;font-size:14px;margin:5px 0;">Best of luck in your career journey!</p>
+                <p style="color:#999;font-size:14px;margin:5px 0;">CASTO Team – University of Sharjah</p>
+            </footer>
+        </div>
+        `;
+
+        await sendEmail(
+            `Your Feedback Matters! - Career Fair 2025`,
+            evaluationEmailTemplate,
+            applicantEmail,
+            "CASTO – Career Fair Feedback <internshipfair@sharjah.ac.ae>"
+        );
+
+        res.status(200).json({ message: "Evaluation email sent successfully" });
+    } catch (error) {
+        console.error("Error sending evaluation email:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Function to send bulk evaluation emails to all attendees
+const sendBulkEvaluationEmails = async (req, res) => {
+    try {
+        const { surveyLink } = req.body;
+
+        // Get all applicants who attended the fair
+        const attendees = await ApplicantModel.find({ attended: true });
+
+        if (attendees.length === 0) {
+            return res.status(404).json({ message: "No attendees found" });
+        }
+
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const attendee of attendees) {
+            try {
+                const email = attendee.applicantDetails?.email;
+                const name = attendee.applicantDetails?.fullName;
+
+                if (email && name) {
+                    const evaluationEmailTemplate = `
+                    <div style="max-width:600px;margin:auto;padding:30px;background-color:#ffffff;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.08);font-family:Arial,sans-serif;">
+                        <div style="text-align:center;margin-bottom:20px;">
+                            <h2 style="color:#0E7F41;margin:0;">Thank You for Attending!</h2>
+                            <p style="color:#666;font-size:14px;margin-top:5px;">Internship & Career Fair 2025</p>
+                        </div>
+
+                        <p style="color:#34495e;font-size:16px;line-height:1.6;">
+                            Dear <strong>${name}</strong>,
+                        </p>
+
+                        <p style="color:#34495e;font-size:16px;line-height:1.6;">
+                            Thank you for attending the <strong>University of Sharjah Internship & Career Fair 2025</strong>. We hope you had a valuable experience connecting with potential employers.
+                        </p>
+
+                        <div style="margin:25px 0;padding:20px;border-radius:10px;background:linear-gradient(135deg, #f0fff4 0%, #e6f7ff 100%);border:1px solid #b7eb8f;">
+                            <h3 style="color:#0E7F41;margin-top:0;">We Value Your Feedback!</h3>
+                            <p style="color:#555;font-size:15px;margin-bottom:15px;">
+                                Your opinion matters to us. Please take a few minutes to share your experience and help us improve future events.
+                            </p>
+                            <a href="${surveyLink || 'https://forms.office.com/your-survey-link'}"
+                               style="display:inline-block;padding:12px 30px;background-color:#0E7F41;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:bold;font-size:15px;">
+                                Complete the Survey
+                            </a>
+                        </div>
+
+                        <footer style="text-align:center;margin-top:30px;border-top:1px solid #e0e0e0;padding-top:15px;">
+                            <p style="color:#999;font-size:14px;margin:5px 0;">Best of luck in your career journey!</p>
+                            <p style="color:#999;font-size:14px;margin:5px 0;">CASTO Team – University of Sharjah</p>
+                        </footer>
+                    </div>
+                    `;
+
+                    await sendEmail(
+                        `Your Feedback Matters! - Career Fair 2025`,
+                        evaluationEmailTemplate,
+                        email,
+                        "CASTO – Career Fair Feedback <internshipfair@sharjah.ac.ae>"
+                    );
+                    successCount++;
+                }
+            } catch (emailError) {
+                console.error(`Failed to send email to ${attendee.applicantDetails?.email}:`, emailError);
+                failCount++;
+            }
+        }
+
+        res.status(200).json({
+            message: "Bulk evaluation emails processed",
+            totalAttendees: attendees.length,
+            successCount,
+            failCount
+        });
+    } catch (error) {
+        console.error("Error sending bulk evaluation emails:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, sendEvaluationEmail, sendBulkEvaluationEmails}

@@ -2,16 +2,13 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
-const multer = require("multer");
-const { GridFsStorage } = require("multer-gridfs-storage");
-const Grid = require("gridfs-stream");
 
+const requireAuth = require("../middlewares/requireAuth");
 
+// Cloudinary configuration
+const { cloudinary, upload } = require("../config/cloudinary");
 
-const requireAuth = require("../middlewares/requireAuth")
-
-
-const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant} = require("../controllers/applicantsControllers")
+const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, sendEvaluationEmail, sendBulkEvaluationEmails} = require("../controllers/applicantsControllers")
 
 const router = express.Router();
 
@@ -20,65 +17,28 @@ const uri = process.env.URI;
 mongoose.connect(uri);
 const connection = mongoose.connection;
 
-
-let gfs;
 connection.once("open", ()=>{
     console.log("DB connected successfully");
-    gfs = Grid(connection.db, mongoose.mongo);
-    gfs.collection("applicants_details")
-})
-
-const storage = new GridFsStorage({
-    url: uri,
-    file: (req, file) => {
-        return {
-            filename: file.originalname,
-            bucketName: "applicants_details"
-        }
-    }
-})
-
-const upload = multer(
-    {
-        storage,
-        limits: {
-            fileSize: 4 * 1024 * 1024
-        },
-    },
-    
-);
+});
 
 
-
-
-
-
+// Download CV - now redirects to Cloudinary URL
 const downloadCV = async (req, res) => {
     try {
-        gfs.files.findOne(
-            { _id: req.params.id },
-            (err, file) => {
-            if (!file || file.length == 0) {
-                return res.status(404).json({
-                    err: 'No file exists'
-                });
-            }
-            
-            console.log(req.params.id);
-            const readstream = gfs.createReadStream(file.filename);
-            res.set('Content-Type', file.contentType);
-            res.set('Content-Disposition', `attachment; filename="${file.filename}"`);
-    
-            readstream.pipe(res);
-        })
-        res.json({message: "CV downloaded:" + req.params.id})
+        const cvUrl = req.params.id;
 
+        // If it's a Cloudinary URL, redirect to it
+        if (cvUrl.startsWith('http')) {
+            return res.redirect(cvUrl);
+        }
+
+        // For legacy GridFS IDs, return not found
+        return res.status(404).json({ message: 'File not found. Please re-upload CV.' });
 
     } catch (error) {
         console.error('Error fetching CV:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-
 }
 
 
@@ -97,10 +57,23 @@ router.patch("/applicant/apply/:id", apply);
 
 
 
-
 router.post("/email", emailRequest);
 
-router.post("/applicants",upload.single("cvfile") , addApplicantPublic);
+// Evaluation email routes
+router.post("/evaluation-email", sendEvaluationEmail);
+router.post("/bulk-evaluation-emails", sendBulkEvaluationEmails);
+
+router.post("/applicants", (req, res, next) => {
+    upload.single("cvfile")(req, res, (err) => {
+        if (err) {
+            console.log("Upload middleware error:", err);
+            return res.status(400).json({ error: err.message });
+        }
+        console.log("After upload middleware - req.file:", req.file);
+        console.log("After upload middleware - req.body keys:", Object.keys(req.body));
+        next();
+    });
+}, addApplicantPublic);
 
 router.use(requireAuth);
 
@@ -115,32 +88,7 @@ router.patch("/applicants/:id", updateApplicant);
 router.patch("/applicants/confirm/:id", confirmAttendant);
 
 
-router.post("/applicants",upload.single("cvfile") , addApplicant)
-
-router.get("/download/:filename", (req, res) => {
-    const filename = req.params.filename;
-
-    gfs.files.findOne({ filename: filename }, (err, file) => {
-        if (err || !file) {
-            return res.status(404).json({ error: "File does not exist" });
-        }
-
-        res.set("Content-Type", file.contentType);
-        res.set("Content-Disposition", `attachment; filename="${file.filename}"`);
-        
-        const readstream = gfs.createReadStream({ filename: file.filename });
-        readstream.on('error', (error) => {
-            res.status(500).json({ error: "Error reading file" });
-        });
-
-        readstream.pipe(res);
-    });
-});
-
-
-
-
-
+router.post("/applicants", upload.single("cvfile"), addApplicant)
 
 
 // an applicant will open a simple page that ask him for his id
