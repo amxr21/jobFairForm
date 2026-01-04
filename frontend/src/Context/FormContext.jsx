@@ -31,12 +31,16 @@ export const FormProvider = ( {children} ) => {
             "Study Program": "",
             CGPA: 0,
             "Expected to Graduate": "",
-            "Technical Skills": "",
+            "Technical Skills": [],
             Experience: "",
-            "Non-technical skills": "",
-            CV: {}
+            "Non-technical skills": [],
+            CV: {},
+            // Optional preference fields
+            "Field Interest": "",
+            "Opportunity Type": [],
+            "Preferred Work City": ""
           }
-          
+
     );
 
     
@@ -55,6 +59,9 @@ export const FormProvider = ( {children} ) => {
             key != "CGPA" &&
             key != "LinkedIn URL" &&
             key != "CV" &&
+            key != "Field Interest" &&
+            key != "Opportunity Type" &&
+            key != "Preferred Work City" &&
             isEmptyValue(value)
           )
           .map(([key]) => key)
@@ -72,11 +79,17 @@ export const FormProvider = ( {children} ) => {
         const missingFields = Object.entries(updatedData)
         .filter(([key, value]) => {
           if (key === "University ID") {
-            return !value || String(value).trim().length !== 8;
+            const idStr = String(value).trim();
+            if (!value || idStr.length !== 8) return true;
+            const firstTwo = parseInt(idStr.substring(0, 2));
+            return firstTwo < 14 || firstTwo > 26;
           }
 
-          if (key === "Phone number") {
-            return !value || !/^\d+$/.test(value.trim()) || value.trim().length < 9;
+          if (key === "Mobile number") {
+            const phone = String(value).trim();
+            const isLocalValid = /^0\d{9}$/.test(phone);
+            const isIntlValid = /^\+\d{10,14}$/.test(phone);
+            return !value || (!isLocalValid && !isIntlValid);
           }
 
           if (key === "Email address") {
@@ -88,22 +101,30 @@ export const FormProvider = ( {children} ) => {
             key !== "CGPA" &&
             key !== "LinkedIn URL" &&
             key !== "CV" &&
+            key !== "Field Interest" &&
+            key !== "Opportunity Type" &&
+            key !== "Preferred Work City" &&
             isEmptyValue(value)
           );
         })
         .map(([key, value]) => {
           if (key === "University ID") {
-            if (!value || String(value.trim()).length !== 8) {
+            const idStr = String(value).trim();
+            if (!value || idStr.length !== 8) {
               return `${key} must be exactly 8 digits`;
+            }
+            const firstTwo = parseInt(idStr.substring(0, 2));
+            if (firstTwo < 14 || firstTwo > 26) {
+              return `${key} - First 2 digits must be between 14-26`;
             }
           }
 
-          if (key === "Phone number") {
-            if (!value || value.trim().length < 9) {
-              return `${key} must be at least 9 digits`;
-            }
-            if (!/^\d+$/.test(value.trim())) {
-              return `${key} must contain only digits`;
+          if (key === "Mobile number") {
+            const phone = String(value).trim();
+            const isLocalValid = /^0\d{9}$/.test(phone);
+            const isIntlValid = /^\+\d{10,14}$/.test(phone);
+            if (!value || (!isLocalValid && !isIntlValid)) {
+              return `${key} - Must be 10 digits (05XXXXXXXX) or country code format (+971XXXXXXXXX)`;
             }
           }
 
