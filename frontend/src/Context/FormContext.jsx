@@ -34,9 +34,9 @@ export const FormProvider = ( {children} ) => {
             "Technical Skills": [],
             Experience: "",
             "Non-technical skills": [],
-            CV: {},
+            CV: null,
             // Optional preference fields
-            "Field Interest": "",
+            "Field Interest": [],
             "Opportunity Type": [],
             "Preferred Work City": ""
           }

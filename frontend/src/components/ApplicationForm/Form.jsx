@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { useRef, createContext, useState, useContext } from "react";
+import { useRef, createContext, useState, useContext, useEffect } from "react";
 import { PersonalInfo, ProfessionalInfo, Preferences, SubmitFormBtn, ConfirmMessageDiv } from "./index";
 
 // const link = "https://jobfairform-backend.onrender.com"
@@ -81,20 +81,40 @@ const Form = () => {
     const form = useRef();
     const [full, setFull] = useState(true);
     const [currentStep, setCurrentStep] = useState(1);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [slideDirection, setSlideDirection] = useState('');
 
     const goToNextStep = (e) => {
         e.preventDefault();
-        if (currentStep < 3) {
-            setCurrentStep(currentStep + 1);
-            updateProgressBar(currentStep + 1);
+        if (currentStep < 3 && !isTransitioning) {
+            setSlideDirection('slide-left');
+            setIsTransitioning(true);
+            setTimeout(() => {
+                setCurrentStep(currentStep + 1);
+                updateProgressBar(currentStep + 1);
+                setSlideDirection('slide-in-right');
+                setTimeout(() => {
+                    setIsTransitioning(false);
+                    setSlideDirection('');
+                }, 300);
+            }, 200);
         }
     };
 
     const goToPrevStep = (e) => {
         e.preventDefault();
-        if (currentStep > 1) {
-            setCurrentStep(currentStep - 1);
-            updateProgressBar(currentStep - 1);
+        if (currentStep > 1 && !isTransitioning) {
+            setSlideDirection('slide-right');
+            setIsTransitioning(true);
+            setTimeout(() => {
+                setCurrentStep(currentStep - 1);
+                updateProgressBar(currentStep - 1);
+                setSlideDirection('slide-in-left');
+                setTimeout(() => {
+                    setIsTransitioning(false);
+                    setSlideDirection('');
+                }, 300);
+            }, 200);
         }
     };
 
@@ -133,7 +153,24 @@ const Form = () => {
             console.log(formData);
 
             for (const [apiKey, formKey] of Object.entries(keyMap)) {
-                formDataToSend.append(apiKey, formData[formKey]);
+                const value = formData[formKey];
+
+                // Handle File objects (CV)
+                if (value instanceof File) {
+                    formDataToSend.append(apiKey, value);
+                }
+                // Handle arrays (languages, skills, etc.)
+                else if (Array.isArray(value)) {
+                    formDataToSend.append(apiKey, JSON.stringify(value));
+                }
+                // Handle null/undefined - skip or append empty string
+                else if (value === null || value === undefined) {
+                    formDataToSend.append(apiKey, '');
+                }
+                // Handle regular values
+                else {
+                    formDataToSend.append(apiKey, value);
+                }
               }
 
 
@@ -290,7 +327,13 @@ const Form = () => {
                     </div>
                     <div className="information-part border h-fit md:h-full px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
                         {/* Phase content with smooth transition */}
-                        <div className="h-full flex flex-col justify-between transition-opacity duration-300 ease-in-out">
+                        <div className={`h-full flex flex-col justify-between transition-all duration-300 ease-in-out ${
+                            slideDirection === 'slide-left' ? 'opacity-0 -translate-x-8' :
+                            slideDirection === 'slide-right' ? 'opacity-0 translate-x-8' :
+                            slideDirection === 'slide-in-left' ? 'opacity-100 translate-x-0' :
+                            slideDirection === 'slide-in-right' ? 'opacity-100 translate-x-0' :
+                            'opacity-100 translate-x-0'
+                        }`}>
                             {/* Section 1: Personal Information */}
                             {currentStep === 1 && <PersonalInfo />}
 
