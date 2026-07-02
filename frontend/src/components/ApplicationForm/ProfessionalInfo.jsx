@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
-import useFormContext from "../../Hooks/useFormContext";
+import useFormContext from "../../hooks/useFormContext";
 
 const ProfessionalInfo = () => {
     const [majors, setMajors] = useState([]);

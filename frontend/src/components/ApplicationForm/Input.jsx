@@ -1,6 +1,6 @@
 import { FocusedState, RequiredAstrik } from "./index";
 import { useRef, useState } from "react";
-import useFormContext from "../../Hooks/useFormContext";
+import useFormContext from "../../hooks/useFormContext";
 
 // Unified label styles
 const LABEL_CLASSES = "text-xs md:text-sm mb-1 shrink-0";

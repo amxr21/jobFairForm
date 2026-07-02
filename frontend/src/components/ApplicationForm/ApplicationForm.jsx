@@ -1,5 +1,5 @@
-import { FormContext, FormProvider } from "../../Context/FormContext";
-import { ProgressProvider } from "../../Context/ProgressContext";
+import { FormContext, FormProvider } from "../../context/FormContext";
+import { ProgressProvider } from "../../context/ProgressContext";
 import { NavBar, MainBanner, Form } from "./index";
 // import "./style.css"
 

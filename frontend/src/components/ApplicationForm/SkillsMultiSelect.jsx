@@ -1,5 +1,5 @@
 import { useState, useContext, useRef, useEffect } from "react";
-import { FormContext } from "../../Context/FormContext";
+import { FormContext } from "../../context/FormContext";
 import { RequiredAstrik } from "./index";
 
 const TECHNICAL_SKILLS = [

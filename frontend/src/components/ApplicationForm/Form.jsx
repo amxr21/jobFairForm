@@ -7,14 +7,14 @@ import { PersonalInfo, ProfessionalInfo, Preferences, SubmitFormBtn, ConfirmMess
 // const link = "https://jobfairform-backend-production.up.railway.app"
 const link = "http://localhost:2001"
 
-import { useAuthContext } from "../../Hooks/useAuthContext"
-import useFormContext from "../../Hooks/useFormContext";
+import { useAuthContext } from "../../hooks/useAuthContext"
+import useFormContext from "../../hooks/useFormContext";
 
-import { FormContext } from "../../Context/FormContext";
+import { FormContext } from "../../context/FormContext";
 import ProgressSection from "./ProgressSection";
 
 import PersonalIcon from '../../assets/images/personal.svg'
-import { useProgressContext } from "../../Context/ProgressContext";
+import { useProgressContext } from "../../context/ProgressContext";
 import LoadingPage from "../../pages/LoadingPage";
 
 

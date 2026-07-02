@@ -1,6 +1,6 @@
 import { useState, useRef, useContext, useEffect } from "react"
 
-import { IdContext } from "../../Context/IdContext"
+import { IdContext } from "../../context/IdContext"
 
 import axios from "axios";
 

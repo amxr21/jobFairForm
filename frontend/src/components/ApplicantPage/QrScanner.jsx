@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useEffect, useRef, useContext } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-import { IdContext } from "../../Context/IdContext";
+import { IdContext } from "../../context/IdContext";
 
 const linkUrl = 'https://jobfair-1.onrender.com';
 

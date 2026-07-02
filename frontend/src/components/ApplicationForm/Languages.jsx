@@ -1,6 +1,6 @@
 import { RequiredAstrik } from "./index";
 import { useState, useContext } from "react";
-import { FormContext } from "../../Context/FormContext";
+import { FormContext } from "../../context/FormContext";
 
 const COMMON_LANGUAGES = [
     "Arabic", "English", "French", "Spanish", "German",

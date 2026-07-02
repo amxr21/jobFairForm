@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom'
 
 import App from './App.jsx'
-import { AuthContextProvidor } from './Context/UserAuthContext.jsx'
+import { AuthContextProvidor } from './context/UserAuthContext.jsx'
 
 // React 17, the one compatible with render hosting
 const app = document.getElementById("root");

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import useFormContext from "../../Hooks/useFormContext";
+import useFormContext from "../../hooks/useFormContext";
 import { Input, SelectInput } from "./index";
 
 // Industry Fields for job interests

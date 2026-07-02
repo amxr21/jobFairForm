@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import useFormContext from "../../Hooks/useFormContext";
+import useFormContext from "../../hooks/useFormContext";
 import { RequiredAstrik } from "./index";
 
 const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handleChange, required = true, placeholder }) => {
