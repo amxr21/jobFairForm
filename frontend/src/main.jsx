@@ -3,13 +3,16 @@ import ReactDOM from 'react-dom'
 
 import App from './App.jsx'
 import { AuthContextProvidor } from './context/UserAuthContext.jsx'
+import { ToastProvider } from './components/Toast.jsx'
 
 // React 17, the one compatible with render hosting
 const app = document.getElementById("root");
 ReactDOM.render(
-      <AuthContextProvidor>
-        <App/>
-      </AuthContextProvidor>
+      <ToastProvider>
+        <AuthContextProvidor>
+          <App/>
+        </AuthContextProvidor>
+      </ToastProvider>
       ,app
     )
 // ReactDOM.render(

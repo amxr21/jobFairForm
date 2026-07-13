@@ -77,7 +77,7 @@ const ProfessionalInfo = () => {
 
     return (
         <div id="ProfessionalInfo" className="h-full flex flex-col w-full overflow-hidden">
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1 -m-1">
                 <div className="flex flex-col gap-y-3 md:gap-y-4">
                     {/* Row 1: Study Program, College, Major */}
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3">
@@ -133,7 +133,7 @@ const ProfessionalInfo = () => {
                                             id="noExperience"
                                             checked={noExperience}
                                             onChange={handleNoExperienceChange}
-                                            className="w-3.5 h-3.5 md:w-4 md:h-4 accent-blue-800"
+                                            className="w-3.5 h-3.5 md:w-4 md:h-4 accent-[#0E7F41]"
                                         />
                                         <label htmlFor="noExperience" className="text-xs md:text-sm text-gray-600">
                                             No prior experience
@@ -145,7 +145,7 @@ const ProfessionalInfo = () => {
                                     value={noExperience ? "No prior work experience" : (formData.Experience === "No prior work experience" ? "" : formData.Experience)}
                                     onChange={(e) => updateFormData("Experience", e.target.value)}
                                     placeholder="E.g., Internship at ABC Company, Part-time job, Volunteer work, University projects..."
-                                    className={`flex-1 w-full bg-transparent border border-gray-700 rounded-lg py-1 px-2 text-xs md:text-sm resize-none min-h-16 md:min-h-20 ${noExperience ? 'bg-gray-100 text-gray-400 border-gray-300' : ''}`}
+                                    className={`flex-1 w-full bg-transparent border border-gray-700 rounded-md py-1 px-2 text-xs md:text-sm resize-none min-h-16 md:min-h-20 ${noExperience ? 'bg-gray-100 text-gray-400 border-gray-300' : ''}`}
                                 />
                             </div>
                         </div>
@@ -164,7 +164,7 @@ const ProfessionalInfo = () => {
                                         name="cvfile"
                                         className="text-xs md:text-sm w-full md:max-w-56 bg-transparent border border-gray-700 rounded-lg py-1 px-2 h-8 md:h-9"
                                     />
-                                    <RequiredAstrik />
+                                    <RequiredAstrik required={true} />
                                 </div>
                             </div>
                         </div>

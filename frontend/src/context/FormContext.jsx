@@ -62,6 +62,8 @@ export const FormProvider = ( {children} ) => {
             key != "Field Interest" &&
             key != "Opportunity Type" &&
             key != "Preferred Work City" &&
+            key != "tempFirst" &&
+            key != "tempLast" &&
             isEmptyValue(value)
           )
           .map(([key]) => key)
@@ -104,6 +106,8 @@ export const FormProvider = ( {children} ) => {
             key !== "Field Interest" &&
             key !== "Opportunity Type" &&
             key !== "Preferred Work City" &&
+            key !== "tempFirst" &&
+            key !== "tempLast" &&
             isEmptyValue(value)
           );
         })

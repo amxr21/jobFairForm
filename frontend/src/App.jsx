@@ -1,3 +1,4 @@
+import "./inputs.css";
 import "./style.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { ApplicationForm } from "./components/ApplicationForm";
