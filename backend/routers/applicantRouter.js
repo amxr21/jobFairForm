@@ -1,25 +1,15 @@
 require("dotenv").config();
 
 const express = require("express");
-const mongoose = require("mongoose");
 
 const requireAuth = require("../middlewares/requireAuth");
 
 // Cloudinary configuration
 const { cloudinary, upload } = require("../config/cloudinary");
 
-const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, sendEvaluationEmail, sendBulkEvaluationEmails} = require("../controllers/applicantsControllers")
+const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, sendEvaluationEmail, sendBulkEvaluationEmails, lookupApplicantByUniId} = require("../controllers/applicantsControllers")
 
 const router = express.Router();
-
-const uri = process.env.URI;
-
-mongoose.connect(uri);
-const connection = mongoose.connection;
-
-connection.once("open", ()=>{
-    console.log("DB connected successfully");
-});
 
 
 // Download CV - now redirects to Cloudinary URL
@@ -74,6 +64,10 @@ router.post("/applicants", (req, res, next) => {
         next();
     });
 }, addApplicantPublic);
+
+// Public ticket lookup (must stay before requireAuth so students can use it
+// without an account).
+router.get("/applicants/lookup/:uniId", lookupApplicantByUniId);
 
 router.use(requireAuth);
 

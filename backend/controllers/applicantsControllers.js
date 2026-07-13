@@ -1,21 +1,16 @@
-const mongoose = require("mongoose");
-const ApplicantModel = require("../models/applicantFormModel");
-const UserModel = require("../models/userModel");
+const prisma = require("../config/prisma");
+const { ObjectId } = require("bson");
 const QRCode = require("qrcode");
 
 const dotenv = require("dotenv");
 dotenv.config();
 
 const nodemailer = require("nodemailer");
-// const env = require("dotenv").config()
 
 const sendEmail = async (subject, message, send_to, sent_from) => {
     const transporter = nodemailer.createTransport({
-        // host : "smtp.gmail.com",
-        host : "smtp.outlook.com",
-        // service: "Gmail",
+        host: "smtp.outlook.com",
         secure: false,
-        // port: "465",
         port: "587",
         auth: {
             user: process.env.EMAIL_USER,
@@ -24,263 +19,417 @@ const sendEmail = async (subject, message, send_to, sent_from) => {
         tls: {
             rejectUnauthorized: false
         }
-    })
+    });
 
     const options = {
         from: 'internshipfair@sharjah.ac.ae',
         to: send_to,
         subject: subject,
         html: message
-    }
+    };
 
+    transporter.sendMail(options, function (err, info) {
+        if (err) console.log(err);
+        else { console.log("Email sent"); }
+    });
+};
 
-    transporter.sendMail(options, function(err, info){
-        if(err) console.log(err);
-        else {console.log("Email sent");}
-    })
+// Branded HTML ticket-confirmation email. Table-based layout with inline
+// styles for email-client compatibility (Gmail/Outlook strip <style> blocks
+// and most fl<box); office green (#0E7F41) identity throughout.
+function buildTicketEmail({ fullName, uniId, email, major, college, studyLevel, expectedToGraduate, cgpa, fileName, qrUrl, ticketUrl }) {
+    const safe = (v, fallback = "—") => (v && String(v).trim() !== "" ? String(v) : fallback);
+    const row = (label, value) => `
+        <tr>
+          <td style="padding:7px 0;color:#6b7280;font-size:14px;width:42%;">${label}</td>
+          <td style="padding:7px 0;color:#111827;font-size:14px;font-weight:600;">${safe(value)}</td>
+        </tr>`;
+
+    return `
+    <div style="margin:0;padding:24px 12px;background-color:#f3f6f4;font-family:'Segoe UI',Arial,sans-serif;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+        <!-- Header -->
+        <tr>
+          <td style="background:linear-gradient(135deg,#0E7F41,#0a5f31);padding:36px 32px;text-align:center;">
+            <div style="display:inline-block;width:56px;height:56px;line-height:56px;background:rgba(255,255,255,0.15);border-radius:50%;font-size:28px;margin-bottom:12px;">🎟️</div>
+            <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">You're all set, ${safe(fullName, "there").split(" ")[0]}!</h1>
+            <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Your Job Fair 2025 ticket is confirmed</p>
+          </td>
+        </tr>
+
+        <!-- QR -->
+        <tr>
+          <td style="padding:28px 32px 8px;text-align:center;">
+            <img src="${qrUrl}" alt="Your ticket QR code" width="188" style="width:188px;height:188px;border:1px solid #eef2f0;border-radius:12px;padding:8px;background:#fff;" />
+            <p style="margin:12px 0 0;color:#6b7280;font-size:13px;">Show this QR code at the entrance to check in</p>
+          </td>
+        </tr>
+
+        <!-- Event details -->
+        <tr>
+          <td style="padding:20px 32px 8px;">
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px 20px;">
+              <p style="margin:0 0 10px;color:#0a5f31;font-size:15px;font-weight:700;">📍 Event Details</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${row("Date", "Tuesday, 22 April 2025")}
+                ${row("Time", "10:00 AM – 02:00 PM")}
+                ${row("Location", "Building M11 — University of Sharjah")}
+                ${row("Companies", "70+ participating")}
+              </table>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Applicant details -->
+        <tr>
+          <td style="padding:12px 32px 8px;">
+            <div style="border:1px solid #eef2f0;border-radius:12px;padding:18px 20px;">
+              <p style="margin:0 0 10px;color:#111827;font-size:15px;font-weight:700;">🧾 Your Ticket Info</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${row("Full Name", fullName)}
+                ${row("University ID", uniId)}
+                ${row("Email", email)}
+                ${row("College", college)}
+                ${row("Major", major)}
+                ${row("Study Level", studyLevel)}
+                ${row("Expected to Graduate", expectedToGraduate || "Graduated")}
+                ${cgpa && cgpa != 0 ? row("GPA", cgpa) : ""}
+                ${row("Uploaded CV", fileName || "No CV uploaded")}
+              </table>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Retrieve ticket CTA -->
+        <tr>
+          <td style="padding:16px 32px 4px;text-align:center;">
+            <a href="${ticketUrl}" style="display:inline-block;background:#0E7F41;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px;">View my ticket anytime</a>
+            <p style="margin:10px 0 0;color:#9ca3af;font-size:12px;">Retrieve it any time using your University ID (${safe(uniId)})</p>
+          </td>
+        </tr>
+
+        <!-- Tips -->
+        <tr>
+          <td style="padding:16px 32px 8px;">
+            <p style="margin:0 0 6px;color:#111827;font-size:14px;font-weight:600;">Before you come:</p>
+            <ul style="margin:0;padding-left:18px;color:#4b5563;font-size:13px;line-height:1.7;">
+              <li>Arrive early for a smoother check-in.</li>
+              <li>Bring printed or digital copies of your CV.</li>
+              <li>Dress professionally and be ready to meet employers.</li>
+            </ul>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:24px 32px 32px;text-align:center;border-top:1px solid #eef2f0;">
+            <p style="margin:0;color:#9ca3af;font-size:13px;">Best regards,</p>
+            <p style="margin:2px 0 0;color:#0a5f31;font-size:14px;font-weight:700;">CASTO Office — University of Sharjah</p>
+          </td>
+        </tr>
+      </table>
+    </div>`;
 }
 
+const newId = () => new ObjectId().toHexString();
+const isValidId = (id) => /^[0-9a-fA-F]{24}$/.test(id || "");
 
-const testFunc =  async (req, res) => {
+// YYYY-MM-DD, matching the plain string shape Mongo always returned for
+// these fields (dashboard frontend code does .split("-")[0] on birthdate
+// directly — see MainBanner.jsx — so a raw Date's full ISO datetime string
+// must not leak through).
+function dateOnlyString(date) {
+    if (!date) return null;
+    return date.toISOString().slice(0, 10);
+}
+
+// Maps a Prisma `applicants` row back into the applicantDetails-nested shape
+// the frontend already expects (unchanged API contract from the Mongo days).
+// Kept identical to apps/dashboard/backend's version since both apps' UIs
+// consume the same shape. cgpa/birthdate/ExpectedToGraduate/gender/
+// studyLevel are now real Decimal/Date/Enum types in Prisma — converted
+// back to the plain strings the frontend has always received.
+function toApplicantJson(row) {
+    if (!row) return row;
+    return {
+        _id: row.id,
+        applicantDetails: {
+            uniId: row.uniId,
+            fullName: row.fullName,
+            birthdate: dateOnlyString(row.birthdate),
+            gender: row.gender,
+            nationality: row.nationality,
+            studyLevel: row.studyLevel,
+            college: row.college,
+            major: row.major,
+            email: row.email,
+            phoneNumber: row.phoneNumber,
+            cgpa: row.cgpa === null || row.cgpa === undefined ? null : row.cgpa.toString(),
+            city: row.city,
+            linkedIn: row.linkedIn,
+            technicalSkills: row.technicalSkills,
+            nonTechnicalSkills: row.nonTechnicalSkills,
+            experience: row.experience,
+            languages: row.languages,
+            ExpectedToGraduate: dateOnlyString(row.expectedToGraduate),
+            fieldInterest: row.fieldInterest,
+            opportunityType: row.opportunityType,
+            preferredWorkCity: row.preferredWorkCity,
+            careerGoals: row.careerGoals,
+            availability: row.availability,
+        },
+        cv: row.cvMetadata,
+        attended: row.attended,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        user_id: (row.relations || []).filter(r => r.relationType === "applied").map(r => r.company?.companyName ?? r.companyId),
+        flags: (row.relations || []).filter(r => r.relationType === "flagged").map(r => r.company?.companyName ?? r.companyId),
+        rejectedBy: (row.relations || []).filter(r => r.relationType === "rejected").map(r => r.company?.companyName ?? r.companyId),
+        shortlistedBy: (row.relations || []).filter(r => r.relationType === "shortlisted").map(r => r.company?.companyName ?? r.companyId),
+    };
+}
+
+const applicantWithRelationsInclude = {
+    relations: { include: { company: { select: { companyName: true } } } },
+};
+
+const testFunc = async (req, res) => {
     res.json("Make it work");
-}
+};
 
 const getAllApplicants = async (req, res) => {
-    try{
-        const filteredUserIds = await ApplicantModel?.find({})
-
-        if(filteredUserIds.length > 0){
-            const a = filteredUserIds.map((aa) => aa?.user_id)[0][0];
-            console.log(a);
-    
-    
-            const allApplicants = (await ApplicantModel.find({}))
-            // .filter((app)=> {
-            //     console.log(a, app.user_id[0], a.equals(app.user_id[0]));
-            //     return app.user_id[0], a.equals(app.user_id[0])
-            // })
-            // console.log(req.user._id, );
-            res.status(200).json(allApplicants.filter((applicant)=>applicant.applicantDetails != undefined).sort(() => {return -1}))
-        }
-        else{
-            res.status(200).json([])
-            
-        }
-
-    } catch(error) {
-        res.status(500).json({error: error.message})
-        // console.log({error: error.message});
+    try {
+        const applicants = await prisma.applicant.findMany({
+            where: { fullName: { not: null } },
+            include: applicantWithRelationsInclude,
+            orderBy: { createdAt: "desc" },
+        });
+        res.status(200).json(applicants.map(toApplicantJson));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };
 
-const addApplicant =  async (req, res) => {
-    const userId = !req.user ? "662d20b4754626de2c3ac2b7" : req.user._id;
-    try{
-        console.log("Recieved POST request to /applicants");
-        console.log("Request body: ",req.body);
-        console.log("Uploaded applicant CV: ", req.file);
+const VALID_GENDERS = ["Male", "Female"];
+const VALID_STUDY_LEVELS = ["Bachelor", "Master", "PhD", "Diploma"];
 
-        // Cloudinary file info - store URL and public_id
-        const cvData = req.file ? {
-            url: req.file.path,           // Cloudinary URL
-            public_id: req.file.filename, // Cloudinary public_id for deletion
-            originalname: req.file.originalname
-        } : null;
+// gender/studyLevel are now real MySQL ENUMs (see schema.prisma) — Prisma
+// throws if handed a value outside the set, unlike Mongo's old untyped
+// Object field. This is the live public submission endpoint, so an
+// unrecognized value (blank, typo, a form field that hasn't caught up with
+// the enum) must degrade to null rather than 500ing a real applicant's
+// submission.
+function toEnumOrNull(value, allowed) {
+    return allowed.includes(value) ? value : null;
+}
 
-        const applicantProfile = await ApplicantModel.create({
-            cv: cvData,
-            applicantDetails: req.body,
-            user_id: userId
-        })
-        //this must be the exact the same as the one inn the model
-        console.log(applicantProfile);
+// cgpa is now DECIMAL(3,2) — same conversion rules as the migration
+// (see apps/dashboard/backend/migrations/generate-seed.js's sqlCgpa):
+// blank/non-numeric/out-of-range -> null rather than rejecting the submission.
+function toCgpaOrNull(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const n = Number(value);
+    if (isNaN(n) || n < 0 || n > 9.99) return null;
+    return n;
+}
 
-        const qrData = JSON.stringify(req.body);
-        QRCode.toDataURL(JSON.stringify(applicantProfile._id), (err, url)=>{
-            // console.log("--------qr code url--------------",url,"--------qr code url--------------");
-            // res.status(200).json( url );
-            res.status(200).json( {url: url ,applicantProfile: applicantProfile } );
-            sendEmail(
-                `JobFair ticket #${req.body.uniId}`,
-                `
-                <div style="max-width:600px;margin:auto;padding:30px;background-color:#ffffff;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.08);font-family:Arial,sans-serif;">
-                  <h2 style="color:#2c3e50;text-align:center;">Job Fair 2025 – Ticket Confirmation</h2>
-              
-                  <p style="color:#34495e;font-size:16px;line-height:1.6;">
-                    Dear <strong>${req.body.fullName}</strong>,
-                  </p>
-              
-                  <p style="color:#34495e;font-size:16px;line-height:1.6;">
-                    Thank you for registering for the <strong>University of Sharjah Annual Job Fair 2025</strong>. We are pleased to confirm your ticket and participation.
-                  </p>
-              
-                  <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f9f9f9;">
-                    <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">📍 Event Details</h3>
-                    <ul style="list-style-type:none;padding-left:0;color:#555;">
-                      <li><strong>📅 Date:</strong> April 15, 2025</li>
-                      <li><strong>🕙 Time:</strong> 10:00 AM – 2:00 PM</li>
-                      <li><strong>🏢 Location:</strong> M11 – University of Sharjah</li>
-                      <li><strong>👥 Companies Participating:</strong> Over 70 companies</li>
-                    </ul>
-                  </div>
-              
-                  <div style="margin-bottom:20px;">
-                    <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">🧾 Your Ticket Info</h3>
-                    <ul style="list-style-type:none;padding-left:0;color:#555;">
-                      <li><strong>Full Name:</strong> ${req.body.fullName || 'Not specified'}</li>
-                      <li><strong>ID Number:</strong> ${req.body.uniId || 'Not specified'}</li>
-                      <li><strong>Email:</strong> ${req.body.email || 'Not specified'}</li>
-                      <li><strong>Major:</strong> ${req.body.major || 'Not specified'}</li>
-                      <li><strong>College:</strong> ${req.body.college || 'Not specified'}</li>
-                      <li><strong>Study Level:</strong> ${req.body.studyLevel || 'Not specified'}</li>
-                      <li><strong>Expected to Graduate:</strong> ${req.body.ExpectedToGraduate || 'Graduated'}</li>
-                      ${req.body.cgpa && req.body.cgpa != 0 ? `<li><strong>GPA:</strong> ${req.body.cgpa}</li>` : ''}
-                      ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : '<li><strong>Uploaded File:</strong> No uploaded CV</li>'}
-                    </ul>
-                  </div>
-              
-                  <div style="text-align:center;margin-bottom:20px;">
-                    <img src="${url}" alt="QR Code" style="max-width:200px;border-radius:6px;">
-                    <p style="color:#999;font-size:14px;margin-top:8px;">Scan this QR code at the entrance for check-in</p>
-                  </div>
-              
-                  <div style="margin-top:20px;">
-                    <p style="color:#34495e;font-size:16px;">Please make sure to:</p>
-                    <ul style="color:#555;padding-left:20px;">
-                      <li>Arrive early for smoother check-in.</li>
-                      <li>Bring printed or digital copies of your CV.</li>
-                      <li>Dress professionally and be prepared to engage with employers.</li>
-                    </ul>
-                  </div>
-              
-                  <footer style="text-align:center;margin-top:30px;border-top:1px solid #e0e0e0;padding-top:15px;">
-                    <p style="color:#999;font-size:14px;">Best regards,</p>
-                    <p style="color:#999;font-size:14px;">CASTO Office – University of Sharjah</p>
-                  </footer>
-                </div>
-                `,
-                req.body.email,
-                `CASTO Office 🏢🚨 <${process.env.USER_EMAIL}>`
-              );
-              
-        
+function toDateOrNull(value) {
+    if (!value) return null;
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+}
+
+async function createApplicant(req, { userIdField }) {
+    const d = req.body;
+    const cvData = req.file ? {
+        url: req.file.path,
+        public_id: req.file.filename,
+        originalname: req.file.originalname
+    } : null;
+
+    const id = newId();
+
+    await prisma.applicant.create({
+        data: {
+            id,
+            uniId: d.uniId ?? null,
+            fullName: d.fullName ?? null,
+            birthdate: toDateOrNull(d.birthdate),
+            gender: toEnumOrNull(d.gender, VALID_GENDERS),
+            nationality: d.nationality ?? null,
+            studyLevel: toEnumOrNull(d.studyLevel, VALID_STUDY_LEVELS),
+            college: d.college ?? null,
+            major: d.major ?? null,
+            email: d.email ?? null,
+            phoneNumber: d.phoneNumber ?? null,
+            cgpa: toCgpaOrNull(d.cgpa),
+            city: d.city ?? null,
+            linkedIn: d.linkedIn ?? null,
+            technicalSkills: d.technicalSkills ?? null,
+            nonTechnicalSkills: d.nonTechnicalSkills ?? null,
+            experience: d.experience ?? null,
+            languages: d.languages ?? null,
+            expectedToGraduate: toDateOrNull(d.ExpectedToGraduate),
+            fieldInterest: d.fieldInterest ?? undefined,
+            opportunityType: d.opportunityType ?? undefined,
+            preferredWorkCity: d.preferredWorkCity ?? null,
+            careerGoals: d.careerGoals ?? null,
+            availability: d.availability ?? null,
+            cvMetadata: cvData ?? undefined,
+            attended: false,
+        },
     });
 
-
-    } catch(error){
-        console.log("----this is the error---\n\n\n\n\n\n\n\n\n\n\n\n-",error,"---------\n\n\n\n\n\n\n\n");
-        res.status(500).json({error: "Request is never sent...T-T"})
+    if (userIdField && isValidId(userIdField)) {
+        const companyExists = await prisma.company.findUnique({ where: { id: userIdField }, select: { id: true } });
+        if (companyExists) {
+            await prisma.applicantCompanyRelation.create({
+                data: { applicantId: id, companyId: userIdField, relationType: "applied" },
+            }).catch(() => {});
+        }
     }
 
+    return prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
 }
+
+const addApplicant = async (req, res) => {
+    const userId = !req.user ? null : req.user._id;
+    try {
+        console.log("Recieved POST request to /applicants");
+        console.log("Request body: ", req.body);
+        console.log("Uploaded applicant CV: ", req.file);
+
+        const applicantProfile = await createApplicant(req, { userIdField: userId });
+        console.log(applicantProfile);
+
+        QRCode.toDataURL(JSON.stringify(applicantProfile.id), (err, url) => {
+            res.status(200).json({ url: url, applicantProfile: toApplicantJson(applicantProfile) });
+            const ticketUrl = `${req.body.dashboardUrl || 'https://job-fair-control.vercel.app'}/my-qr-code`;
+            sendEmail(
+                `Your Job Fair 2025 Ticket — #${req.body.uniId}`,
+                buildTicketEmail({
+                    fullName: req.body.fullName,
+                    uniId: req.body.uniId,
+                    email: req.body.email,
+                    major: req.body.major,
+                    college: req.body.college,
+                    studyLevel: req.body.studyLevel,
+                    expectedToGraduate: req.body.ExpectedToGraduate,
+                    cgpa: req.body.cgpa,
+                    fileName: req.file?.originalname,
+                    qrUrl: url,
+                    ticketUrl,
+                }),
+                req.body.email,
+                `CASTO Office <${process.env.USER_EMAIL}>`
+            );
+        });
+
+    } catch (error) {
+        console.log("----this is the error---\n\n\n\n\n\n\n\n\n\n\n\n-", error, "---------\n\n\n\n\n\n\n\n");
+        res.status(500).json({ error: "Request is never sent...T-T" });
+    }
+};
 
 const getApplicant = async (req, res) => {
     const { id } = req.params;
 
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(404).json({error: "No such id for an applicant"})
+    if (!isValidId(id)) {
+        return res.status(404).json({ error: "No such id for an applicant" });
     }
-
-    const applicant = await ApplicantModel.findById(id);
-
-    try{
-        res.status(200).json(applicant);
-    } catch(error){
-        console.log(error);
-        res.status(401).json({error: "did not find the applicant"});
-    }
-}
-const updateApplicant = async (req, res) => {
 
     try {
+        const applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
+        res.status(200).json(toApplicantJson(applicant));
+    } catch (error) {
+        console.log(error);
+        res.status(401).json({ error: "did not find the applicant" });
+    }
+};
+
+// See apps/dashboard/backend's addRelationByCompanyName: the frontend
+// (shared BriefInfo.jsx-equivalent flows) sends the company NAME, not id.
+async function findCompanyIdByName(companyName) {
+    if (!companyName) return null;
+    const company = await prisma.company.findFirst({ where: { companyName }, select: { id: true } });
+    return company?.id ?? null;
+}
+
+async function addRelationByCompanyName(applicantId, companyName, relationType) {
+    const companyId = await findCompanyIdByName(companyName);
+    if (!companyId) return null;
+    return prisma.applicantCompanyRelation.upsert({
+        where: { applicantId_companyId_relationType: { applicantId, companyId, relationType } },
+        create: { applicantId, companyId, relationType },
+        update: {},
+    });
+}
+
+const updateApplicant = async (req, res) => {
+    try {
         const { id } = req.params;
-        
-        if(!mongoose.Types.ObjectId.isValid(id)){
-            return res.status(404).json({error: "No such id for an applicant"})
+
+        if (!isValidId(id)) {
+            return res.status(404).json({ error: "No such id for an applicant" });
         }
 
+        if (req.body.hasOwnProperty("user_id") && Array.isArray(req.body.user_id) && req.body.user_id[0]) {
+            await addRelationByCompanyName(id, req.body.user_id[0], "applied")
+                .catch((err) => console.log({ error: err.message }));
+        }
 
-        let updateData = {};
-        if(req.body.hasOwnProperty("user_id")){
-            updateData.$addToSet = { user_id: req.body.user_id[0] }
-        };
-
-
-
-        const applicant = await ApplicantModel.findOneAndUpdate({_id: id},
-            updateData,
-            {new: false}
-        );
+        const applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
         console.log(id);
         console.log(applicant);
 
-        res.status(200).json(applicant)
+        res.status(200).json(toApplicantJson(applicant));
 
-    } catch(error){
-        console.log({error: error.message});
+    } catch (error) {
+        console.log({ error: error.message });
+        res.status(404).json({ error: "No such id for an applicant" });
     }
-}
+};
 
 const addApplicantPublic = async (req, res) => {
-    try{
-        // Cloudinary file info - store URL and public_id
-        const cvData = req.file ? {
-            url: req.file.path,           // Cloudinary URL
-            public_id: req.file.filename, // Cloudinary public_id for deletion
-            originalname: req.file.originalname
-        } : null;
+    try {
+        const applicantProfile = await createApplicant(req, { userIdField: null });
 
-        const applicantProfile = await ApplicantModel.create({
-            flags: [],
-            cv: cvData,
-            applicantDetails: req.body,
-            user_id: [],
-            attended: false
-        })
+        console.log(applicantProfile, "------this is the added applicant publically-----");
 
-
-        console.log(applicantProfile,"------this is the added applicant publically-----");
-
-
-        const qrData = JSON.stringify(req.body);
-        QRCode.toDataURL((JSON.stringify(applicantProfile._id)), (err, url)=>{
-            // console.log("--------qr code url--------------",url,"--------qr code url--------------");
-            // res.status(200).json( url );
-
-
-            res.status(200).json( {url: url ,applicantProfile: applicantProfile } );
+        QRCode.toDataURL((JSON.stringify(applicantProfile.id)), (err, url) => {
+            res.status(200).json({ url: url, applicantProfile: toApplicantJson(applicantProfile) });
+            const ticketUrl = `${req.body.dashboardUrl || 'https://job-fair-control.vercel.app'}/my-qr-code`;
             sendEmail(
                 `Your Entry Confirmation – Ticket #${req.body.uniId}`,
-              
                 `<div style="max-width:600px;margin:auto;padding:30px;background-color:#ffffff;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.08);font-family:Arial,sans-serif;">
                   <h2 style="color:#0E7F41;text-align:center;font-weight:bold;">🎓 Your Entry Confirmation</h2>
-              
+
                   <p style="color:#34495e;font-size:16px;line-height:1.6;">
                     Dear <strong>${req.body.fullName}</strong>,
                   </p>
-              
+
                   <p style="color:#34495e;font-size:16px;line-height:1.6;">
                     The <strong>Career Advancement and Student Training Office (CASTO)</strong> is excited to welcome you to our annual <strong>Internship and Career Fair 2025</strong>!
                   </p>
-              
+
                   <p style="color:#2c3e50;font-size:16px;">Please keep your QR code handy on the day of the event for entry and to share your profile with employers.</p>
-              
+
                   <div style="margin-bottom:20px;">
                     <h3 style="color:#2c3e50;border-bottom:1px solid #ddd;padding-bottom:5px;">🧾 Your Ticket Info</h3>
                     <ul style="list-style-type:none;padding-left:0;color:#555;">
-                        <li><strong>Full Name:</strong> ${req.body.fullName ? req.body.fullName : 'Not specified' }</li>
-                        <li><strong>ID Number:</strong> ${req.body.uniId ? req.body.uniId : 'Not specified' }</li>
-                        <li><strong>Email:</strong> ${req.body.email ? req.body.email : 'Not specified' }</li>
-                        <li><strong>Major:</strong> ${req.body.major ? req.body.major : 'Not specified' }</li>
-                        <li><strong>College:</strong> ${req.body.college ? req.body.college : 'Not specified' }</li>
-                        <li><strong>Study Level:</strong> ${req.body.studyLevel ? req.body.studyLevel : 'Not specified' }</li>
+                        <li><strong>Full Name:</strong> ${req.body.fullName ? req.body.fullName : 'Not specified'}</li>
+                        <li><strong>ID Number:</strong> ${req.body.uniId ? req.body.uniId : 'Not specified'}</li>
+                        <li><strong>Email:</strong> ${req.body.email ? req.body.email : 'Not specified'}</li>
+                        <li><strong>Major:</strong> ${req.body.major ? req.body.major : 'Not specified'}</li>
+                        <li><strong>College:</strong> ${req.body.college ? req.body.college : 'Not specified'}</li>
+                        <li><strong>Study Level:</strong> ${req.body.studyLevel ? req.body.studyLevel : 'Not specified'}</li>
                         <li><strong>Expected to Graduate:</strong> ${req.body.ExpectedToGraduate ? req.body.ExpectedToGraduate : 'Graduted'}</li>
                         ${req.body.cgpa && req.body.cgpa != 0 ? `<li><strong>GPA:</strong> ${req.body.cgpa}</li>` : ''}
                         ${req.file?.originalname ? `<li><strong>Uploaded File:</strong> ${req.file.originalname}</li>` : 'No uploaded CV'}
                     </ul>
                 </div>
 
-              
+
                   <div style="margin:20px 0;padding:15px;border:1px solid #e0e0e0;border-radius:8px;background-color:#f4fef7;">
                     <h3 style="color:#2c3e50;margin-bottom:10px;">📍 Event Details</h3>
                     <ul style="list-style-type:none;padding-left:0;color:#555;">
@@ -290,12 +439,18 @@ const addApplicantPublic = async (req, res) => {
                       <li><strong>Companies Participating:</strong> 70+ Employers</li>
                     </ul>
                   </div>
-              
+
                   <div style="text-align:center;margin:30px 0;">
                     <img src="${url}" alt="QR Code" style="max-width:200px;border-radius:6px;" />
                     <p style="color:#777;font-size:14px;margin-top:8px;">Scan this QR code at the entrance</p>
                   </div>
-              
+
+                  <div style="text-align:center;margin:20px 0;padding:12px;background-color:#f4fef7;border-radius:8px;">
+                    <p style="color:#34495e;font-size:14px;margin:0;">Lost this email or need your ticket again?</p>
+                    <a href="${ticketUrl}" style="color:#0E7F41;font-weight:bold;font-size:14px;">View your ticket anytime here</a>
+                    <p style="color:#777;font-size:12px;margin:6px 0 0;">using your University ID (${req.body.uniId})</p>
+                  </div>
+
                   <div style="margin-top:20px;">
                     <p style="color:#34495e;font-size:16px;">✅ Quick Tips:</p>
                     <ul style="color:#555;padding-left:20px;">
@@ -303,35 +458,28 @@ const addApplicantPublic = async (req, res) => {
                       <li>Dress professionally and be confident!</li>
                     </ul>
                   </div>
-              
+
                   <footer style="text-align:center;margin-top:30px;border-top:1px solid #e0e0e0;padding-top:15px;">
                     <p style="color:#999;font-size:14px;">Best of Luck!</p>
                     <p style="color:#999;font-size:14px;">CASTO Team – University of Sharjah</p>
                   </footer>
                 </div>`,
-              
                 req.body.email,
-              
                 "CASTO – Internship Fair <internshipfair@sharjah.ac.ae>"
-              )
-              
-        })
+            );
+        });
 
-
-
-    } catch(error){
+    } catch (error) {
         console.log("Error in addApplicantPublic:", error);
-        res.status(500).json({error: error.message})
+        res.status(500).json({ error: error.message });
     }
-}
-
-
+};
 
 const emailRequest = async (req, res) => {
     console.log(req.body, "This is the request\n\n\n\n\n");
 
     const emailTemplate = {
-        i :`<div style="max-width:600px; padding:20px; background-color:#f9f9f9; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:center; font-family:Arial, sans-serif; color:#333; line-height:1.6;">
+        i: `<div style="max-width:600px; padding:20px; background-color:#f9f9f9; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:center; font-family:Arial, sans-serif; color:#333; line-height:1.6;">
             <h1 style="margin-bottom:20px; font-size:24px;">Interview Invitation</h1>
             <p>Dear ${req.body.fullName},</p>
             <p>Congratulations! We are pleased to inform you that you have been selected for an interview.</p>
@@ -359,144 +507,110 @@ const emailRequest = async (req, res) => {
     `,
         o: `Hala`
 
-}
+    };
 
-    switch(req.body.type){
+    switch (req.body.type) {
         case "interview":
             sendEmail(
-                `JobFair ticket #${req.body.uniId}`,//u22200731
+                `JobFair ticket #${req.body.uniId}`,
                 emailTemplate["i"],
-        
                 `${req.body.email}`,
-        
                 "🥲 <internshipfair@sharjah.ac.ae>",
-            )
+            );
             break;
         case "rejection":
             sendEmail(
-                `JobFair ticket #${req.body.uniId}`,//u22200731
+                `JobFair ticket #${req.body.uniId}`,
                 emailTemplate["r"],
-        
                 `${req.body.email}`,
-        
                 "🥲 <internshipfair@sharjah.ac.ae>",
-            )
+            );
             break;
         case "other":
             sendEmail(
-                `JobFair ticket #${req.body.uniId}`,//u22200731
+                `JobFair ticket #${req.body.uniId}`,
                 emailTemplate["o"],
-        
                 `${req.body.email}`,
-        
                 "🥲 <internshipfair@sharjah.ac.ae>",
-            )
+            );
     }
 
-
-    
-
-    res.status(200).json({message: "email sent!"})
-
-}
-
+    res.status(200).json({ message: "email sent!" });
+};
 
 const apply = async (req, res) => {
     try {
         const { id } = req.params;
 
-        if(!mongoose.Types.ObjectId.isValid(id)){
-            return res.status(404).json({error: "No such a comapny with this id"});
+        if (!isValidId(id)) {
+            return res.status(404).json({ error: "No such a comapny with this id" });
         }
 
-        let updatedApplicantData = {};
-        if(req.body.hasOwnProperty("user_id")){
-            updatedApplicantData.$addToSet = { user_id: req.body.user_id[0] };
+        if (req.body.hasOwnProperty("user_id") && Array.isArray(req.body.user_id) && req.body.user_id[0]) {
+            await addRelationByCompanyName(id, req.body.user_id[0], "applied");
         }
 
-
-        const updateApplicant = await ApplicantModel.findOneAndUpdate({_id: id},
-            updatedApplicantData,
-            {new: false});
-
-        console.log(id);
-        console.log(updateApplicant.data);
-
-
-        res.status(200).json(updateApplicant);
-
-    } catch(error){
-        res.status(404).json({error: error.message});
-    }
-}
-
-
-
-
-const getCompanies = async (req, res) => {
-    const companies = await UserModel.find({});
-
-    res.json(companies)
-}
-
-
-const getCompany = async (req, res) => {
-    const { id } = req.params;
-    if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(400).json({message: "Not a valid id"+id})
-    }
-
-
-    const company = await UserModel.findById(id)
-
-    try{
-        res.json(company)
-    } catch(error){
-        return res.json({error: error});
-    }
-}
-
-
-
-
-const confirmAttendant = async (req, res) => {
-
-    try {
-        const { id } = req.params;
-        
-        if(!mongoose.Types.ObjectId.isValid(id)){
-            return res.status(404).json({error: "No such id for an applicant"})
-        }
-
-
-        let updateData = {};
-        if(req.body.hasOwnProperty("attended")){
-            updateData.$set = { attended: true }
-        };
-
-
-
-        const applicant = await ApplicantModel.findOneAndUpdate({_id: id},
-            updateData,
-            {new: false}
-        );
+        const applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
         console.log(id);
         console.log(applicant);
 
-        res.status(200).json(applicant)
+        res.status(200).json(toApplicantJson(applicant));
 
-    } catch(error){
-        console.log({error: error.message});
+    } catch (error) {
+        res.status(404).json({ error: error.message });
     }
-}
+};
 
+const getCompanies = async (req, res) => {
+    try {
+        const companies = await prisma.company.findMany();
+        res.json(companies);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
+const getCompany = async (req, res) => {
+    const { id } = req.params;
+    if (!isValidId(id)) {
+        return res.status(400).json({ message: "Not a valid id" + id });
+    }
 
+    try {
+        const company = await prisma.company.findUnique({ where: { id } });
+        res.json(company);
+    } catch (error) {
+        return res.json({ error: error });
+    }
+};
 
+const confirmAttendant = async (req, res) => {
+    try {
+        const { id } = req.params;
 
+        if (!isValidId(id)) {
+            return res.status(404).json({ error: "No such id for an applicant" });
+        }
 
+        let applicant;
+        if (req.body.hasOwnProperty("attended")) {
+            applicant = await prisma.applicant.update({ where: { id }, data: { attended: true }, include: applicantWithRelationsInclude });
+        } else {
+            applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
+        }
+        console.log(id);
+        console.log(applicant);
 
+        res.status(200).json(toApplicantJson(applicant));
 
+    } catch (error) {
+        // Was a hang-forever bug: this catch never sent a response, so a
+        // well-formed but nonexistent id (isValidId only checks format,
+        // not existence) left the request open with no reply.
+        console.log({ error: error.message });
+        res.status(404).json({ error: "No such id for an applicant" });
+    }
+};
 
 // Function to send post-fair evaluation email
 const sendEvaluationEmail = async (req, res) => {
@@ -575,8 +689,7 @@ const sendBulkEvaluationEmails = async (req, res) => {
     try {
         const { surveyLink } = req.body;
 
-        // Get all applicants who attended the fair
-        const attendees = await ApplicantModel.find({ attended: true });
+        const attendees = await prisma.applicant.findMany({ where: { attended: true } });
 
         if (attendees.length === 0) {
             return res.status(404).json({ message: "No attendees found" });
@@ -587,8 +700,8 @@ const sendBulkEvaluationEmails = async (req, res) => {
 
         for (const attendee of attendees) {
             try {
-                const email = attendee.applicantDetails?.email;
-                const name = attendee.applicantDetails?.fullName;
+                const email = attendee.email;
+                const name = attendee.fullName;
 
                 if (email && name) {
                     const evaluationEmailTemplate = `
@@ -633,7 +746,7 @@ const sendBulkEvaluationEmails = async (req, res) => {
                     successCount++;
                 }
             } catch (emailError) {
-                console.error(`Failed to send email to ${attendee.applicantDetails?.email}:`, emailError);
+                console.error(`Failed to send email to ${attendee.email}:`, emailError);
                 failCount++;
             }
         }
@@ -650,4 +763,34 @@ const sendBulkEvaluationEmails = async (req, res) => {
     }
 };
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, sendEvaluationEmail, sendBulkEvaluationEmails}
+// Public ticket lookup — a student who already applied can come back, enter
+// the University ID they applied with, and retrieve their ticket (QR value +
+// attendance status) instead of filling the whole form again. Mirrors the
+// dashboard's lookupApplicantByUniId so both apps behave identically.
+const lookupApplicantByUniId = async (req, res) => {
+    try {
+        const uniId = req.params.uniId?.trim();
+        if (!uniId) return res.status(400).json({ error: "University ID is required" });
+
+        const applicant = await prisma.applicant.findFirst({
+            where: { uniId },
+            orderBy: { createdAt: "desc" },
+        });
+        if (!applicant) return res.status(404).json({ error: "No application found for that University ID" });
+
+        res.status(200).json({
+            id: applicant.id,
+            fullName: applicant.fullName,
+            uniId: applicant.uniId,
+            attended: applicant.attended,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {
+    getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic,
+    emailRequest, apply, getCompanies, getCompany, confirmAttendant, sendEvaluationEmail, sendBulkEvaluationEmails,
+    lookupApplicantByUniId,
+};

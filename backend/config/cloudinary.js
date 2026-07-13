@@ -9,21 +9,28 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+const path = require('path');
+
 // Configure Cloudinary storage for multer
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: 'jobfair-cvs',
-        allowed_formats: ['pdf', 'doc', 'docx'],
-        resource_type: 'raw', // For non-image files like PDFs
-        public_id: (req, file) => {
-            // Create unique filename: uniId_timestamp_originalname
-            // Trim whitespace and remove any special characters that Cloudinary doesn't allow
-            const uniId = (req.body.uniId || 'unknown').trim().replace(/\s+/g, '_');
-            const timestamp = Date.now();
-            const originalName = file.originalname.replace(/\.[^/.]+$/, '').trim().replace(/\s+/g, '_');
-            return `${uniId}_${timestamp}_${originalName}`;
-        }
+    params: (req, file) => {
+        // Create unique filename: uniId_timestamp_originalname
+        // Trim whitespace and remove any special characters that Cloudinary doesn't allow
+        const uniId = (req.body.uniId || 'unknown').trim().replace(/\s+/g, '_');
+        const timestamp = Date.now();
+        // Original extension (e.g. ".pdf"), lowercased, without the dot.
+        const ext = path.extname(file.originalname).replace('.', '').toLowerCase();
+        const baseName = file.originalname.replace(/\.[^/.]+$/, '').trim().replace(/\s+/g, '_');
+        // For resource_type 'raw', Cloudinary does NOT auto-append the file
+        // extension the way it does for images — so the extension must be part
+        // of the public_id, otherwise the stored URL has no ".pdf" and the file
+        // downloads without an extension. Bake the extension into the public_id.
+        return {
+            folder: 'jobfair-cvs',
+            resource_type: 'raw',
+            public_id: `${uniId}_${timestamp}_${baseName}${ext ? '.' + ext : ''}`,
+        };
     }
 });
 
