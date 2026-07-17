@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom'
 
 import App from './App.jsx'
@@ -12,12 +11,6 @@ ReactDOM.render(
       </AuthContextProvidor>
       ,app
     )
-// ReactDOM.render(
-//       <AuthContextProvidor>
-//         <App/>
-//       </AuthContextProvidor>
-//       ,app
-//     )
 
 
 // React 18
@@ -25,7 +18,7 @@ ReactDOM.render(
   //   <React.StrictMode>
   //     <AuthContextProvidor>
   //       <App />
-  
+
   //     </AuthContextProvidor>
   //   </React.StrictMode>,
   // )

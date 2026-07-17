@@ -1,8 +1,6 @@
 import axios from "axios";
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
-
-import { IdContext } from "../../context/IdContext";
 
 const linkUrl = 'https://jobfair-1.onrender.com';
 
@@ -10,9 +8,6 @@ const QrScanner = () => {
 
     const [applicant, setApplicant] = useState({});
     const [company, setCompany] = useState({});
-
-
-    const { inputValue, setInputValue } = useContext(IdContext);
 
     const [scannerResult, setScannerResult] = useState(null);
     const [isCameraOn, setIsCameraOn] = useState(false);
@@ -56,7 +51,7 @@ const QrScanner = () => {
                 }
             }
 
-            const error = (err) => {
+            const error = () => {
                 // console.warn("");
             }
 
