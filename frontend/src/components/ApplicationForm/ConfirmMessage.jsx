@@ -1,8 +1,8 @@
+import PropTypes from "prop-types";
 import QRCode from 'qrcode.react';
 import ReturnHome from "../SuccessPage/ReturnHome";
 
 import CelebrateEmoji from "../../assets/images/celebrateEmoji.png"
-import SuitcaseEmoji from "../../assets/images/suitEmoji.png"
 
 import ConfirmMessage from "../SuccessPage/ConfirmMessage";
 import TicketText from "../SuccessPage/TicketText";
@@ -34,6 +34,11 @@ const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
         </div>
     )
 }
+ConfirmMessageDiv.propTypes = {
+    confirmMessageRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })]),
+    qrCodeSrc: PropTypes.string,
+};
+
 export default ConfirmMessageDiv
 
 //my idea breif

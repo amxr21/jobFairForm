@@ -1,7 +1,7 @@
 import axios from "axios";
 
-import { useRef, createContext, useState, useContext, useEffect } from "react";
-import { PersonalInfo, ProfessionalInfo, Preferences, SubmitFormBtn, ConfirmMessageDiv } from "./index";
+import { useRef, useState } from "react";
+import { PersonalInfo, ProfessionalInfo, Preferences, ConfirmMessageDiv } from "./index";
 
 // const link = "https://jobfairform-backend.onrender.com"
 // const link = "https://jobfairform-backend-production.up.railway.app"
@@ -10,11 +10,8 @@ const link = "http://localhost:2001"
 import { useAuthContext } from "../../hooks/useAuthContext"
 import useFormContext from "../../hooks/useFormContext";
 
-import { FormContext } from "../../context/FormContext";
 import ProgressSection from "./ProgressSection";
 
-import PersonalIcon from '../../assets/images/personal.svg'
-import { useProgressContext } from "../../context/ProgressContext";
 import LoadingPage from "../../pages/LoadingPage";
 
 
@@ -41,28 +38,6 @@ const keyMap = {
     ExpectedToGraduate: "Expected to Graduate",
   };
 
-const requiredKey = {
-    uniId: "University ID",
-    fullName: "Full Name",
-    birthdate: "Date of Birth",
-    gender: "Gender",
-    nationality: "Nationality",
-    studyLevel: "Study Program",
-    college: "College",
-    major: "Major",
-    email: "Email address",
-    phoneNumber: "Mobile number",
-    city: "City",
-    technicalSkills: "Technical Skills",
-    nonTechnicalSkills: "Non-technical skills",
-    experience: "Experience",
-    cvfile: "CV",
-    // portfolio: "Personal Website (if any)",
-    languages: "languages",
-  };
-
-
-
 
 
 
@@ -73,7 +48,6 @@ const Form = () => {
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
 
-    const [formDataReq, setFormDataReq] = useState({});
     const [qrCodeSrc, setQRCodeSrc] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false)
@@ -121,7 +95,6 @@ const Form = () => {
     const updateProgressBar = (step) => {
         const progressBar = document.querySelector('.progress-bar');
         const sectionHeader = document.querySelector('.section-header');
-        const sectionIcon = document.querySelector('.section-icon');
 
         // Remove all progress classes
         progressBar.classList.remove('md:h-1/3', 'md:h-2/3', 'md:h-full', 'w-1/3', 'w-2/3', 'w-full');
@@ -270,8 +243,7 @@ const Form = () => {
 
     }
 
-    const confirmRegistration = (e) => {
-        // e.preventDefault();
+    const confirmRegistration = () => {
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
         form.current.classList.replace("h-[86vh]", "h-0");
@@ -376,29 +348,3 @@ const Form = () => {
 }
 
 export default Form;
-
-
-
-const sample = {
-    "Full Name": "Hamda Mohammed Saeed Al-Khori",
-    "University ID": "22100100",
-    "Date Of Birth": "1999-08-21",
-    "Gender": "Male",
-    "Nationality": "Oman",
-    "Email": "u22105176@sharjah.ac.ae",
-    "Phone number": "0566558198",
-    "CGPA": "2.98",
-    "languages": [
-        "Arabic",
-        "English",
-        "Urdu"
-    ],
-    "Study Program": "Bachelor",
-    "College": "College of Sciences",
-    "Major": "Physics",
-    "LinkedIn URL": "ammarobad.info",
-    "Personal Website (if any)": "ammarobad.info",
-    "Experience": "ammarobad.info",
-    "Skills": "ammarobad.info",
-    "CV": {}
-}

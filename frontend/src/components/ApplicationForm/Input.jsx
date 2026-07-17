@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { FocusedState, RequiredAstrik } from "./index";
 import { useRef, useState } from "react";
 import useFormContext from "../../hooks/useFormContext";
@@ -49,19 +50,21 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     const validate = (value) => {
         switch (label) {
             case 'First Name':
-            case 'Last Name':
+            case 'Last Name': {
                 const nameValue = refLabel.current.value.replace(/[^a-zA-Z\s-]/g, '');
                 refLabel.current.value = nameValue;
                 break;
+            }
 
-            case 'Email address':
+            case 'Email address': {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (value && !emailRegex.test(value)) {
                     setFieldMissing('Email address');
                 }
                 break;
+            }
 
-            case 'Mobile number':
+            case 'Mobile number': {
                 let phoneValue = refLabel.current.value;
                 // Allow + at the start for country code, then only digits
                 if (phoneValue.startsWith('+')) {
@@ -77,8 +80,9 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     setFieldMissing('Mobile number - Must be 10 digits or country code + 9-13 digits');
                 }
                 break;
+            }
 
-            case 'University ID':
+            case 'University ID': {
                 let idValue = refLabel.current.value.replace(/\D/g, '');
                 idValue = idValue.slice(0, 8);
                 refLabel.current.value = idValue;
@@ -92,8 +96,9 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     setFieldMissing('University ID - Must be exactly 8 digits');
                 }
                 break;
+            }
 
-            case 'CGPA':
+            case 'CGPA': {
                 let cgpaValue = parseFloat(refLabel.current.value);
                 if (!isNaN(cgpaValue)) {
                     if (cgpaValue > 4) refLabel.current.value = '4.00';
@@ -103,8 +108,9 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     }
                 }
                 break;
+            }
 
-            case 'Date of Birth':
+            case 'Date of Birth': {
                 const dob = new Date(value);
                 const minAgeDate = new Date();
                 minAgeDate.setFullYear(minAgeDate.getFullYear() - 20);
@@ -112,6 +118,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     setFieldMissing('Date of Birth - Must be at least 20 years old');
                 }
                 break;
+            }
 
             case 'LinkedIn URL':
                 if (value && !value.includes('linkedin.com')) {
