@@ -1,0 +1,127 @@
+// Prisma schema for the public application-form backend. Points at the SAME
+// MySQL database as apps/dashboard/backend (see migrations/schema.sql there
+// for the authoritative source), but only declares the tables this app
+// actually touches (companies, applicants, their relation) — it never reads
+// or writes eventOps/attendance-staff/etc. Keep these two models' fields in
+// sync with apps/dashboard/backend/prisma/schema.prisma if either changes.
+
+generator client {
+  provider     = "prisma-client-js"
+  output       = "../node_modules/.prisma/client"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Company {
+  id                     String    @id @db.VarChar(24)
+  companyName            String    @map("company_name") @db.VarChar(255)
+  email                  String    @unique @db.VarChar(255)
+  password               String    @db.VarChar(255)
+  representatives        String?   @db.VarChar(255)
+  fields                 Json?
+  sector                 CompanySector?
+  city                   String?   @db.VarChar(100)
+  noOfPositions          String?   @map("no_of_positions") @db.VarChar(50)
+  preferredMajors        Json?     @map("preferred_majors")
+  opportunityTypes       Json?     @map("opportunity_types")
+  preferredQualities     String?   @map("preferred_qualities") @db.Text
+  status                 CompanyStatus @default(Pending)
+  confirmationToken      String?   @map("confirmation_token") @db.VarChar(255)
+  confirmationTokenExpiry DateTime? @map("confirmation_token_expiry")
+  reminderSentAt         DateTime? @map("reminder_sent_at")
+
+  relations              ApplicantCompanyRelation[]
+
+  @@map("companies")
+}
+
+enum CompanyStatus {
+  Pending
+  Confirmed
+  Canceled
+}
+
+enum CompanySector {
+  Private
+  Semi
+  Local
+  Federal
+}
+
+enum ApplicantGender {
+  Male
+  Female
+}
+
+enum StudyLevel {
+  Bachelor
+  Master
+  PhD
+  Diploma
+}
+
+model Applicant {
+  id                   String    @id @db.VarChar(24)
+
+  uniId                String?   @map("uni_id") @db.VarChar(50)
+  fullName             String?   @map("full_name") @db.VarChar(255)
+  birthdate            DateTime? @db.Date
+  gender               ApplicantGender?
+  nationality          String?   @db.VarChar(100)
+  studyLevel           StudyLevel? @map("study_level")
+  college              String?   @db.VarChar(255)
+  major                String?   @db.VarChar(255)
+  email                String?   @db.VarChar(255)
+  phoneNumber          String?   @map("phone_number") @db.VarChar(50)
+  cgpa                 Decimal?  @db.Decimal(3, 2)
+  city                 String?   @db.VarChar(100)
+  linkedIn             String?   @map("linked_in") @db.VarChar(500)
+  technicalSkills      String?   @map("technical_skills") @db.Text
+  nonTechnicalSkills   String?   @map("non_technical_skills") @db.Text
+  experience           String?   @db.Text
+  languages            String?   @db.VarChar(255)
+  expectedToGraduate   DateTime? @map("expected_to_graduate") @db.Date
+
+  fieldInterest        Json?     @map("field_interest")
+  opportunityType      Json?     @map("opportunity_type")
+  preferredWorkCity    String?   @map("preferred_work_city") @db.VarChar(100)
+  careerGoals          String?   @map("career_goals") @db.Text
+  availability         String?   @db.VarChar(50)
+
+  cvMetadata           Json?     @map("cv_metadata")
+
+  attended             Boolean   @default(false)
+
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+
+  relations            ApplicantCompanyRelation[]
+
+  @@index([email], map: "idx_applicants_email")
+  @@index([uniId], map: "idx_applicants_uni_id")
+  @@map("applicants")
+}
+
+model ApplicantCompanyRelation {
+  applicantId  String       @map("applicant_id") @db.VarChar(24)
+  companyId    String       @map("company_id") @db.VarChar(24)
+  relationType RelationType @map("relation_type")
+
+  applicant    Applicant    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([applicantId, companyId, relationType])
+  @@index([companyId], map: "idx_acr_company")
+  @@index([applicantId], map: "idx_acr_applicant")
+  @@map("applicant_company_relations")
+}
+
+enum RelationType {
+  applied
+  flagged
+  rejected
+  shortlisted
+}
