@@ -108,8 +108,8 @@ const Languages = ({ classes }) => {
 
             {/* Other languages multiselect input */}
             {showOtherInput && (
-                <div className="flex flex-col gap-2 mt-1 p-2 md:p-3 bg-gray-50 rounded-md">
-                    <p className="text-xs text-gray-600">Select additional languages or type your own:</p>
+                <div className="flex flex-col gap-2 mt-1 p-2 md:p-3 bg-surface-hover rounded-md">
+                    <p className="text-xs text-fg-muted">Select additional languages or type your own:</p>
 
                     {/* Quick select from remaining common languages */}
                     <div className="flex flex-wrap gap-1.5 mb-1">
@@ -121,7 +121,7 @@ const Languages = ({ classes }) => {
                                 className={`px-2 py-0.5 rounded-full text-xs border transition-colors ${
                                     formData.languages?.includes(lang)
                                         ? 'bg-[#0E7F41] text-white border-[#0E7F41]'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:border-[#0E7F41]'
+                                        : 'bg-surface-card text-fg border-line hover:border-[#0E7F41]'
                                 }`}
                             >
                                 {lang}
@@ -137,7 +137,7 @@ const Languages = ({ classes }) => {
                             onChange={(e) => setOtherLanguage(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOtherLanguage())}
                             placeholder="Type a language..."
-                            className="flex-1 h-8 md:h-9 bg-transparent border border-gray-700 rounded-md py-1 px-2 text-xs md:text-sm"
+                            className="flex-1 h-8 md:h-9 bg-transparent border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm"
                         />
                         <button
                             type="button"

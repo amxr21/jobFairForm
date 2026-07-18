@@ -52,7 +52,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     const getBorderClass = () => {
         if (showError) return "border-red-400 focus:ring-red-400";
         if (isValid) return "border-primary focus:ring-primary";
-        return "border-gray-700 focus:ring-primary hover:border-gray-500";
+        return "border-line-strong focus:ring-primary hover:border-fg-faint";
     };
 
     const handleBlur = () => setTouched(true);
@@ -260,7 +260,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     onBlur={handleBlur}
                     disabled={!isFocused}
                     disabledMessage='Check "Are you a current student?" below to set your expected graduation date.'
-                    triggerClassName={!isFocused ? 'border-gray-300 text-gray-300 bg-gray-100' : getBorderClass()}
+                    triggerClassName={!isFocused ? 'border-line text-fg-faint bg-surface-hover' : getBorderClass()}
                 />
                 <div className="flex items-center gap-x-2 mt-2">
                     <input
@@ -324,7 +324,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
                 {renderLabel()}
                 <div className={`flex items-center h-8 md:h-9 w-full bg-transparent border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${getBorderClass()}`}>
-                    <span className="px-2 text-xs md:text-sm font-medium text-gray-600 bg-gray-100 h-full flex items-center border-r border-gray-700 rounded-l-md">
+                    <span className="px-2 text-xs md:text-sm font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md">
                         {config.hasPrefix}
                     </span>
                     <input {...inputProps} />

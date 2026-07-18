@@ -40,7 +40,7 @@ const FieldHint = ({ text }) => {
     };
 
     return (
-        <span className="inline-flex items-center align-middle ml-1">
+        <span className="inline-flex items-center align-middle -my-1.5 ml-0.5">
             <button
                 ref={iconRef}
                 type="button"
@@ -50,7 +50,7 @@ const FieldHint = ({ text }) => {
                 onFocus={show}
                 onBlur={hide}
                 onClick={(e) => { e.preventDefault(); open ? hide() : show(); }}
-                className="text-gray-400 hover:text-[#0E7F41] transition-colors"
+                className="p-1.5 text-fg-faint hover:text-[#0E7F41] transition-colors"
             >
                 <Info className="w-3.5 h-3.5" />
             </button>

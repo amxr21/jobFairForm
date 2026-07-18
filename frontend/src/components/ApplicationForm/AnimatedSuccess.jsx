@@ -16,7 +16,7 @@ const AnimatedSuccess = ({ phase }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[99999999] flex items-center justify-center bg-white/80 backdrop-blur-sm transition-opacity duration-500 ${phase === "fade" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+      className={`fixed inset-0 z-[99999999] flex items-center justify-center bg-surface-page/80 backdrop-blur-sm transition-opacity duration-500 ${phase === "fade" ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       <div className="flex flex-col items-center gap-6">
         {/* Stage: the badge circle everything happens inside */}
@@ -59,7 +59,7 @@ const AnimatedSuccess = ({ phase }) => {
         {/* Caption */}
         <div className="text-center h-10">
           {showDots && (
-            <p className="text-lg font-semibold text-gray-700" style={{ animation: "sd-fade 0.3s ease both" }}>
+            <p className="text-lg font-semibold text-fg" style={{ animation: "sd-fade 0.3s ease both" }}>
               Submitting your application…
             </p>
           )}

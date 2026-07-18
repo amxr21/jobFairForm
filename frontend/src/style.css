@@ -96,9 +96,38 @@ body {
   background-position: left bottom; */
 }
 
+/* Semantic surface/border/text tokens (see tailwind.config.js) — each has a
+   light-tier default here and a dark-tier override in .dark below. Every
+   surface, border, and text color that needs to differ between modes should
+   read one of these instead of hardcoding bg-white/border-gray-*/text-gray-*,
+   so dark mode is a designed palette rather than a global invert. */
+:root {
+  --surface-page: #ffffff;
+  --surface-card: #ffffff;
+  --surface-panel: #ffffff;
+  --surface-hover: #f3f4f6;
+  --line: #e5e7eb;
+  --line-strong: #d1d5db;
+  --fg: #1f2937;
+  --fg-muted: #6b7280;
+  --fg-faint: #9ca3af;
+}
+
+.dark {
+  --surface-page: #0b1220;
+  --surface-card: #131b2c;
+  --surface-panel: #1a2438;
+  --surface-hover: #1f2a40;
+  --line: #2a3650;
+  --line-strong: #3a4968;
+  --fg: #e5e7eb;
+  --fg-muted: #9aa5b8;
+  --fg-faint: #6b7690;
+}
+
 .dark body {
-  background-color: #0b1220;
-  color: #e5e7eb;
+  background-color: var(--surface-page);
+  color: var(--fg);
 }
 
 #intro::-webkit-scrollbar {

@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react";
 
 import { CheckId, QrScanner, IdContext } from "./index"
 
-const linkUrl = 'http://localhost:2000'
+const linkUrl = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com"
 
 const QuickApplyForm = () => {
     const [applicant, setApplicant] = useState({id: "", name: "Ammar"});
@@ -23,7 +23,7 @@ const QuickApplyForm = () => {
 
 
     return (
-        <div className="w-1/2 bg-white h-64 rounded-lg px-8 py-6 shadow-2xl opacity-90 overflow-hidden">
+        <div className="w-1/2 bg-surface-card h-64 rounded-lg px-8 py-6 shadow-2xl opacity-90 overflow-hidden">
             <CheckId value= {checked}/>
             {inputValue &&
             <div className="welcome-div">

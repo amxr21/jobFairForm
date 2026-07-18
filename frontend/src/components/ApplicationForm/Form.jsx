@@ -6,10 +6,12 @@ import { PersonalInfo, ProfessionalInfo, Preferences, ConfirmMessageDiv } from "
 
 // Was hardcoded to "http://localhost:2001" — meant every deployed build
 // (Vercel etc.) tried to submit applications to the developer's own
-// machine instead of the real backend. VITE_API_URL is already the
-// established pattern for this in useLogin.jsx/useSignUp.jsx; set it in
-// the deployment's environment variables to the real backend URL.
-const link = import.meta.env.VITE_API_URL || "http://localhost:2001"
+// machine over plain HTTP, which is both broken (unreachable) and a
+// mixed-content/insecure-form-submission red flag on a live HTTPS site.
+// Same fallback pattern (and same backend) as useLogin.jsx/useSignUp.jsx/
+// TicketLookup.jsx — set VITE_API_URL in the deployment's environment
+// variables to override.
+const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com"
 
 import { useAuthContext } from "../../hooks/useAuthContext"
 import useFormContext from "../../hooks/useFormContext";
@@ -314,13 +316,13 @@ const Form = () => {
     return (
         <>
             <AnimatedSuccess phase={submitPhase} />
-            <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}>
+            <form id="Form" ref={form} className={`relative bg-surface-card border-line rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}>
 
                 <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">
                     <div className="md:w-3/12 md:min-w-[240px] shrink-0">
                         <ProgressSection status={full} missing={fieldMissing} currentStep={currentStep} />
                     </div>
-                    <div className="information-part border h-fit md:h-full px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
+                    <div className="information-part border-line border h-fit md:h-full px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
                         {/* Phase content with smooth transition */}
                         <div className={`h-full flex flex-col justify-between transition-all duration-300 ease-in-out ${
                             slideDirection === 'slide-left' ? 'opacity-0 -translate-x-8' :
@@ -341,13 +343,13 @@ const Form = () => {
                             {/* Navigation buttons */}
                             <div className="w-full flex justify-between mt-3 shrink-0">
                                 {currentStep > 1 ? (
-                                    <button onClick={goToPrevStep} className="border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                    <button onClick={goToPrevStep} aria-label="Previous step" className="border-line border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-fg-muted hover:bg-surface-hover transition-colors">
                                         <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
                                     </button>
                                 ) : <div></div>}
 
                                 {currentStep < 3 ? (
-                                    <button onClick={goToNextStep} className="border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                    <button onClick={goToNextStep} aria-label="Next step" className="border-line border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-fg-muted hover:bg-surface-hover transition-colors">
                                         <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                                     </button>
                                 ) : (
