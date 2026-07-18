@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
@@ -68,6 +69,10 @@ const FieldHint = ({ text }) => {
             )}
         </span>
     );
+};
+
+FieldHint.propTypes = {
+    text: PropTypes.string,
 };
 
 export default FieldHint;

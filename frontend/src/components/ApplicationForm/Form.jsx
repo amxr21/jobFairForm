@@ -61,7 +61,6 @@ const Form = () => {
 
     const [qrCodeSrc, setQRCodeSrc] = useState(null);
 
-    const [isLoading, setIsLoading] = useState(false)
     // Drives the AnimatedSuccess overlay: idle → loading → success → fade → done.
     const [submitPhase, setSubmitPhase] = useState("idle");
 
@@ -130,7 +129,6 @@ const Form = () => {
 
         try {
 
-            setIsLoading(true)
             setSubmitPhase("loading")
 
             e.preventDefault()
@@ -257,7 +255,6 @@ const Form = () => {
         }
         finally{
             console.log('We are done');
-            setIsLoading(false)
         }
 
 
@@ -313,8 +310,6 @@ const Form = () => {
 
 
 
-
-    const actualHeight = (window.innerHeight)/(window.screen.height) * 100
 
     return (
         <>

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { GraduationCap } from "lucide-react";
 
 // Full-screen submit overlay with a scripted sequence, driven by `phase`:
@@ -64,7 +65,7 @@ const AnimatedSuccess = ({ phase }) => {
           )}
           {showCap && (
             <p className="text-lg font-semibold text-[#0E7F41]" style={{ animation: "sd-fade 0.4s ease 0.15s both" }}>
-              You're all set!
+              You&apos;re all set!
             </p>
           )}
         </div>
@@ -92,6 +93,10 @@ const AnimatedSuccess = ({ phase }) => {
       `}</style>
     </div>
   );
+};
+
+AnimatedSuccess.propTypes = {
+  phase: PropTypes.oneOf(["idle", "loading", "success", "fade", "done"]),
 };
 
 export default AnimatedSuccess;

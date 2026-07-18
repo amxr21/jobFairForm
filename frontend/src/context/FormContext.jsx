@@ -1,4 +1,5 @@
-import { useState, useRef, createContext } from "react";
+import PropTypes from "prop-types";
+import { useState, createContext } from "react";
 
 
 export const FormContext = createContext();
@@ -159,7 +160,11 @@ export const FormProvider = ( {children} ) => {
 
     return (
         <FormContext.Provider value={{formData, updateFormData, setFormData, fieldMissing, setFieldMissing}}>
-            {children} 
+            {children}
         </FormContext.Provider>
     )
 }
+
+FormProvider.propTypes = {
+    children: PropTypes.node,
+};

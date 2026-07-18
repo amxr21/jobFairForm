@@ -1,26 +1,4 @@
-import { useEffect, useState } from "react"
-
-const Progress = ( {secton} ) => {
-
-    const inputFields = document.querySelectorAll('input, select')
-
-
-
-
-    // console.log([...inputFields]);
-
-    // const [progressPercentage, setProgressPercentage] = useState('0')
-
-    // useEffect(() => {
-    //     secton?.textContent.split(" ")[0] == "Personal" ? setProgressPercentage('1/2') : setProgressPercentage('full')
-
-    //     console.log(secton?.textContent.split(" ")[0]);
-
-    // }, [secton])
-
-    // secton?.textContent.split(" ")[0] == "Personal" ? setProgressPercentage('1/2') : setProgressPercentage('full')
-
-
+const Progress = () => {
     return (
         <div className="progress h-fit md:h-full">
             <div className="h-2 w-full md:h-full md:w-2 rounded-full border border-white bg-[#0E7F41]">

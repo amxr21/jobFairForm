@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
@@ -103,7 +104,7 @@ const TicketLookup = ({ open, onClose }) => {
                                 <QRCode value={applicant.id} size={176} fgColor="#111827" />
                             </div>
                             <div className={`w-full text-center text-xs font-medium rounded-md px-3 py-2 ${applicant.attended ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
-                                {applicant.attended ? "You're checked in — see you there!" : "Show this QR code at the entrance to check in"}
+                                {applicant.attended ? "You&apos;re checked in — see you there!" : "Show this QR code at the entrance to check in"}
                             </div>
                             <button onClick={reset} className="text-xs text-gray-400 hover:text-gray-600">
                                 Look up a different ID
@@ -115,6 +116,11 @@ const TicketLookup = ({ open, onClose }) => {
         </div>,
         document.body
     );
+};
+
+TicketLookup.propTypes = {
+    open: PropTypes.bool,
+    onClose: PropTypes.func,
 };
 
 export default TicketLookup;

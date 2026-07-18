@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { RequiredAstrik } from "./index";
 import { useState, useContext } from "react";
 import { FormContext } from "../../context/FormContext";
@@ -52,8 +53,6 @@ const Languages = ({ classes }) => {
             languages: prev.languages.filter(l => l !== lang)
         }));
     };
-
-    const customLanguages = formData.languages?.filter(l => !COMMON_LANGUAGES.includes(l)) || [];
 
     return (
         <div className={`flex flex-col grow mb-2 md:my-0 ${classes}`}>
@@ -152,6 +151,10 @@ const Languages = ({ classes }) => {
             )}
         </div>
     );
+};
+
+Languages.propTypes = {
+    classes: PropTypes.string,
 };
 
 export default Languages;
