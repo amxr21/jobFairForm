@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
 
-const link = import.meta.env.VITE_API_URL || "https://jobfairform-backend-production.up.railway.app";
+const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
 
 export const useLogin = () => {
     const [error, setError] = useState(null);

@@ -6,10 +6,12 @@ import { PersonalInfo, ProfessionalInfo, Preferences, ConfirmMessageDiv } from "
 
 // Was hardcoded to "http://localhost:2001" — meant every deployed build
 // (Vercel etc.) tried to submit applications to the developer's own
-// machine instead of the real backend. VITE_API_URL is already the
-// established pattern for this in useLogin.jsx/useSignUp.jsx; set it in
-// the deployment's environment variables to the real backend URL.
-const link = import.meta.env.VITE_API_URL || "http://localhost:2001"
+// machine over plain HTTP, which is both broken (unreachable) and a
+// mixed-content/insecure-form-submission red flag on a live HTTPS site.
+// Same fallback pattern (and same backend) as useLogin.jsx/useSignUp.jsx/
+// TicketLookup.jsx — set VITE_API_URL in the deployment's environment
+// variables to override.
+const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com"
 
 import { useAuthContext } from "../../hooks/useAuthContext"
 import useFormContext from "../../hooks/useFormContext";
