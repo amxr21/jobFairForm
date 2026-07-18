@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, createContext } from "react";
 
 export const IdContext = createContext({inputValue: false, setInputValue: () => {}})
@@ -12,5 +13,9 @@ export const IdProvider = ({children}) => {
     )
 }
 
+
+IdProvider.propTypes = {
+    children: PropTypes.node,
+};
 
 export default {IdContext, IdProvider}

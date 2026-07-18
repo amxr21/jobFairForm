@@ -31,7 +31,7 @@ const ConfirmMessageDiv = ({ confirmMessageRef, qrCodeSrc }) => {
                     <div className="flex flex-col justify-center text-white md:w-1/2">
                         <div className="flex items-center gap-2 mb-3">
                             <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 shrink-0" strokeWidth={1.75} />
-                            <h2 className="text-3xl md:text-5xl font-bold">You're all set!</h2>
+                            <h2 className="text-3xl md:text-5xl font-bold">You&apos;re all set!</h2>
                         </div>
                         <p className="text-white/85 text-sm md:text-base mb-5 max-w-md">
                             Your application is in. Bring your QR code ticket to the entrance on event day.

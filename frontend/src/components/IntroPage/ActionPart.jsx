@@ -1,5 +1,4 @@
 import { useRef, useState } from "react"
-import Arrow from "../../assets/images/arrow.svg"
 import TicketLookup from "./TicketLookup"
 
 

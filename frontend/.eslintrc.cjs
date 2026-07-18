@@ -17,4 +17,10 @@ module.exports = {
       { allowConstantExport: true },
     ],
   },
+  overrides: [
+    {
+      files: ['vite.config.js', 'tailwind.config.js', 'postcss.config.js'],
+      env: { node: true },
+    },
+  ],
 }

@@ -1,11 +1,12 @@
+import PropTypes from "prop-types";
 import useFormContext from "../../hooks/useFormContext";
-import { useRef, useContext } from "react";
+import { useRef } from "react";
 
 
 const Language = ({lang}) => {
     const refLabel = useRef();
 
-    const { formData, updateFormData } = useFormContext();
+    const { updateFormData } = useFormContext();
     const getLang = () => {
         // console.log([...document.getElementById("Languages").childNodes]);
         updateFormData("languages", [...document.getElementById("Languages").childNodes].filter((checkbx)=> checkbx.firstChild.checked).map((html) => html.textContent
@@ -22,5 +23,9 @@ const Language = ({lang}) => {
         </div>
     )
 }
+
+Language.propTypes = {
+    lang: PropTypes.string.isRequired,
+};
 
 export default Language;

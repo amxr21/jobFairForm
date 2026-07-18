@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -42,6 +43,10 @@ export function ToastProvider({ children }) {
         </ToastContext.Provider>
     );
 }
+
+ToastProvider.propTypes = {
+    children: PropTypes.node,
+};
 
 // ─── Individual toast ─────────────────────────────────────────────────────────
 
@@ -97,8 +102,17 @@ function ToastItem({ message, type, leaving, entering, onDismiss }) {
     );
 }
 
+ToastItem.propTypes = {
+    message: PropTypes.string,
+    type: PropTypes.oneOf(['success', 'error', 'info', 'warning']),
+    leaving: PropTypes.bool,
+    entering: PropTypes.bool,
+    onDismiss: PropTypes.func,
+};
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook is tightly coupled to ToastProvider, kept in one file
 export function useToast() {
     const ctx = useContext(ToastContext);
     if (!ctx) throw new Error('useToast must be used inside ToastProvider');

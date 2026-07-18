@@ -38,6 +38,9 @@ const ProfessionalInfo = () => {
         setMajors([]);
         updateFormData("College", "");
         updateFormData("Major", "");
+        // updateFormData isn't memoized in FormContext, so including it here
+        // would re-run this effect (and reset College/Major) on every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedProgram]);
 
     // When college changes, update majors list
@@ -52,6 +55,7 @@ const ProfessionalInfo = () => {
         // Reset major
         setSelectedMajor('Select');
         updateFormData("Major", "");
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCollege, selectedProgram]);
 
     const handleCollegeChange = (value) => {

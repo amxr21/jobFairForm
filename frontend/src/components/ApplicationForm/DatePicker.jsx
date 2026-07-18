@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
@@ -248,6 +249,18 @@ const DatePicker = ({
             )}
         </div>
     );
+};
+
+DatePicker.propTypes = {
+    value: PropTypes.instanceOf(Date),
+    onSelect: PropTypes.func,
+    minDate: PropTypes.instanceOf(Date),
+    maxDate: PropTypes.instanceOf(Date),
+    disabled: PropTypes.bool,
+    disabledMessage: PropTypes.string,
+    placeholder: PropTypes.string,
+    triggerClassName: PropTypes.string,
+    onBlur: PropTypes.func,
 };
 
 export default DatePicker;

@@ -22,7 +22,7 @@ const LoadingPage = () => {
                     <div className="bg-white rounded-2xl shadow-md border border-gray-100 px-6 py-5 text-center">
                         <h2 className="text-xl font-semibold text-gray-800 mb-1">Submitting your application…</h2>
                         <p className="text-sm text-gray-500 leading-snug">
-                            Hang tight — we're securing your spot and generating your QR ticket.
+                            Hang tight — we&apos;re securing your spot and generating your QR ticket.
                         </p>
                         {/* Indeterminate progress bar */}
                         <div className="mt-4 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">

@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useContext, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, ChevronDown } from "lucide-react";
@@ -153,7 +154,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
                             onClick={() => handleSelect(searchTerm)}
                             className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-[#0E7F41] hover:bg-[#0E7F41]/10 border-b"
                         >
-                            + Add "{searchTerm}"
+                            + Add &quot;{searchTerm}&quot;
                         </button>
                     )}
 
@@ -195,5 +196,11 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
     );
 };
 
-export { TECHNICAL_SKILLS, NON_TECHNICAL_SKILLS };
+SkillsMultiSelect.propTypes = {
+    label: PropTypes.string.isRequired,
+    fieldName: PropTypes.string.isRequired,
+    skillsList: PropTypes.arrayOf(PropTypes.string),
+    fieldClasses: PropTypes.string,
+};
+
 export default SkillsMultiSelect;

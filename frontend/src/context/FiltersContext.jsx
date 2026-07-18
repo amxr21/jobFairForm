@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, createContext, useContext } from "react";
 
 
@@ -24,4 +25,9 @@ const FiltersProvider = ({children}) => {
         </FiltersContext.Provider>
     )
 }
+FiltersProvider.propTypes = {
+    children: PropTypes.node,
+};
+
+// eslint-disable-next-line react-refresh/only-export-components -- hook is tightly coupled to FiltersProvider, kept in one file
 export { FiltersContext, useFiltersContext, FiltersProvider }

@@ -1,6 +1,4 @@
 import Logos from "../IntroPage/Logos";
-import Feb from "../../assets/images/FEB.svg";
-import PeopleIllustration from "../IntroPage/PeopleIllustration";
 
 import Header from "./Header";
 

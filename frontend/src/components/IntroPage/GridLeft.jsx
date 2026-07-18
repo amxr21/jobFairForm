@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import GridLeftPng from "../../assets/images/grid.png"
 
 const GridLeft = ({mark, otherClasses}) => {
@@ -8,5 +9,10 @@ const GridLeft = ({mark, otherClasses}) => {
     )
 }
 
+
+GridLeft.propTypes = {
+    mark: PropTypes.bool,
+    otherClasses: PropTypes.string,
+};
 
 export default GridLeft
