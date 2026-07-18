@@ -123,7 +123,7 @@ const Preferences = () => {
                         {/* Multi-select Input Container */}
                         <div
                             ref={fieldTriggerRef}
-                            className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 transition-all duration-200 ${
+                            className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 transition-all duration-200 ${
                                 isFieldOpen ? 'ring-2 ring-primary border-transparent' : 'hover:border-fg-faint'
                             }`}
                             onClick={() => {
@@ -174,7 +174,7 @@ const Preferences = () => {
                         {isFieldOpen && fieldTriggerRect && createPortal(
                             <div
                                 ref={fieldPanelRef}
-                                className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
+                                className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
                                 style={{ top: fieldTriggerRect.bottom + 4, left: fieldTriggerRect.left, width: fieldTriggerRect.width }}
                             >
                                 {filteredFields.length > 0 ? (

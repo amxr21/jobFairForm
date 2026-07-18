@@ -8,7 +8,7 @@ import FieldHint from "./FieldHint";
 // Unified label styles
 const LABEL_CLASSES = "text-xs md:text-sm mb-1 shrink-0";
 // Unified input styles (border color is appended per-instance via getBorderClass)
-const INPUT_CLASSES = "h-8 md:h-9 w-full bg-transparent border rounded-md py-1 px-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200";
+const INPUT_CLASSES = "h-8 md:h-9 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1 px-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200";
 // Unified wrapper styles
 const WRAPPER_CLASSES = "flex flex-col";
 
@@ -240,7 +240,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     onBlur={handleBlur}
                     name={name || label}
                     placeholder={config.placeholder}
-                    className={`flex-1 w-full bg-transparent border rounded-md py-1.5 px-2 text-sm resize-none min-h-0 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${getBorderClass()}`}
+                    className={`flex-1 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1.5 px-2 text-sm resize-none min-h-0 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${getBorderClass()}`}
                 />
                 {renderError()}
             </div>
@@ -323,7 +323,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         return (
             <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
                 {renderLabel()}
-                <div className={`flex items-center h-8 md:h-9 w-full bg-transparent border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${getBorderClass()}`}>
+                <div className={`flex items-center h-8 md:h-9 w-full bg-white dark:bg-[#1a2438] overflow-hidden border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${getBorderClass()}`}>
                     <span className="px-2 text-xs md:text-sm font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md">
                         {config.hasPrefix}
                     </span>

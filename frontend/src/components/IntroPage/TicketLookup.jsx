@@ -56,9 +56,9 @@ const TicketLookup = ({ open, onClose }) => {
 
     return createPortal(
         <div className="fixed inset-0 z-[1000000] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/50 animate-in fade-in duration-200" onClick={onClose} />
+            <div className="absolute inset-0 backdrop-fade" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onClick={onClose} />
 
-            <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md bg-surface-card rounded-xl md:rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="overlay-pop relative w-full max-w-xs sm:max-w-sm md:max-w-md bg-white dark:bg-[#131b2c] rounded-xl md:rounded-2xl shadow-2xl overflow-hidden">
                 <button onClick={onClose} className="absolute top-2 right-2 md:top-3 md:right-3 z-10 text-white/80 hover:text-white transition-colors">
                     <X className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
@@ -72,7 +72,7 @@ const TicketLookup = ({ open, onClose }) => {
                             <h1 className="text-white text-base md:text-lg font-bold">Check My Ticket</h1>
                             <p className="text-white/80 text-[11px] md:text-xs mt-1">Enter the University ID you applied with</p>
                         </div>
-                        <div className="p-4 md:p-6 flex flex-col gap-2.5 md:gap-3">
+                        <div className="bg-white dark:bg-[#131b2c] p-4 md:p-6 flex flex-col gap-2.5 md:gap-3">
                             <input
                                 ref={inputRef}
                                 value={uniId}
@@ -80,7 +80,7 @@ const TicketLookup = ({ open, onClose }) => {
                                 onKeyDown={(e) => e.key === "Enter" && lookup()}
                                 placeholder="e.g. 20211234"
                                 inputMode="numeric"
-                                className="bg-transparent text-fg border-line border rounded-md px-3 md:px-4 py-2.5 md:py-3 text-center text-base md:text-lg font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#0E7F41]"
+                                className="bg-white dark:bg-[#1a2438] text-fg border-line border rounded-md px-3 md:px-4 py-2.5 md:py-3 text-center text-base md:text-lg font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#0E7F41]"
                             />
                             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
                             <button
@@ -99,12 +99,12 @@ const TicketLookup = ({ open, onClose }) => {
                             <h1 className="text-white text-base md:text-lg font-bold">{applicant.fullName}</h1>
                             <p className="text-white/80 text-[11px] md:text-xs mt-1 font-mono">U{applicant.uniId}</p>
                         </div>
-                        <div className="p-4 md:p-6 flex flex-col items-center gap-3 md:gap-4">
+                        <div className="bg-white dark:bg-[#131b2c] p-4 md:p-6 flex flex-col items-center gap-3 md:gap-4">
                             <div className="bg-white border border-line rounded-md p-2.5 md:p-3">
                                 <QRCode value={applicant.id} size={144} className="w-32 h-32 md:w-44 md:h-44" fgColor="#111827" />
                             </div>
-                            <div className={`w-full text-center text-[11px] md:text-xs font-medium rounded-md px-2.5 md:px-3 py-1.5 md:py-2 ${applicant.attended ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>
-                                {applicant.attended ? "You&apos;re checked in — see you there!" : "Show this QR code at the entrance to check in"}
+                            <div className={`w-full text-center text-[11px] md:text-xs font-medium rounded-md px-2.5 md:px-3 py-1.5 md:py-2 ${applicant.attended ? "bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300" : "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"}`}>
+                                {applicant.attended ? "You’re checked in — see you there!" : "Show this QR code at the entrance to check in"}
                             </div>
                             <button onClick={reset} className="text-[11px] md:text-xs text-fg-faint hover:text-fg-muted">
                                 Look up a different ID
