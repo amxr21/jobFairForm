@@ -1,8 +1,8 @@
 import axios from "axios";
 
-import { useRef, createContext, useState, useContext, useEffect } from "react";
+import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { PersonalInfo, ProfessionalInfo, Preferences, SubmitFormBtn, ConfirmMessageDiv } from "./index";
+import { PersonalInfo, ProfessionalInfo, Preferences, ConfirmMessageDiv } from "./index";
 
 // Was hardcoded to "http://localhost:2001" — meant every deployed build
 // (Vercel etc.) tried to submit applications to the developer's own
@@ -14,11 +14,8 @@ const link = import.meta.env.VITE_API_URL || "http://localhost:2001"
 import { useAuthContext } from "../../hooks/useAuthContext"
 import useFormContext from "../../hooks/useFormContext";
 
-import { FormContext } from "../../context/FormContext";
 import ProgressSection from "./ProgressSection";
 
-import PersonalIcon from '../../assets/images/personal.svg'
-import { useProgressContext } from "../../context/ProgressContext";
 import AnimatedSuccess from "./AnimatedSuccess";
 import { useToast } from "../Toast";
 
@@ -51,28 +48,6 @@ const keyMap = {
     availability: "Availability",
   };
 
-const requiredKey = {
-    uniId: "University ID",
-    fullName: "Full Name",
-    birthdate: "Date of Birth",
-    gender: "Gender",
-    nationality: "Nationality",
-    studyLevel: "Study Program",
-    college: "College",
-    major: "Major",
-    email: "Email address",
-    phoneNumber: "Mobile number",
-    city: "City",
-    technicalSkills: "Technical Skills",
-    nonTechnicalSkills: "Non-technical skills",
-    experience: "Experience",
-    cvfile: "CV",
-    // portfolio: "Personal Website (if any)",
-    languages: "languages",
-  };
-
-
-
 
 
 
@@ -84,7 +59,6 @@ const Form = () => {
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
 
-    const [formDataReq, setFormDataReq] = useState({});
     const [qrCodeSrc, setQRCodeSrc] = useState(null);
 
     const [isLoading, setIsLoading] = useState(false)
@@ -297,8 +271,7 @@ const Form = () => {
 
     }
 
-    const confirmRegistration = (e) => {
-        // e.preventDefault();
+    const confirmRegistration = () => {
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
         form.current.classList.replace("h-[86vh]", "h-0");
@@ -399,29 +372,3 @@ const Form = () => {
 }
 
 export default Form;
-
-
-
-const sample = {
-    "Full Name": "Hamda Mohammed Saeed Al-Khori",
-    "University ID": "22100100",
-    "Date Of Birth": "1999-08-21",
-    "Gender": "Male",
-    "Nationality": "Oman",
-    "Email": "u22105176@sharjah.ac.ae",
-    "Phone number": "0566558198",
-    "CGPA": "2.98",
-    "languages": [
-        "Arabic",
-        "English",
-        "Urdu"
-    ],
-    "Study Program": "Bachelor",
-    "College": "College of Sciences",
-    "Major": "Physics",
-    "LinkedIn URL": "ammarobad.info",
-    "Personal Website (if any)": "ammarobad.info",
-    "Experience": "ammarobad.info",
-    "Skills": "ammarobad.info",
-    "CV": {}
-}

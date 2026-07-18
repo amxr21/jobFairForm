@@ -1,4 +1,5 @@
 import { useState, useRef, useContext, useEffect } from "react"
+import PropTypes from "prop-types";
 
 import { IdContext } from "../../context/IdContext"
 
@@ -39,6 +40,7 @@ const CheckId = ({value}) => {
 
     useEffect(() => {
         if( inputId != "") getA()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inputValue])
 
 
@@ -54,5 +56,9 @@ const CheckId = ({value}) => {
         </div>
     )
 }
+
+CheckId.propTypes = {
+    value: PropTypes.bool,
+};
 
 export default CheckId;

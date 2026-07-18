@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import useFormContext from "../../hooks/useFormContext";
 import { useRef } from "react";
 import { Input, RequiredAstrik } from "./index";
@@ -30,5 +31,10 @@ const Experiences = ({label, classes}) => {
     )
 }
 
+
+Experiences.propTypes = {
+    label: PropTypes.string,
+    classes: PropTypes.string,
+};
 
 export default Experiences;

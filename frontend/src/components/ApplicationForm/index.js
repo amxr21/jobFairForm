@@ -12,7 +12,6 @@ export {default as ProfessionalInfo} from "./ProfessionalInfo";
 export {default as Preferences} from "./Preferences";
 export {default as SelectInput} from "./SelectInput";
 export {default as Experiences} from "./Experiences";
-export {default as SubmitFormBtn} from "./SubmitFormBtn";
 export {default as FocusedState} from "./FocusedState";
 export {default as RequiredAstrik} from "./RequiredAstrik";
 export {default as DownArrow} from "./DownArrow";

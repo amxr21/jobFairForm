@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import QRCode from 'qrcode.react';
 import { CheckCircle2, Calendar, MapPin, Clock, Download } from "lucide-react";
 
@@ -80,6 +81,11 @@ const ConfirmMessageDiv = ({ confirmMessageRef, qrCodeSrc }) => {
             </div>
         </div>
     );
+};
+
+ConfirmMessageDiv.propTypes = {
+    confirmMessageRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.any })]),
+    qrCodeSrc: PropTypes.string,
 };
 
 export default ConfirmMessageDiv;

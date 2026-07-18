@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const FocusedState = ({label}) => {
     switch(label){
         case "CGPA":
@@ -15,5 +17,9 @@ const FocusedState = ({label}) => {
     }
 }
 
+
+FocusedState.propTypes = {
+    label: PropTypes.string,
+};
 
 export default FocusedState
