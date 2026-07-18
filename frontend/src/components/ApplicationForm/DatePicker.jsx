@@ -148,7 +148,7 @@ const DatePicker = ({
                     isOpen ? setIsOpen(false) : open();
                 }}
                 onBlur={onBlur}
-                className={`h-8 md:h-9 w-full bg-transparent border rounded-md py-1 px-2 text-xs md:text-sm flex items-center justify-between text-left transition-all duration-200 ${disabled ? "cursor-not-allowed" : ""} ${triggerClassName}`}
+                className={`h-8 md:h-9 w-full bg-surface-field border rounded-md py-1 px-2 text-xs md:text-sm flex items-center justify-between text-left transition-all duration-200 ${disabled ? "cursor-not-allowed" : ""} ${triggerClassName}`}
             >
                 <span className={value ? "text-fg" : "text-fg-faint"}>
                     {value ? formatDisplay(value) : placeholder}

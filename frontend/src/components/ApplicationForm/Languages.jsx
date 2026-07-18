@@ -137,7 +137,7 @@ const Languages = ({ classes }) => {
                             onChange={(e) => setOtherLanguage(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOtherLanguage())}
                             placeholder="Type a language..."
-                            className="flex-1 h-8 md:h-9 bg-transparent border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm"
+                            className="flex-1 h-8 md:h-9 bg-surface-field border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm"
                         />
                         <button
                             type="button"

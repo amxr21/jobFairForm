@@ -106,6 +106,7 @@ body {
   --surface-card: #ffffff;
   --surface-panel: #ffffff;
   --surface-hover: #f3f4f6;
+  --surface-field: #f9fafb;
   --line: #e5e7eb;
   --line-strong: #d1d5db;
   --fg: #1f2937;
@@ -118,6 +119,7 @@ body {
   --surface-card: #131b2c;
   --surface-panel: #1a2438;
   --surface-hover: #1f2a40;
+  --surface-field: #0e1626;
   --line: #2a3650;
   --line-strong: #3a4968;
   --fg: #e5e7eb;
