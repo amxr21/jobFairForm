@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Check } from "lucide-react";
@@ -182,6 +183,17 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
             )}
         </div>
     );
+};
+
+SelectInput.propTypes = {
+    label: PropTypes.string.isRequired,
+    value: PropTypes.string,
+    options: PropTypes.arrayOf(PropTypes.string).isRequired,
+    fieldClasses: PropTypes.string,
+    selectClasses: PropTypes.string,
+    handleChange: PropTypes.func,
+    required: PropTypes.bool,
+    placeholder: PropTypes.string,
 };
 
 export default SelectInput;

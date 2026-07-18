@@ -5,7 +5,7 @@ const MainBanner = () => {
 
     const startButton = useRef();
 
-    const startForm = (e) => {
+    const startForm = () => {
         startButton.current.parentElement.parentElement.classList.add("-mt-10");
         startButton.current.parentElement.parentElement.classList.add("opacity-0");
 

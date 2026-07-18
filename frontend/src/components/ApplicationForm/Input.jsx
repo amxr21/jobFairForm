@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { RequiredAstrik } from "./index";
 import { useRef, useState } from "react";
 import useFormContext from "../../hooks/useFormContext";
@@ -59,12 +60,6 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     const capitalize = (str) => {
         if (!str) return "";
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
-    const get20YearsAgo = () => {
-        const today = new Date();
-        today.setFullYear(today.getFullYear() - 20);
-        return today.toISOString().split('T')[0];
     };
 
     const validate = (value) => {
@@ -346,6 +341,13 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             {renderError()}
         </div>
     );
+};
+
+Input.propTypes = {
+    label: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    name: PropTypes.string,
+    fieldClasses: PropTypes.string,
 };
 
 export default Input;

@@ -1,6 +1,6 @@
+import PropTypes from "prop-types";
 import GridLeft from "../IntroPage/GridLeft";
 import Progress from "./Progress";
-import { useRef } from "react";
 import { User, GraduationCap, Sparkles } from "lucide-react";
 
 // Each wizard step gets its own icon + title in the side panel, so the panel
@@ -14,7 +14,6 @@ const STEP_META = {
 
 const ProgressSection = ({ currentStep }) => {
 
-    const header = useRef()
     const { Icon, title } = STEP_META[currentStep] || STEP_META[1];
 
     return (
@@ -27,7 +26,7 @@ const ProgressSection = ({ currentStep }) => {
                 <div className="text-white flex items-center justify-center icon min-w-14 md:min-w-16 md:w-16 min-h-14 md:min-h-16 md:h-16 border border-white rounded-2xl mb-4">
                     <Icon key={currentStep} className="section-icon w-7 h-7 md:w-8 md:h-8 animate-in fade-in zoom-in-75 duration-300" strokeWidth={1.5} />
                 </div>
-                <h1 ref={header} className="section-header font-semibold text-white text-xl md:text-3xl w-40 md:w-fit">
+                <h1 className="section-header font-semibold text-white text-xl md:text-3xl w-40 md:w-fit">
                     {title}
                 </h1>
             </div>
@@ -38,12 +37,14 @@ const ProgressSection = ({ currentStep }) => {
                 </p>
             )}
 
-            <Progress secton={header.current} />
-
-
+            <Progress />
 
         </div>
     )
 }
+
+ProgressSection.propTypes = {
+    currentStep: PropTypes.number,
+};
 
 export default ProgressSection;

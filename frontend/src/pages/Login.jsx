@@ -42,7 +42,7 @@ export const Login = () => {
           <h2 className="font-bold text-3xl mb-6">Welcome to Log in page</h2>
           <p className="text-md text-justify">Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda hic minus laboriosam blanditiis cum, exercitationem repellat sed magnam eos omnis</p>
           <div className="my-10 text-sm">
-            <span>Don't have an accont? </span>
+            <span>Don&apos;t have an accont? </span>
             <span><a href="/signup" className="underline">Sign up</a> from here</span>
           </div>
         </div>
