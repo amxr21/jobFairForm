@@ -38,7 +38,6 @@ export default {
         "surface-card": "var(--surface-card)",
         "surface-panel": "var(--surface-panel)",
         "surface-hover": "var(--surface-hover)",
-        "surface-field": "var(--surface-field)",
         line: "var(--line)",
         "line-strong": "var(--line-strong)",
         fg: "var(--fg)",

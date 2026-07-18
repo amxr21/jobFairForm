@@ -14,15 +14,7 @@ const Intro = () => {
 
 
     return (
-        <>
-            {/* Full-bleed backing layer — the padded panel below doesn't
-                reach the true screen edges (that's intentional, it's the
-                margin around the rounded green card), so without this the
-                page behind Intro shows through the gap. Same z-index minus
-                one, no padding, so it's always a solid backdrop regardless
-                of viewport/height-calc edge cases. */}
-            <div className="fixed inset-0 w-screen h-screen bg-surface-page z-[999998]" />
-            <div id="intro" className={`intro fixed p-4 md:p-6 w-[100vw] md:w-full h-[${actualHeight}%] md:h-[100vh] top-0 left-0 bg-surface-page z-[999999] overflow-hidden`}>
+        <div id="intro" className={`intro fixed p-4 md:p-6 w-[100vw] md:w-full h-[${actualHeight}%] md:h-[100vh] top-0 left-0 bg-surface-page z-[999999] overflow-hidden`}>
             <PrivacyPopup />
             
             <div id="intro" className={`relative bg-[#0E7F41] text-white flex flex-col gap-8 px-6 py-4 md:px-14 md:py-12 h-full rounded-[2em] md:rounded-t-[4em] md:rounded-b-[2em] overflow-y-auto overflow-x-hidden`}>
@@ -32,8 +24,13 @@ const Intro = () => {
                 <GridLeft mark={true} />
                 <SloganImage />
             </div>
-            </div>
-        </>
+
+
+
+
+
+            
+        </div>
     )
     // return (
     //     <div id="intro" className={`intro fixed p-4 md:p-8 w-[100vw] md:w-full h-[${actualHeight}%] md:h-[100vh] top-0 left-0 bg-white z-[999999] overflow-hidden`}>

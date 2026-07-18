@@ -95,7 +95,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
             {/* Input Container with tags inside */}
             <div
                 ref={triggerRef}
-                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-surface-field border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
+                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
                 onClick={() => {
                     setIsOpen(true);
                     inputRef.current?.focus();

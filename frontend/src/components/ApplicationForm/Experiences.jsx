@@ -24,7 +24,7 @@ const Experiences = ({label, classes}) => {
                     ref={message}
                     name="TechnicalSkills"
                     id="TechnicalSkills"
-                    className="flex-1 w-full bg-surface-field border border-line-strong rounded-lg py-1.5 px-2 resize-none overflow-auto min-h-0"
+                    className="flex-1 w-full bg-transparent border border-line-strong rounded-lg py-1.5 px-2 resize-none overflow-auto min-h-0"
                 ></textarea>
             </div>
         </div>
