@@ -33,7 +33,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
         if (isOpen) return "ring-2 ring-primary border-transparent";
         if (showError) return "border-red-400";
         if (isValid) return "border-primary";
-        return "hover:border-gray-500";
+        return "hover:border-fg-faint";
     };
 
     // Close dropdown when clicking outside — the panel is portaled to
@@ -98,7 +98,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                 tabIndex={0}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                aria-label={label}
+                aria-label={`${label}: ${currentValue || placeholder || `Select ${label === "Study Program" ? "Program" : label}`}`}
                 onKeyDown={(e) => {
                     if (!isOpen && (e.key === "Enter" || e.key === " " || e.key === "ArrowDown")) {
                         e.preventDefault();
@@ -109,7 +109,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                         setTouched(true);
                     }
                 }}
-                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-gray-700 rounded-md cursor-pointer transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${getBorderClass()} ${selectClasses || ''}`}
+                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-pointer transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${getBorderClass()} ${selectClasses || ''}`}
                 onClick={() => {
                     setIsOpen(true);
                     inputRef.current?.focus();
@@ -129,14 +129,14 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                             autoFocus
                         />
                     ) : (
-                        <span className={`flex-1 text-xs md:text-sm truncate ${!currentValue ? 'text-gray-400' : 'text-gray-800'}`}>
+                        <span className={`flex-1 text-xs md:text-sm truncate ${!currentValue ? 'text-fg-faint' : 'text-fg'}`}>
                             {currentValue || placeholder || `Select ${label === "Study Program" ? "Program" : label}`}
                         </span>
                     )}
 
                     {/* Dropdown Arrow */}
                     <div className="pointer-events-none ml-2 shrink-0">
-                        <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
                 </div>
             </div>
@@ -147,7 +147,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
             {isOpen && triggerRect && createPortal(
                 <div
                     ref={panelRef}
-                    className="fixed z-[1000] bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto"
+                    className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg max-h-48 overflow-y-auto"
                     style={{ top: triggerRect.bottom + 4, left: triggerRect.left, width: triggerRect.width }}
                 >
                     {filteredOptions.length > 0 ? (
@@ -159,7 +159,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                                 className={`w-full px-2 md:px-3 py-1.5 md:py-2 text-left text-xs md:text-sm transition-colors duration-150 first:rounded-t-md last:rounded-b-md ${
                                     option === currentValue
                                         ? 'bg-[#0E7F41]/10 text-[#0E7F41] font-medium'
-                                        : 'hover:bg-gray-100'
+                                        : 'text-fg hover:bg-surface-hover'
                                 }`}
                             >
                                 <div className="flex items-center justify-between">
@@ -171,7 +171,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                             </button>
                         ))
                     ) : (
-                        <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-500">
+                        <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg-muted">
                             No matching options found
                         </div>
                     )}

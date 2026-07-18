@@ -63,7 +63,7 @@ const ConfirmMessageDiv = ({ confirmMessageRef, qrCodeSrc }) => {
                                 : <div className="w-[168px] h-[168px] flex items-center justify-center text-gray-400 text-sm">Generating QR…</div>}
                         </div>
 
-                        <p className="text-center text-xs md:text-sm text-gray-500 leading-snug">
+                        <p className="text-center text-xs md:text-sm text-fg-muted leading-snug">
                             Screenshot this QR code for entry and to share your profile with 70+ companies.
                         </p>
 

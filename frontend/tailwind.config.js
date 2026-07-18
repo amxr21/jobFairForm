@@ -27,7 +27,22 @@ export default {
           DEFAULT: "#000",
           100: "#1E1E2D",
           200: "#232533",
-        }
+        },
+        // Semantic surface/border/text tokens — one light+dark pair each, so
+        // components use bg-surface-card / border-line / text-fg instead of
+        // hardcoding bg-white / border-gray-200 / text-gray-700 and needing a
+        // dark: twin at every call site. Dark tiers live in style.css as CSS
+        // custom properties (see the `.dark` block) since this project isn't
+        // on Tailwind v4's CSS-first @theme yet.
+        "surface-page": "var(--surface-page)",
+        "surface-card": "var(--surface-card)",
+        "surface-panel": "var(--surface-panel)",
+        "surface-hover": "var(--surface-hover)",
+        line: "var(--line)",
+        "line-strong": "var(--line-strong)",
+        fg: "var(--fg)",
+        "fg-muted": "var(--fg-muted)",
+        "fg-faint": "var(--fg-faint)",
       },
       fontFamily :{
         ithin: ["Inter-Thin", "sans-serif"],

@@ -95,7 +95,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
             {/* Input Container with tags inside */}
             <div
                 ref={triggerRef}
-                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-gray-700 rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
+                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
                 onClick={() => {
                     setIsOpen(true);
                     inputRef.current?.focus();
@@ -135,7 +135,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
 
                 {/* Dropdown Arrow */}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
             </div>
 
@@ -144,7 +144,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
             {isOpen && triggerRect && createPortal(
                 <div
                     ref={panelRef}
-                    className="fixed z-[1000] bg-white border border-gray-300 rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
+                    className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
                     style={{ top: triggerRect.bottom + 4, left: triggerRect.left, width: triggerRect.width }}
                 >
                     {/* Quick add custom skill */}
@@ -164,21 +164,21 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
                                 key={skill}
                                 type="button"
                                 onClick={() => handleSelect(skill)}
-                                className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm hover:bg-gray-100 transition-colors"
+                                className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg hover:bg-surface-hover transition-colors"
                             >
                                 {skill}
                             </button>
                         ))
                     ) : (
                         !searchTerm && (
-                            <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-500">
+                            <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg-muted">
                                 Type to search or add custom skills...
                             </div>
                         )
                     )}
 
                     {filteredSkills.length > 15 && (
-                        <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-gray-400 border-t">
+                        <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-fg-faint border-line border-t">
                             Type to filter more skills...
                         </div>
                     )}
@@ -188,7 +188,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
 
             {/* Selected count */}
             {selectedSkills.length > 0 && (
-                <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">
+                <p className="text-[10px] md:text-xs text-fg-muted mt-0.5">
                     {selectedSkills.length} skill{selectedSkills.length !== 1 ? 's' : ''} selected
                 </p>
             )}

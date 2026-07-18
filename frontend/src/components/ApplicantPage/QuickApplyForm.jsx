@@ -23,7 +23,7 @@ const QuickApplyForm = () => {
 
 
     return (
-        <div className="w-1/2 bg-white h-64 rounded-lg px-8 py-6 shadow-2xl opacity-90 overflow-hidden">
+        <div className="w-1/2 bg-surface-card h-64 rounded-lg px-8 py-6 shadow-2xl opacity-90 overflow-hidden">
             <CheckId value= {checked}/>
             {inputValue &&
             <div className="welcome-div">
