@@ -11,10 +11,11 @@ function App() {
         <div className="App relative">
             <ThemeToggle />
             <ThemeTourHint />
-            <Intro />
             <BrowserRouter>
+                <Intro />
                 <Routes>
                     <Route path="/" element={<ApplicationForm />} />
+                    <Route path="/my-qr-code" element={<ApplicationForm />} />
                 </Routes>
             </BrowserRouter>
         </div>
