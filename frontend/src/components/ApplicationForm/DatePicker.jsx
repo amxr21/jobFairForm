@@ -148,7 +148,7 @@ const DatePicker = ({
                     isOpen ? setIsOpen(false) : open();
                 }}
                 onBlur={onBlur}
-                className={`h-8 md:h-9 w-full bg-transparent border rounded-md py-1 px-2 text-xs md:text-sm flex items-center justify-between text-left transition-all duration-200 ${disabled ? "cursor-not-allowed" : ""} ${triggerClassName}`}
+                className={`h-8 md:h-9 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1 px-2 text-xs md:text-sm flex items-center justify-between text-left transition-all duration-200 ${disabled ? "cursor-not-allowed" : ""} ${triggerClassName}`}
             >
                 <span className={value ? "text-fg" : "text-fg-faint"}>
                     {value ? formatDisplay(value) : placeholder}
@@ -164,7 +164,7 @@ const DatePicker = ({
             {isOpen && rect && createPortal(
                 <div
                     ref={panelRef}
-                    className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg p-3 w-[280px]"
+                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg p-3 w-[280px]"
                     style={{ top: rect.bottom + 4, left: rect.left }}
                 >
                     {/* Header: prev arrow, month + year pickers, next arrow */}
@@ -183,13 +183,13 @@ const DatePicker = ({
                                 <button
                                     type="button"
                                     onClick={() => { setMonthPickerOpen((o) => !o); setYearPickerOpen(false); }}
-                                    className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-surface-card text-fg cursor-pointer hover:bg-surface-hover transition-all duration-200 ease-out inline-flex items-center gap-0.5"
+                                    className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover transition-all duration-200 ease-out inline-flex items-center gap-0.5"
                                 >
                                     {MONTHS[viewMonth]}
                                     <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
                                 </button>
                                 {monthPickerOpen && (
-                                    <div className="absolute z-10 top-full left-0 mt-1 bg-surface-card border-line border rounded-md shadow-lg max-h-48 overflow-y-auto w-32">
+                                    <div className="absolute z-10 top-full left-0 mt-1 bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-48 overflow-y-auto w-32">
                                         {MONTHS.map((m, i) => (
                                             <button
                                                 key={m}
@@ -210,13 +210,13 @@ const DatePicker = ({
                                 <button
                                     type="button"
                                     onClick={() => { setYearPickerOpen((o) => !o); setMonthPickerOpen(false); }}
-                                    className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-surface-card text-fg cursor-pointer hover:bg-surface-hover transition-all duration-200 ease-out inline-flex items-center gap-0.5"
+                                    className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover transition-all duration-200 ease-out inline-flex items-center gap-0.5"
                                 >
                                     {viewYear}
                                     <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
                                 </button>
                                 {yearPickerOpen && (
-                                    <div className="absolute z-10 top-full right-0 mt-1 bg-surface-card border-line border rounded-md shadow-lg max-h-48 overflow-y-auto w-24">
+                                    <div className="absolute z-10 top-full right-0 mt-1 bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-48 overflow-y-auto w-24">
                                         {yearOptions.map((y) => (
                                             <button
                                                 key={y}

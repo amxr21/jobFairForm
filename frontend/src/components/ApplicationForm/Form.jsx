@@ -1,7 +1,7 @@
 import axios from "axios";
 
 import { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Check } from "lucide-react";
 import { PersonalInfo, ProfessionalInfo, Preferences, ConfirmMessageDiv } from "./index";
 
 // Was hardcoded to "http://localhost:2001" — meant every deployed build
@@ -66,61 +66,43 @@ const Form = () => {
     // Drives the AnimatedSuccess overlay: idle → loading → success → fade → done.
     const [submitPhase, setSubmitPhase] = useState("idle");
 
+    // The submit button shows a spinner and locks navigation while a request
+    // is in flight or the success sequence is playing.
+    const isSubmitting = submitPhase !== "idle";
+
     const form = useRef();
-    const [full, setFull] = useState(true);
     const [currentStep, setCurrentStep] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [slideDirection, setSlideDirection] = useState('');
 
+    // Animate out, swap step, animate in. Used by Back/Continue and by the
+    // stepper in ProgressSection (jumping back to an earlier step).
+    const goToStep = (step) => {
+        if (step === currentStep || step < 1 || step > 3 || isTransitioning) return;
+        const forward = step > currentStep;
+        setSlideDirection(forward ? 'slide-left' : 'slide-right');
+        setIsTransitioning(true);
+        // Exit (180ms, ease-in) then swap content and play the enter
+        // (260ms, ease-out) — durations mirror the .step-exit/.step-enter
+        // easings in style.css.
+        setTimeout(() => {
+            setCurrentStep(step);
+            setSlideDirection(forward ? 'slide-in-right' : 'slide-in-left');
+            setTimeout(() => {
+                setIsTransitioning(false);
+                setSlideDirection('');
+            }, 260);
+        }, 180);
+    };
+
     const goToNextStep = (e) => {
         e.preventDefault();
-        if (currentStep < 3 && !isTransitioning) {
-            setSlideDirection('slide-left');
-            setIsTransitioning(true);
-            setTimeout(() => {
-                setCurrentStep(currentStep + 1);
-                updateProgressBar(currentStep + 1);
-                setSlideDirection('slide-in-right');
-                setTimeout(() => {
-                    setIsTransitioning(false);
-                    setSlideDirection('');
-                }, 300);
-            }, 200);
-        }
+        goToStep(currentStep + 1);
     };
 
     const goToPrevStep = (e) => {
         e.preventDefault();
-        if (currentStep > 1 && !isTransitioning) {
-            setSlideDirection('slide-right');
-            setIsTransitioning(true);
-            setTimeout(() => {
-                setCurrentStep(currentStep - 1);
-                updateProgressBar(currentStep - 1);
-                setSlideDirection('slide-in-left');
-                setTimeout(() => {
-                    setIsTransitioning(false);
-                    setSlideDirection('');
-                }, 300);
-            }, 200);
-        }
-    };
-
-    // The section title + icon are now driven reactively by currentStep in
-    // ProgressSection.jsx; here we only drive the progress-bar height.
-    const updateProgressBar = (step) => {
-        const progressBar = document.querySelector('.progress-bar');
-        if (!progressBar) return;
-
-        progressBar.classList.remove('md:h-1/3', 'md:h-2/3', 'md:h-full', 'w-1/3', 'w-2/3', 'w-full');
-
-        if (step === 1) {
-            progressBar.classList.add('md:h-1/3', 'w-1/3');
-        } else if (step === 2) {
-            progressBar.classList.add('md:h-2/3', 'w-2/3');
-        } else if (step === 3) {
-            progressBar.classList.add('md:h-full', 'w-full');
-        }
+        goToStep(currentStep - 1);
     };
 
 
@@ -191,14 +173,7 @@ const Form = () => {
             if (filledFields.length >= 16 && formData["University ID"] && formData["University ID"].length == 8 && formData["Nationality"] != '' && formData["Major"] != '' ) {
                     e.preventDefault();
 
-                    document.querySelector('.progress-bar').classList.replace('h-1/2', 'h-full')
-
                     console.log("Application submitted successfully");
-
-                    setFull(true);
-
-
-
 
 
                     let confirmationResponse;
@@ -224,7 +199,6 @@ const Form = () => {
                 }
 
             else{
-                setFull(false)
                 setSubmitPhase("idle") // close the overlay; nothing was submitted
 
                 const missingSummary = (Array.isArray(fieldMissing) ? fieldMissing : (fieldMissing || "").split(", ")).filter(Boolean);
@@ -232,8 +206,6 @@ const Form = () => {
                     ? `${missingSummary.slice(0, 3).join(", ")} and ${missingSummary.length - 3} more`
                     : missingSummary.join(", ");
                 toast(summaryText ? `Please complete: ${summaryText}` : "Please complete the required fields", { type: 'warning' });
-
-                setTimeout(() =>{setFull(true)}, 3000)
 
                 return;
             }
@@ -316,19 +288,33 @@ const Form = () => {
     return (
         <>
             <AnimatedSuccess phase={submitPhase} />
-            <form id="Form" ref={form} className={`relative bg-surface-card border-line rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}>
+            <form
+                id="Form"
+                ref={form}
+                onSubmit={(e) => {
+                    // Enter anywhere in the form should advance the wizard, not
+                    // trip the first button in the DOM. Only the last step submits.
+                    e.preventDefault();
+                    if (currentStep < 3) goToNextStep(e);
+                    else handleSubmit(e);
+                }}
+                className={`relative bg-surface-card border-line rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
+            >
 
                 <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">
                     <div className="md:w-3/12 md:min-w-[240px] shrink-0">
-                        <ProgressSection status={full} missing={fieldMissing} currentStep={currentStep} />
+                        <ProgressSection currentStep={currentStep} />
                     </div>
                     <div className="information-part border-line border h-fit md:h-full px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
-                        {/* Phase content with smooth transition */}
-                        <div className={`h-full flex flex-col justify-between transition-all duration-300 ease-in-out ${
-                            slideDirection === 'slide-left' ? 'opacity-0 -translate-x-8' :
-                            slideDirection === 'slide-right' ? 'opacity-0 translate-x-8' :
-                            slideDirection === 'slide-in-left' ? 'opacity-100 translate-x-0' :
-                            slideDirection === 'slide-in-right' ? 'opacity-100 translate-x-0' :
+                        {/* Step swap: exit accelerates away (ease-in), enter
+                            decelerates in (ease-out) — mirrored curves rather
+                            than a flat ease-in-out. Only transform + opacity move,
+                            so it stays on the compositor. */}
+                        <div className={`step-pane h-full flex flex-col justify-between will-change-transform ${
+                            slideDirection === 'slide-left' ? 'step-exit opacity-0 -translate-x-6' :
+                            slideDirection === 'slide-right' ? 'step-exit opacity-0 translate-x-6' :
+                            slideDirection === 'slide-in-left' ? 'step-enter opacity-100 translate-x-0' :
+                            slideDirection === 'slide-in-right' ? 'step-enter opacity-100 translate-x-0' :
                             'opacity-100 translate-x-0'
                         }`}>
                             {/* Section 1: Personal Information */}
@@ -341,19 +327,48 @@ const Form = () => {
                             {currentStep === 3 && <Preferences />}
 
                             {/* Navigation buttons */}
-                            <div className="w-full flex justify-between mt-3 shrink-0">
+                            <div className="w-full flex items-center justify-between gap-3 mt-3 shrink-0">
                                 {currentStep > 1 ? (
-                                    <button onClick={goToPrevStep} aria-label="Previous step" className="border-line border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-fg-muted hover:bg-surface-hover transition-colors">
-                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                                    <button
+                                        type="button"
+                                        onClick={goToPrevStep}
+                                        disabled={isSubmitting}
+                                        className="group inline-flex items-center gap-1.5 border-line border rounded-lg h-9 md:h-10 px-3 md:px-4 text-sm md:text-base text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors disabled:opacity-50"
+                                    >
+                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-translate-x-0.5" />
+                                        Back
                                     </button>
-                                ) : <div></div>}
+                                ) : <div />}
 
                                 {currentStep < 3 ? (
-                                    <button onClick={goToNextStep} aria-label="Next step" className="border-line border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-fg-muted hover:bg-surface-hover transition-colors">
-                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                                    <button
+                                        type="button"
+                                        onClick={goToNextStep}
+                                        className="group inline-flex items-center gap-1.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-9 md:h-10 px-5 md:px-6 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all"
+                                    >
+                                        Continue
+                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-0.5" />
                                     </button>
                                 ) : (
-                                    <button onClick={handleSubmit} id="submitForm" className="bg-[#0E7F41] hover:bg-[#0a5f31] text-white px-4 py-2 md:px-5 md:py-2.5 rounded-md text-sm md:text-base w-fit transition-colors">Submit</button>
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        disabled={isSubmitting}
+                                        id="submitForm"
+                                        className="inline-flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-9 md:h-10 px-6 md:px-7 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
+                                                Submitting…
+                                            </>
+                                        ) : (
+                                            <>
+                                                Submit application
+                                                <Check className="w-4 h-4 md:w-5 md:h-5" />
+                                            </>
+                                        )}
+                                    </button>
                                 )}
                             </div>
                         </div>

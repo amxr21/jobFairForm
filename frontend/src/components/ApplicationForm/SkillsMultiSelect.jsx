@@ -95,7 +95,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
             {/* Input Container with tags inside */}
             <div
                 ref={triggerRef}
-                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
+                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
                 onClick={() => {
                     setIsOpen(true);
                     inputRef.current?.focus();
@@ -144,7 +144,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
             {isOpen && triggerRect && createPortal(
                 <div
                     ref={panelRef}
-                    className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
+                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
                     style={{ top: triggerRect.bottom + 4, left: triggerRect.left, width: triggerRect.width }}
                 >
                     {/* Quick add custom skill */}

@@ -67,9 +67,17 @@
 
 * {
   font-family: "29LT bukra";
-  transition: all ease-in-out 0.3s !important;
   scroll-behavior: smooth !important;
 }
+
+/* NOTE: the old `transition: all ease-in-out 0.3s !important` on every element
+   was removed. Forcing a transition on *all* properties (including
+   background-color and opacity) meant freshly-mounted overlays — e.g. the
+   ticket-lookup modal, portaled to document.body — animated their background
+   in from the initial value and rendered as if transparent, and it made every
+   hover feel sluggish. Components already declare their own scoped
+   `transition-colors` / `transition-all` Tailwind utilities where motion is
+   wanted, so nothing here needs a blanket override. */
 
 /* Accessibility: honor the user's reduced-motion preference. Collapses the
    global transition above, tailwindcss-animate enter animations, and the
@@ -111,6 +119,43 @@ body {
   --fg: #1f2937;
   --fg-muted: #6b7280;
   --fg-faint: #9ca3af;
+
+  /* One motion vocabulary for the whole app. --ease-out for enters
+     (decelerate into place), --ease-in for exits (accelerate away). */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+/* Step wizard swap — mirrored enter/exit driven by .step-exit / .step-enter
+   classes toggled from Form.jsx. Transform + opacity only. */
+.step-pane {
+  transition-property: transform, opacity;
+}
+.step-exit {
+  transition-duration: 180ms;
+  transition-timing-function: var(--ease-in);
+}
+.step-enter {
+  transition-duration: 260ms;
+  transition-timing-function: var(--ease-out);
+}
+
+/* Shared overlay enter for floating surfaces (modal card, dropdown/calendar
+   panels): a quick, decisive scale+fade with the app's ease-out. Applied via
+   the .overlay-pop utility so every popover uses one identical curve. */
+@keyframes overlay-pop {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.overlay-pop {
+  animation: overlay-pop 200ms var(--ease-out) both;
+}
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.backdrop-fade {
+  animation: backdrop-fade 200ms ease-out both;
 }
 
 .dark {
@@ -165,12 +210,36 @@ body {
   display: none;
 }
 
+/* Reactive step-progress fill. --fill (set inline from currentStep) maps to
+   width on mobile (horizontal bar) and to height on md+ (vertical bar),
+   anchored to the bottom so it grows upward like a gauge. */
+.progress-fill {
+  left: 0;
+  top: 0;
+  width: var(--fill, 33%);
+  height: 100%;
+  transition: width 0.5s ease-out, height 0.5s ease-out;
+}
+
+@media (min-width: 768px) {
+  .progress-fill {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: var(--fill, 33%);
+  }
+}
 
 
+
+/* Placeholders read as guidance text, not decoration — the old
+   rgba(0,0,0,.15) was well below WCAG contrast and invisible in dark mode.
+   --fg-faint carries a legible light + dark tier. */
 ::placeholder{
   font-style: italic;
   font-size: .9rem;
-  color: rgba(0, 0, 0, 0.15) !important;
+  color: var(--fg-faint) !important;
+  opacity: 1; /* Firefox dims placeholders by default; token already handles tone */
 }
 
 
