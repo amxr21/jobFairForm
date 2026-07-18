@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { createContext, useEffect, useReducer } from "react";
 
+// eslint-disable-next-line react-refresh/only-export-components -- context is tightly coupled to AuthContextProvidor, kept in one file
 export const AuthContext = createContext();
 
 // eslint-disable-next-line react-refresh/only-export-components -- reducer is tightly coupled to AuthContextProvidor, kept in one file

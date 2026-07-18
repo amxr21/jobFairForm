@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import { useState, createContext } from "react";
 
 
+// eslint-disable-next-line react-refresh/only-export-components -- context is tightly coupled to FormProvider, kept in one file
 export const FormContext = createContext();
 
 
