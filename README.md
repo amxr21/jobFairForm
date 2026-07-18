@@ -41,6 +41,9 @@ This application is built to work seamlessly with the [JobFair Dashboard](https:
 - Confirmation email with QR code ticket sent upon successful submission
 - CV upload with Cloudinary cloud storage
 - Integrates directly with the JobFair management backend
+- Light/dark mode toggle with a fully designed dark palette (not a blanket inversion — every surface, border, and text color has its own light and dark tier)
+- "Check My Ticket" lookup — applicants can retrieve their QR ticket by University ID without refilling the form, either via a button on the homepage or by visiting `/my-qr-code` directly
+- Accessible by default: keyboard-operable custom dropdowns/date picker (no native `<select>`), labeled icon-only buttons, WCAG-sized touch targets
 
 ### Form Sections
 1. **Personal Information** - Name, University ID, date of birth, contact details
@@ -60,7 +63,8 @@ This application is built to work seamlessly with the [JobFair Dashboard](https:
 ### Frontend
 
 - React.js (Vite)
-- Tailwind CSS
+- Tailwind CSS (with a semantic light/dark token system)
+- React Router
 - Axios
 - Context API for state management
 
@@ -68,7 +72,7 @@ This application is built to work seamlessly with the [JobFair Dashboard](https:
 
 - Node.js
 - Express.js
-- MongoDB (via Mongoose)
+- MySQL via Prisma ORM
 - Cloudinary (CV file storage)
 - Nodemailer (email confirmations)
 - QRCode (ticket generation)
@@ -76,7 +80,11 @@ This application is built to work seamlessly with the [JobFair Dashboard](https:
 ### Hosting
 
 - Frontend: Vercel
-- Backend: Railway
+- Backend: Render
+
+### CI
+
+- GitHub Actions runs lint, build, and backend tests (against a MySQL service container) on every PR and push to `dev`/`main`
 
 ---
 
@@ -87,7 +95,7 @@ Frontend (React + Vite)
    |
    |---> REST API (Express.js)
    |        |
-   |        |---> MongoDB (Applicant data)
+   |        |---> MySQL via Prisma (Applicant data)
    |        |
    |        |---> Cloudinary (CV storage)
    |        |
@@ -102,8 +110,8 @@ Frontend (React + Vite)
 
 ### Prerequisites
 
-- Node.js v16+
-- MongoDB (local or cloud instance)
+- Node.js v20+
+- MySQL (local or cloud instance)
 - Cloudinary account (for CV storage)
 
 ### Steps
@@ -130,7 +138,7 @@ Frontend (React + Vite)
 
    ```env
    PORT=2001
-   URI=your_mongo_connection_string
+   DATABASE_URL=your_mysql_connection_string
    TOKEN_SIGN=your_jwt_secret
 
    # Email Configuration
@@ -141,6 +149,12 @@ Frontend (React + Vite)
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
+   ```
+
+   Create a `.env` file in the `frontend/` directory (see `.env.example`):
+
+   ```env
+   VITE_API_URL=your_backend_url
    ```
 
 4. Run the development servers
@@ -207,9 +221,9 @@ jobFairForm/
 │   │   │       ├── SelectInput.jsx    # Dropdown component
 │   │   │       ├── SkillsMultiSelect.jsx # Multi-select for skills
 │   │   │       └── ...
-│   │   ├── Context/
+│   │   ├── context/
 │   │   │   └── FormContext.jsx
-│   │   ├── Hooks/
+│   │   ├── hooks/
 │   │   └── App.jsx
 │   └── index.html
 │
@@ -220,6 +234,14 @@ jobFairForm/
 ---
 
 ## Recent Updates
+
+### v2.2 (July 2026)
+- **Dark Mode:** Light/dark toggle with a fully designed dark palette — semantic surface/border/text tokens across every form component, not a blanket color inversion
+- **Ticket Lookup:** "Check My Ticket" modal lets applicants retrieve their QR ticket by University ID; also reachable directly at `/my-qr-code`
+- **Accessibility Fixes:** Custom keyboard-operable date picker replacing the native `<select>` month/year inputs, labeled icon-only buttons, WCAG-sized touch targets (Lighthouse accessibility: 100/100)
+- **Security Fix:** Removed an insecure `localhost` API fallback that could leak applicant data submissions over plain HTTP on production deployments
+- **CI Pipeline:** GitHub Actions now runs lint, build, and backend tests against a MySQL service container on every PR
+- **Backend Migration:** Moved from MongoDB/Mongoose to MySQL via Prisma ORM, now hosted on Render
 
 ### v2.0 (January 2025)
 - **Cloudinary Integration:** CV files now stored on Cloudinary cloud storage
