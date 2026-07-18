@@ -71,6 +71,21 @@
   scroll-behavior: smooth !important;
 }
 
+/* Accessibility: honor the user's reduced-motion preference. Collapses the
+   global transition above, tailwindcss-animate enter animations, and the
+   loading keyframes down to near-instant so nothing moves for users who ask
+   for stillness (vestibular sensitivity). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 body {
   position: relative;
   background-color: #ffffff;

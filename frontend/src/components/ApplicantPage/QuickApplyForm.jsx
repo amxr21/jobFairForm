@@ -1,6 +1,5 @@
 import axios from "axios";
-import { useState, useEffect, useRef, useContext } from "react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { useState, useEffect, useContext } from "react";
 
 
 import { CheckId, QrScanner, IdContext } from "./index"
@@ -9,15 +8,10 @@ const linkUrl = 'http://localhost:2000'
 
 const QuickApplyForm = () => {
     const [applicant, setApplicant] = useState({id: "", name: "Ammar"});
-    const [checked, setChecked] = useState(false);
-    
-    const { inputValue, setInputValue } = useContext(IdContext);
+    const [checked] = useState(false);
 
+    const { inputValue } = useContext(IdContext);
 
-    const [scannerResult, setScannerResult] = useState(null);
-    const [isCameraOn, setIsCameraOn] = useState(false);
-
-    
     useEffect(() => {
         axios.get(`${linkUrl}/applicants/${document.getElementById("applicantId").value}`)
         .then((response) => {

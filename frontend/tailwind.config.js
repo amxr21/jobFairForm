@@ -9,7 +9,20 @@ export default {
     extend: {
       colors: {
         primary: "#0E7F41",
-        secondary: "hsla(36, 81%, 65%, 1)",
+        "primary-light": "#E5FFE5",
+        "primary-dark": "#0a5f31",
+        secondary: "#2959A6",
+        "secondary-light": "#E5F0FF",
+        "secondary-dark": "#0066CC",
+        surface: "#F3F6FF",
+        success: "#0E7F41",
+        "success-light": "#E5FFE5",
+        warning: "#EBC600",
+        "warning-light": "#FFFACD",
+        error: "#CC0000",
+        "error-light": "#FFE5E5",
+        info: "#0066CC",
+        "info-light": "#E5F0FF",
         black: {
           DEFAULT: "#000",
           100: "#1E1E2D",
@@ -29,6 +42,6 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }
 

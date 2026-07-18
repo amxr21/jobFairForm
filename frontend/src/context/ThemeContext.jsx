@@ -51,6 +51,7 @@ ThemeProvider.propTypes = {
     children: PropTypes.node,
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook is tightly coupled to ThemeProvider, kept in one file
 export const useTheme = () => {
     const ctx = useContext(ThemeContext);
     if (!ctx) throw new Error("useTheme must be used inside ThemeProvider");

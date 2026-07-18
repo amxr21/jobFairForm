@@ -1,9 +1,12 @@
+import PropTypes from "prop-types";
 import { createContext, useContext, useState } from "react";
 
 import PersonalIcon from '../assets/images/personal.svg'
 
+// eslint-disable-next-line react-refresh/only-export-components -- context is tightly coupled to ProgressProvider, kept in one file
 export const ProgressContext = createContext()
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook is tightly coupled to ProgressProvider, kept in one file
 export const useProgressContext = () => {
     const progressContext = useContext(ProgressContext)
 
@@ -39,4 +42,8 @@ export const ProgressProvider = ({ children }) => {
 
 
 }
+
+ProgressProvider.propTypes = {
+    children: PropTypes.node,
+};
 

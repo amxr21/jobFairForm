@@ -1,21 +1,23 @@
 import axios from "axios";
 
-import { useRef, createContext, useState, useContext, useEffect } from "react";
-import { PersonalInfo, ProfessionalInfo, Preferences, SubmitFormBtn, ConfirmMessageDiv } from "./index";
+import { useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { PersonalInfo, ProfessionalInfo, Preferences, ConfirmMessageDiv } from "./index";
 
-// const link = "https://jobfairform-backend.onrender.com"
-// const link = "https://jobfairform-backend-production.up.railway.app"
-const link = "http://localhost:2001"
+// Was hardcoded to "http://localhost:2001" — meant every deployed build
+// (Vercel etc.) tried to submit applications to the developer's own
+// machine instead of the real backend. VITE_API_URL is already the
+// established pattern for this in useLogin.jsx/useSignUp.jsx; set it in
+// the deployment's environment variables to the real backend URL.
+const link = import.meta.env.VITE_API_URL || "http://localhost:2001"
 
 import { useAuthContext } from "../../hooks/useAuthContext"
 import useFormContext from "../../hooks/useFormContext";
 
-import { FormContext } from "../../context/FormContext";
 import ProgressSection from "./ProgressSection";
 
-import PersonalIcon from '../../assets/images/personal.svg'
-import { useProgressContext } from "../../context/ProgressContext";
-import LoadingPage from "../../pages/LoadingPage";
+import AnimatedSuccess from "./AnimatedSuccess";
+import { useToast } from "../Toast";
 
 
 const keyMap = {
@@ -39,29 +41,12 @@ const keyMap = {
     // portfolio: "Personal Website (if any)",
     languages: "languages",
     ExpectedToGraduate: "Expected to Graduate",
+    fieldInterest: "Field Interest",
+    opportunityType: "Opportunity Type",
+    preferredWorkCity: "Preferred Work City",
+    careerGoals: "Career Goals",
+    availability: "Availability",
   };
-
-const requiredKey = {
-    uniId: "University ID",
-    fullName: "Full Name",
-    birthdate: "Date of Birth",
-    gender: "Gender",
-    nationality: "Nationality",
-    studyLevel: "Study Program",
-    college: "College",
-    major: "Major",
-    email: "Email address",
-    phoneNumber: "Mobile number",
-    city: "City",
-    technicalSkills: "Technical Skills",
-    nonTechnicalSkills: "Non-technical skills",
-    experience: "Experience",
-    cvfile: "CV",
-    // portfolio: "Personal Website (if any)",
-    languages: "languages",
-  };
-
-
 
 
 
@@ -69,14 +54,15 @@ const requiredKey = {
 const Form = () => {
 
     const { formData, fieldMissing } = useFormContext()
+    const toast = useToast();
 
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
 
-    const [formDataReq, setFormDataReq] = useState({});
     const [qrCodeSrc, setQRCodeSrc] = useState(null);
 
-    const [isLoading, setIsLoading] = useState(false)
+    // Drives the AnimatedSuccess overlay: idle → loading → success → fade → done.
+    const [submitPhase, setSubmitPhase] = useState("idle");
 
     const form = useRef();
     const [full, setFull] = useState(true);
@@ -118,23 +104,20 @@ const Form = () => {
         }
     };
 
+    // The section title + icon are now driven reactively by currentStep in
+    // ProgressSection.jsx; here we only drive the progress-bar height.
     const updateProgressBar = (step) => {
         const progressBar = document.querySelector('.progress-bar');
-        const sectionHeader = document.querySelector('.section-header');
-        const sectionIcon = document.querySelector('.section-icon');
+        if (!progressBar) return;
 
-        // Remove all progress classes
         progressBar.classList.remove('md:h-1/3', 'md:h-2/3', 'md:h-full', 'w-1/3', 'w-2/3', 'w-full');
 
         if (step === 1) {
             progressBar.classList.add('md:h-1/3', 'w-1/3');
-            sectionHeader.textContent = 'Personal Information';
         } else if (step === 2) {
             progressBar.classList.add('md:h-2/3', 'w-2/3');
-            sectionHeader.textContent = 'Professional Information';
         } else if (step === 3) {
             progressBar.classList.add('md:h-full', 'w-full');
-            sectionHeader.textContent = 'Preferences (Optional)';
         }
     };
 
@@ -146,7 +129,7 @@ const Form = () => {
 
         try {
 
-            setIsLoading(true)
+            setSubmitPhase("loading")
 
             e.preventDefault()
             const formDataToSend = new FormData();
@@ -200,7 +183,7 @@ const Form = () => {
             console.log('====================================');
             console.log(filledFields);
             console.log(formData["Email address"]);
-            console.log(formData["University ID"].length);
+            console.log(formData["University ID"]?.length);
             console.log('====================================');
 
             if (filledFields.length >= 16 && formData["University ID"] && formData["University ID"].length == 8 && formData["Nationality"] != '' && formData["Major"] != '' ) {
@@ -240,6 +223,13 @@ const Form = () => {
 
             else{
                 setFull(false)
+                setSubmitPhase("idle") // close the overlay; nothing was submitted
+
+                const missingSummary = (Array.isArray(fieldMissing) ? fieldMissing : (fieldMissing || "").split(", ")).filter(Boolean);
+                const summaryText = missingSummary.length > 3
+                    ? `${missingSummary.slice(0, 3).join(", ")} and ${missingSummary.length - 3} more`
+                    : missingSummary.join(", ");
+                toast(summaryText ? `Please complete: ${summaryText}` : "Please complete the required fields", { type: 'warning' });
 
                 setTimeout(() =>{setFull(true)}, 3000)
 
@@ -247,16 +237,24 @@ const Form = () => {
             }
 
 
-            confirmRegistration();
+            // Play the success sequence: dots → graduation cap ("success"),
+            // hold, then fade the overlay out as the ticket is revealed.
+            setSubmitPhase("success");
+            setTimeout(() => {
+                confirmRegistration();      // reveal the ticket beneath the overlay
+                setSubmitPhase("fade");     // fade the overlay away to show it
+                setTimeout(() => setSubmitPhase("done"), 550);
+            }, 1300);
 
 
 
         } catch (error) {
-            throw new Error(error)
+            console.error(error);
+            setSubmitPhase("idle");
+            toast('Something went wrong submitting your application. Please try again.', { type: 'error' });
         }
         finally{
             console.log('We are done');
-            setIsLoading(false)
         }
 
 
@@ -270,8 +268,7 @@ const Form = () => {
 
     }
 
-    const confirmRegistration = (e) => {
-        // e.preventDefault();
+    const confirmRegistration = () => {
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
         form.current.classList.replace("h-[86vh]", "h-0");
@@ -314,11 +311,9 @@ const Form = () => {
 
 
 
-    const actualHeight = (window.innerHeight)/(window.screen.height) * 100
-
     return (
         <>
-            {isLoading && <LoadingPage />}
+            <AnimatedSuccess phase={submitPhase} />
             <form id="Form" ref={form} className={`relative bg-white rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}>
 
                 <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">
@@ -346,21 +341,17 @@ const Form = () => {
                             {/* Navigation buttons */}
                             <div className="w-full flex justify-between mt-3 shrink-0">
                                 {currentStep > 1 ? (
-                                    <button onClick={goToPrevStep} className="border rounded-lg w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
-                                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                        </svg>
+                                    <button onClick={goToPrevStep} className="border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
                                     </button>
                                 ) : <div></div>}
 
                                 {currentStep < 3 ? (
-                                    <button onClick={goToNextStep} className="border rounded-lg w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
-                                        <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
+                                    <button onClick={goToNextStep} className="border rounded-md w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors">
+                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                                     </button>
                                 ) : (
-                                    <button onClick={handleSubmit} id="submitForm" className="bg-blue-600 hover:bg-blue-800 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg text-sm md:text-base w-fit transition-colors">Submit</button>
+                                    <button onClick={handleSubmit} id="submitForm" className="bg-[#0E7F41] hover:bg-[#0a5f31] text-white px-4 py-2 md:px-5 md:py-2.5 rounded-md text-sm md:text-base w-fit transition-colors">Submit</button>
                                 )}
                             </div>
                         </div>
@@ -376,29 +367,3 @@ const Form = () => {
 }
 
 export default Form;
-
-
-
-const sample = {
-    "Full Name": "Hamda Mohammed Saeed Al-Khori",
-    "University ID": "22100100",
-    "Date Of Birth": "1999-08-21",
-    "Gender": "Male",
-    "Nationality": "Oman",
-    "Email": "u22105176@sharjah.ac.ae",
-    "Phone number": "0566558198",
-    "CGPA": "2.98",
-    "languages": [
-        "Arabic",
-        "English",
-        "Urdu"
-    ],
-    "Study Program": "Bachelor",
-    "College": "College of Sciences",
-    "Major": "Physics",
-    "LinkedIn URL": "ammarobad.info",
-    "Personal Website (if any)": "ammarobad.info",
-    "Experience": "ammarobad.info",
-    "Skills": "ammarobad.info",
-    "CV": {}
-}

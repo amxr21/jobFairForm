@@ -1,8 +1,6 @@
 import axios from "axios";
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
-
-import { IdContext } from "../../context/IdContext";
 
 const linkUrl = 'https://jobfair-1.onrender.com';
 
@@ -11,19 +9,17 @@ const QrScanner = () => {
     const [applicant, setApplicant] = useState({});
     const [company, setCompany] = useState({});
 
-
-    const { inputValue, setInputValue } = useContext(IdContext);
-
     const [scannerResult, setScannerResult] = useState(null);
     const [isCameraOn, setIsCameraOn] = useState(false);
 
-    let scanner;
+    const scannerRef = useRef(null);
     useEffect(() => {
         if(isCameraOn){
-            scanner = new Html5QrcodeScanner("reader", {
+            const scanner = new Html5QrcodeScanner("reader", {
                 qrbox: { width : 150, height: 150 },
                 fps: 10,
             })
+            scannerRef.current = scanner;
 
             const success = async (result) => {
                 scanner.clear();
@@ -56,7 +52,7 @@ const QrScanner = () => {
                 }
             }
 
-            const error = (err) => {
+            const error = () => {
                 // console.warn("");
             }
 
@@ -102,7 +98,7 @@ const QrScanner = () => {
             }
             else{
                 openCamera.current.textContent = "Camera OFF";
-                scanner?.clear();
+                scannerRef.current?.clear();
             }
 
             return !prev;
@@ -124,7 +120,7 @@ const QrScanner = () => {
     
         }
 
-    }, [isCameraOn])
+    }, [isCameraOn, scannerResult])
 
 
 

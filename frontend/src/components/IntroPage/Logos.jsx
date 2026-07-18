@@ -1,11 +1,5 @@
 import UniversityLogo from "../../assets/images/UniLogoSvg.svg";
 import CastoLogo from "../../assets/images/OfficeLogoSvg.svg";
- 
-
-
-
-import UniLogoSVG from "./UniLogo";
-
 
 const Logos = () => {
     return (
