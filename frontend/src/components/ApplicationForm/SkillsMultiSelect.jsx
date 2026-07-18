@@ -1,5 +1,9 @@
+import PropTypes from "prop-types";
 import { useState, useContext, useRef, useEffect } from "react";
-import { FormContext } from "../../Context/FormContext";
+import { createPortal } from "react-dom";
+import { X, ChevronDown } from "lucide-react";
+import { FormContext } from "../../context/FormContext";
+import useDropdownPosition from "../../hooks/useDropdownPosition";
 import { RequiredAstrik } from "./index";
 
 const TECHNICAL_SKILLS = [
@@ -23,17 +27,21 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
+    const triggerRef = useRef(null);
+    const panelRef = useRef(null);
     const inputRef = useRef(null);
+    const triggerRect = useDropdownPosition(triggerRef, isOpen);
 
     const skills = skillsList || (fieldName === "Technical Skills" ? TECHNICAL_SKILLS : NON_TECHNICAL_SKILLS);
     const selectedSkills = Array.isArray(formData[fieldName]) ? formData[fieldName] : [];
 
-    // Handle click outside to close dropdown
+    // Handle click outside to close dropdown — the panel is portaled to
+    // document.body, so it's checked separately from dropdownRef.
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-                setIsOpen(false);
-            }
+            const insideTrigger = dropdownRef.current && dropdownRef.current.contains(e.target);
+            const insidePanel = panelRef.current && panelRef.current.contains(e.target);
+            if (!insideTrigger && !insidePanel) setIsOpen(false);
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -86,7 +94,8 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
 
             {/* Input Container with tags inside */}
             <div
-                className={`relative w-full min-h-[36px] md:min-h-[40px] px-2 py-1 md:py-1.5 bg-transparent border border-gray-700 rounded-lg cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-blue-400 border-transparent' : ''}`}
+                ref={triggerRef}
+                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
                 onClick={() => {
                     setIsOpen(true);
                     inputRef.current?.focus();
@@ -96,7 +105,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
                 {selectedSkills.map((skill) => (
                     <span
                         key={skill}
-                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-100 text-blue-800 text-[10px] md:text-xs rounded-md"
+                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#0E7F41]/10 text-[#0E7F41] text-[10px] md:text-xs rounded-md"
                     >
                         {skill}
                         <button
@@ -107,9 +116,7 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
                             }}
                             className="hover:text-red-500 transition-colors ml-0.5"
                         >
-                            <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <X className="w-2.5 h-2.5 md:w-3 md:h-3" />
                         </button>
                     </span>
                 ))}
@@ -128,63 +135,60 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
 
                 {/* Dropdown Arrow */}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg
-                        className={`h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
             </div>
 
-            {/* Dropdown */}
-            {isOpen && (
-                <div className="relative">
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 md:max-h-48 overflow-y-auto">
-                        {/* Quick add custom skill */}
-                        {searchTerm && !skills.includes(searchTerm) && !selectedSkills.includes(searchTerm) && (
+            {/* Dropdown — portaled to document.body so it isn't clipped by
+                the step containers' overflow-hidden. */}
+            {isOpen && triggerRect && createPortal(
+                <div
+                    ref={panelRef}
+                    className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
+                    style={{ top: triggerRect.bottom + 4, left: triggerRect.left, width: triggerRect.width }}
+                >
+                    {/* Quick add custom skill */}
+                    {searchTerm && !skills.includes(searchTerm) && !selectedSkills.includes(searchTerm) && (
+                        <button
+                            type="button"
+                            onClick={() => handleSelect(searchTerm)}
+                            className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-[#0E7F41] hover:bg-[#0E7F41]/10 border-b"
+                        >
+                            + Add &quot;{searchTerm}&quot;
+                        </button>
+                    )}
+
+                    {filteredSkills.length > 0 ? (
+                        filteredSkills.slice(0, 15).map((skill) => (
                             <button
+                                key={skill}
                                 type="button"
-                                onClick={() => handleSelect(searchTerm)}
-                                className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-blue-600 hover:bg-blue-50 border-b"
+                                onClick={() => handleSelect(skill)}
+                                className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg hover:bg-surface-hover transition-colors"
                             >
-                                + Add "{searchTerm}"
+                                {skill}
                             </button>
-                        )}
-
-                        {filteredSkills.length > 0 ? (
-                            filteredSkills.slice(0, 15).map((skill) => (
-                                <button
-                                    key={skill}
-                                    type="button"
-                                    onClick={() => handleSelect(skill)}
-                                    className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm hover:bg-gray-100 transition-colors"
-                                >
-                                    {skill}
-                                </button>
-                            ))
-                        ) : (
-                            !searchTerm && (
-                                <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-500">
-                                    Type to search or add custom skills...
-                                </div>
-                            )
-                        )}
-
-                        {filteredSkills.length > 15 && (
-                            <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-gray-400 border-t">
-                                Type to filter more skills...
+                        ))
+                    ) : (
+                        !searchTerm && (
+                            <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg-muted">
+                                Type to search or add custom skills...
                             </div>
-                        )}
-                    </div>
-                </div>
+                        )
+                    )}
+
+                    {filteredSkills.length > 15 && (
+                        <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-fg-faint border-line border-t">
+                            Type to filter more skills...
+                        </div>
+                    )}
+                </div>,
+                document.body
             )}
 
             {/* Selected count */}
             {selectedSkills.length > 0 && (
-                <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">
+                <p className="text-[10px] md:text-xs text-fg-muted mt-0.5">
                     {selectedSkills.length} skill{selectedSkills.length !== 1 ? 's' : ''} selected
                 </p>
             )}
@@ -192,5 +196,11 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
     );
 };
 
-export { TECHNICAL_SKILLS, NON_TECHNICAL_SKILLS };
+SkillsMultiSelect.propTypes = {
+    label: PropTypes.string.isRequired,
+    fieldName: PropTypes.string.isRequired,
+    skillsList: PropTypes.arrayOf(PropTypes.string),
+    fieldClasses: PropTypes.string,
+};
+
 export default SkillsMultiSelect;

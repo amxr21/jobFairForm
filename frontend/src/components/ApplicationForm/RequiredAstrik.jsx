@@ -1,8 +1,13 @@
+import PropTypes from "prop-types";
+
 const RequiredMark = ({required}) => (
-    required 
-    ? <span className="text-red-600 lg:-mb-0.5">*</span> 
-    : <span className="absolute -bottom-4 left-0 text-gray-300 italic text-xs lg:mb-5">Optional</span>
+    required
+    ? <span className="text-red-600 lg:-mb-0.5">*</span>
+    : <span className="text-fg-faint italic text-xs ml-1">(Optional)</span>
 )
 
+RequiredMark.propTypes = {
+    required: PropTypes.bool,
+};
 
 export default RequiredMark

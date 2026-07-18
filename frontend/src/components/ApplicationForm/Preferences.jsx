@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import useFormContext from "../../Hooks/useFormContext";
+import { createPortal } from "react-dom";
+import { X, ChevronDown } from "lucide-react";
+import useFormContext from "../../hooks/useFormContext";
+import useDropdownPosition from "../../hooks/useDropdownPosition";
 import { Input, SelectInput } from "./index";
 
 // Industry Fields for job interests
@@ -46,7 +49,10 @@ const Preferences = () => {
     const [isFieldOpen, setIsFieldOpen] = useState(false);
     const [fieldSearchTerm, setFieldSearchTerm] = useState("");
     const fieldDropdownRef = useRef(null);
+    const fieldTriggerRef = useRef(null);
+    const fieldPanelRef = useRef(null);
     const fieldInputRef = useRef(null);
+    const fieldTriggerRect = useDropdownPosition(fieldTriggerRef, isFieldOpen);
 
     const selectedFields = Array.isArray(formData["Field Interest"]) ? formData["Field Interest"] : [];
 
@@ -54,12 +60,13 @@ const Preferences = () => {
     const cityOptions = ["Sharjah", "Dubai", "Abu Dhabi", "Ajman", "Al-Ain", "Ras Al-Khaima", "Remote", "Any"];
     const availabilityOptions = ["Immediately", "Within 1 month", "Within 3 months", "After graduation"];
 
-    // Handle click outside for field dropdown
+    // Handle click outside for field dropdown — the panel is portaled to
+    // document.body, so it's checked separately from fieldDropdownRef.
     useEffect(() => {
         const handleClickOutside = (e) => {
-            if (fieldDropdownRef.current && !fieldDropdownRef.current.contains(e.target)) {
-                setIsFieldOpen(false);
-            }
+            const insideTrigger = fieldDropdownRef.current && fieldDropdownRef.current.contains(e.target);
+            const insidePanel = fieldPanelRef.current && fieldPanelRef.current.contains(e.target);
+            if (!insideTrigger && !insidePanel) setIsFieldOpen(false);
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -107,7 +114,7 @@ const Preferences = () => {
 
     return (
         <div id="Preferences" className="h-full flex flex-col w-full overflow-hidden">
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1 -m-1">
                 <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 md:gap-y-4">
                     {/* Row 1: Field of Interest (Multi-select) & Work Location */}
                     <div className="col-span-12 md:col-span-6 flex flex-col" ref={fieldDropdownRef}>
@@ -115,8 +122,9 @@ const Preferences = () => {
 
                         {/* Multi-select Input Container */}
                         <div
-                            className={`relative w-full min-h-[36px] md:min-h-[40px] px-2 py-1 md:py-1.5 bg-transparent border border-gray-700 rounded-lg cursor-text flex flex-wrap gap-1 items-center pr-8 transition-all duration-200 ${
-                                isFieldOpen ? 'ring-2 ring-blue-400 border-transparent' : 'hover:border-gray-500'
+                            ref={fieldTriggerRef}
+                            className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-transparent border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 transition-all duration-200 ${
+                                isFieldOpen ? 'ring-2 ring-primary border-transparent' : 'hover:border-fg-faint'
                             }`}
                             onClick={() => {
                                 setIsFieldOpen(true);
@@ -127,7 +135,7 @@ const Preferences = () => {
                             {selectedFields.map((field) => (
                                 <span
                                     key={field}
-                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-100 text-blue-800 text-[10px] md:text-xs rounded-md"
+                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#0E7F41]/10 text-[#0E7F41] text-[10px] md:text-xs rounded-md"
                                 >
                                     {field}
                                     <button
@@ -138,9 +146,7 @@ const Preferences = () => {
                                         }}
                                         className="hover:text-red-500 transition-colors ml-0.5"
                                     >
-                                        <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
+                                        <X className="w-2.5 h-2.5 md:w-3 md:h-3" />
                                     </button>
                                 </span>
                             ))}
@@ -159,49 +165,46 @@ const Preferences = () => {
 
                             {/* Dropdown Arrow */}
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <svg
-                                    className={`h-3.5 w-3.5 md:h-4 md:w-4 text-gray-500 transition-transform duration-200 ${isFieldOpen ? 'rotate-180' : ''}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
+                                <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isFieldOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </div>
 
-                        {/* Dropdown */}
-                        {isFieldOpen && (
-                            <div className="relative">
-                                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 md:max-h-48 overflow-y-auto">
-                                    {filteredFields.length > 0 ? (
-                                        filteredFields.slice(0, 15).map((field) => (
-                                            <button
-                                                key={field}
-                                                type="button"
-                                                onClick={() => handleFieldSelect(field)}
-                                                className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm hover:bg-gray-100 transition-colors"
-                                            >
-                                                {field}
-                                            </button>
-                                        ))
-                                    ) : (
-                                        <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-500">
-                                            {fieldSearchTerm ? "No matching fields found" : "All fields selected"}
-                                        </div>
-                                    )}
-                                    {filteredFields.length > 15 && (
-                                        <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-gray-400 border-t">
-                                            Type to filter more...
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                        {/* Dropdown — portaled to document.body so it isn't
+                            clipped by the step containers' overflow-hidden. */}
+                        {isFieldOpen && fieldTriggerRect && createPortal(
+                            <div
+                                ref={fieldPanelRef}
+                                className="fixed z-[1000] bg-surface-card border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
+                                style={{ top: fieldTriggerRect.bottom + 4, left: fieldTriggerRect.left, width: fieldTriggerRect.width }}
+                            >
+                                {filteredFields.length > 0 ? (
+                                    filteredFields.slice(0, 15).map((field) => (
+                                        <button
+                                            key={field}
+                                            type="button"
+                                            onClick={() => handleFieldSelect(field)}
+                                            className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg hover:bg-surface-hover transition-colors"
+                                        >
+                                            {field}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg-muted">
+                                        {fieldSearchTerm ? "No matching fields found" : "All fields selected"}
+                                    </div>
+                                )}
+                                {filteredFields.length > 15 && (
+                                    <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-fg-faint border-line border-t">
+                                        Type to filter more...
+                                    </div>
+                                )}
+                            </div>,
+                            document.body
                         )}
 
                         {/* Selected count */}
                         {selectedFields.length > 0 && (
-                            <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">
+                            <p className="text-[10px] md:text-xs text-fg-muted mt-0.5">
                                 {selectedFields.length} field{selectedFields.length !== 1 ? 's' : ''} selected
                             </p>
                         )}
@@ -225,10 +228,10 @@ const Preferences = () => {
                                     key={type}
                                     type="button"
                                     onClick={() => handleOpportunityTypeChange(type)}
-                                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg border text-xs md:text-sm transition-all duration-200 ${
+                                    className={`px-3 py-1.5 md:px-4 md:py-2 rounded-md border text-xs md:text-sm transition-all duration-200 ${
                                         opportunityTypes.includes(type)
-                                            ? 'bg-[#2959A6] text-white border-[#2959A6]'
-                                            : 'bg-white text-gray-700 border-gray-700 hover:border-[#2959A6] hover:text-[#2959A6]'
+                                            ? 'bg-[#0E7F41] text-white border-[#0E7F41]'
+                                            : 'bg-surface-card text-fg border-line-strong hover:border-[#0E7F41] hover:text-[#0E7F41]'
                                     }`}
                                 >
                                     {type}

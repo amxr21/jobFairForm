@@ -1,6 +1,7 @@
+import PropTypes from "prop-types";
 import { RequiredAstrik } from "./index";
 import { useState, useContext } from "react";
-import { FormContext } from "../../Context/FormContext";
+import { FormContext } from "../../context/FormContext";
 
 const COMMON_LANGUAGES = [
     "Arabic", "English", "French", "Spanish", "German",
@@ -53,35 +54,12 @@ const Languages = ({ classes }) => {
         }));
     };
 
-    const customLanguages = formData.languages?.filter(l => !COMMON_LANGUAGES.includes(l)) || [];
-
     return (
         <div className={`flex flex-col grow mb-2 md:my-0 ${classes}`}>
             <h2 className="text-sm md:text-base mb-1.5">Languages: <RequiredAstrik required={true} /></h2>
 
-            {/* Selected languages display */}
-            {formData.languages?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                    {formData.languages.map((lang) => (
-                        <span
-                            key={lang}
-                            className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
-                        >
-                            {lang}
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveLanguage(lang)}
-                                className="text-blue-600 hover:text-blue-800 font-bold"
-                            >
-                                ×
-                            </button>
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* Language checkboxes - flex wrap */}
-            <div id="Languages" className="flex flex-wrap gap-x-3 gap-y-2 mb-2">
+            {/* Language checkboxes - flex wrap (this is the field itself) */}
+            <div id="Languages" className="flex flex-wrap gap-x-3 gap-y-2">
                 {COMMON_LANGUAGES.slice(0, 6).map((lang) => (
                     <div key={lang} className="checkbox flex items-center">
                         <input
@@ -89,7 +67,7 @@ const Languages = ({ classes }) => {
                             id={lang}
                             checked={formData.languages?.includes(lang) || false}
                             onChange={() => handleLanguageToggle(lang)}
-                            className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 accent-blue-800"
+                            className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 accent-[#0E7F41]"
                         />
                         <label htmlFor={lang} className="text-xs md:text-sm cursor-pointer">{lang}</label>
                     </div>
@@ -100,16 +78,38 @@ const Languages = ({ classes }) => {
                         id="Other"
                         checked={showOtherInput}
                         onChange={handleOtherToggle}
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 accent-blue-800"
+                        className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 accent-[#0E7F41]"
                     />
                     <label htmlFor="Other" className="text-xs md:text-sm cursor-pointer">Other</label>
                 </div>
             </div>
 
+            {/* Selected languages display — below the field, not between the
+                label and the checkboxes */}
+            {formData.languages?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                    {formData.languages.map((lang) => (
+                        <span
+                            key={lang}
+                            className="bg-[#0E7F41]/10 text-[#0E7F41] px-2 py-0.5 rounded-full text-xs flex items-center gap-1"
+                        >
+                            {lang}
+                            <button
+                                type="button"
+                                onClick={() => handleRemoveLanguage(lang)}
+                                className="text-[#0E7F41] hover:text-[#0a5f31] font-bold"
+                            >
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            )}
+
             {/* Other languages multiselect input */}
             {showOtherInput && (
-                <div className="flex flex-col gap-2 mt-1 p-2 md:p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs text-gray-600">Select additional languages or type your own:</p>
+                <div className="flex flex-col gap-2 mt-1 p-2 md:p-3 bg-surface-hover rounded-md">
+                    <p className="text-xs text-fg-muted">Select additional languages or type your own:</p>
 
                     {/* Quick select from remaining common languages */}
                     <div className="flex flex-wrap gap-1.5 mb-1">
@@ -120,8 +120,8 @@ const Languages = ({ classes }) => {
                                 onClick={() => handleLanguageToggle(lang)}
                                 className={`px-2 py-0.5 rounded-full text-xs border transition-colors ${
                                     formData.languages?.includes(lang)
-                                        ? 'bg-blue-500 text-white border-blue-500'
-                                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                                        ? 'bg-[#0E7F41] text-white border-[#0E7F41]'
+                                        : 'bg-surface-card text-fg border-line hover:border-[#0E7F41]'
                                 }`}
                             >
                                 {lang}
@@ -137,12 +137,12 @@ const Languages = ({ classes }) => {
                             onChange={(e) => setOtherLanguage(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOtherLanguage())}
                             placeholder="Type a language..."
-                            className="flex-1 h-8 md:h-9 bg-transparent border border-gray-700 rounded-lg py-1 px-2 text-xs md:text-sm"
+                            className="flex-1 h-8 md:h-9 bg-transparent border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm"
                         />
                         <button
                             type="button"
                             onClick={handleAddOtherLanguage}
-                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs md:text-sm hover:bg-blue-700 transition-colors"
+                            className="px-3 py-1.5 bg-[#0E7F41] text-white rounded-md text-xs md:text-sm hover:bg-[#0a5f31] transition-colors"
                         >
                             Add
                         </button>
@@ -151,6 +151,10 @@ const Languages = ({ classes }) => {
             )}
         </div>
     );
+};
+
+Languages.propTypes = {
+    classes: PropTypes.string,
 };
 
 export default Languages;

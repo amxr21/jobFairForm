@@ -1,6 +1,8 @@
-import { useState, useRef, createContext } from "react";
+import PropTypes from "prop-types";
+import { useState, createContext } from "react";
 
 
+// eslint-disable-next-line react-refresh/only-export-components -- context is tightly coupled to FormProvider, kept in one file
 export const FormContext = createContext();
 
 
@@ -62,6 +64,8 @@ export const FormProvider = ( {children} ) => {
             key != "Field Interest" &&
             key != "Opportunity Type" &&
             key != "Preferred Work City" &&
+            key != "tempFirst" &&
+            key != "tempLast" &&
             isEmptyValue(value)
           )
           .map(([key]) => key)
@@ -104,6 +108,8 @@ export const FormProvider = ( {children} ) => {
             key !== "Field Interest" &&
             key !== "Opportunity Type" &&
             key !== "Preferred Work City" &&
+            key !== "tempFirst" &&
+            key !== "tempLast" &&
             isEmptyValue(value)
           );
         })
@@ -155,7 +161,11 @@ export const FormProvider = ( {children} ) => {
 
     return (
         <FormContext.Provider value={{formData, updateFormData, setFormData, fieldMissing, setFieldMissing}}>
-            {children} 
+            {children}
         </FormContext.Provider>
     )
 }
+
+FormProvider.propTypes = {
+    children: PropTypes.node,
+};

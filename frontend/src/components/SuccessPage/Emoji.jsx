@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const Emoji = ({ imageSrc, imageAlt, classes }) => {
     return (
         <span>
@@ -5,5 +7,11 @@ const Emoji = ({ imageSrc, imageAlt, classes }) => {
         </span>
     )
 }
+
+Emoji.propTypes = {
+    imageSrc: PropTypes.string,
+    imageAlt: PropTypes.string,
+    classes: PropTypes.string,
+};
 
 export default Emoji

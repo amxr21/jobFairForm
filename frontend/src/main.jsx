@@ -1,23 +1,22 @@
-import React from 'react';
 import ReactDOM from 'react-dom'
 
 import App from './App.jsx'
-import { AuthContextProvidor } from './Context/UserAuthContext.jsx'
+import { AuthContextProvidor } from './context/UserAuthContext.jsx'
+import { ThemeProvider } from './context/ThemeContext.jsx'
+import { ToastProvider } from './components/Toast.jsx'
 
 // React 17, the one compatible with render hosting
 const app = document.getElementById("root");
 ReactDOM.render(
-      <AuthContextProvidor>
-        <App/>
-      </AuthContextProvidor>
+      <ThemeProvider>
+        <ToastProvider>
+          <AuthContextProvidor>
+            <App/>
+          </AuthContextProvidor>
+        </ToastProvider>
+      </ThemeProvider>
       ,app
     )
-// ReactDOM.render(
-//       <AuthContextProvidor>
-//         <App/>
-//       </AuthContextProvidor>
-//       ,app
-//     )
 
 
 // React 18
@@ -25,7 +24,7 @@ ReactDOM.render(
   //   <React.StrictMode>
   //     <AuthContextProvidor>
   //       <App />
-  
+
   //     </AuthContextProvidor>
   //   </React.StrictMode>,
   // )

@@ -1,4 +1,5 @@
-import useFormContext from "../../Hooks/useFormContext";
+import PropTypes from "prop-types";
+import useFormContext from "../../hooks/useFormContext";
 import { useRef } from "react";
 import { Input, RequiredAstrik } from "./index";
 
@@ -23,12 +24,17 @@ const Experiences = ({label, classes}) => {
                     ref={message}
                     name="TechnicalSkills"
                     id="TechnicalSkills"
-                    className="flex-1 w-full bg-transparent border border-gray-700 rounded-lg py-1.5 px-2 resize-none overflow-auto min-h-0"
+                    className="flex-1 w-full bg-transparent border border-line-strong rounded-lg py-1.5 px-2 resize-none overflow-auto min-h-0"
                 ></textarea>
             </div>
         </div>
     )
 }
 
+
+Experiences.propTypes = {
+    label: PropTypes.string,
+    classes: PropTypes.string,
+};
 
 export default Experiences;

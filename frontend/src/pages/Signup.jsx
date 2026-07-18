@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSignUp } from "../Hooks/useSignUp";
+import { useSignUp } from "../hooks/useSignUp";
 
 export const Signup = () => {
   const [email, setEmail] = useState("");
@@ -16,8 +16,8 @@ export const Signup = () => {
 
   return (
     <div className="md:h-[60vh] flex flex-col md:flex-row gap-x-10">
-        <h2 className="text-3xl font-bold mb-6 bg-white rounded-lg px-8 py-6 shadow-2xl md:h-80">Sign up</h2>
-        <form onSubmit={handleSubmit} className="bg-white md:w-1/2 md:h-80 h-fit rounded-lg px-8 py-6 shadow-2xl">
+        <h2 className="text-3xl font-bold mb-6 bg-surface-card rounded-lg px-8 py-6 shadow-2xl md:h-80">Sign up</h2>
+        <form onSubmit={handleSubmit} className="bg-surface-card md:w-1/2 md:h-80 h-fit rounded-lg px-8 py-6 shadow-2xl">
             {/* Input fields for registration */}
             <div className="w-full py-2">
             <input
@@ -25,14 +25,14 @@ export const Signup = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
-                className="w-full p-2 border rounded-md mb-1"
+                className="w-full p-2 bg-transparent text-fg border-line-strong border rounded-md mb-1"
             />
             <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full p-2 mt-2 border rounded-md mb-4"
+                className="w-full p-2 mt-2 bg-transparent text-fg border-line-strong border rounded-md mb-4"
             />
             <button disabled={isLoading} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4">
                 Sign up
