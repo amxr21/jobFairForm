@@ -88,10 +88,17 @@
 
 body {
   position: relative;
+  background-color: #ffffff;
+  color: #111827;
   /* background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.jpg") no-repeat; */
   /* background-size: 100% auto;
   background-attachment: fixed;
   background-position: left bottom; */
+}
+
+.dark body {
+  background-color: #0b1220;
+  color: #e5e7eb;
 }
 
 #intro::-webkit-scrollbar {
