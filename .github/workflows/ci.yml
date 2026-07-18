@@ -56,5 +56,5 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npx prisma generate
-      - run: npx prisma db push --skip-generate
+      - run: npx prisma db push
       - run: npm run test:mysql
