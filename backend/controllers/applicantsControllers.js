@@ -8,6 +8,15 @@ dotenv.config();
 const nodemailer = require("nodemailer");
 
 const sendEmail = async (subject, message, send_to, sent_from) => {
+    // The ticket email is a best-effort side effect that runs *after* the
+    // response is sent. A throw here (bad SMTP credentials, no recipient,
+    // network blip) would otherwise become an unhandled rejection and take
+    // the whole process down — losing submissions for every other user.
+    if (!send_to) {
+        console.error("Skipping email: no recipient address");
+        return;
+    }
+
     const transporter = nodemailer.createTransport({
         host: "smtp.outlook.com",
         secure: false,
@@ -29,8 +38,7 @@ const sendEmail = async (subject, message, send_to, sent_from) => {
     };
 
     transporter.sendMail(options, function (err, info) {
-        if (err) console.log(err);
-        else { console.log("Email sent"); }
+        if (err) console.error("Email send failed:", err.message);
     });
 };
 
@@ -295,12 +303,7 @@ async function createApplicant(req, { userIdField }) {
 const addApplicant = async (req, res) => {
     const userId = !req.user ? null : req.user._id;
     try {
-        console.log("Recieved POST request to /applicants");
-        console.log("Request body: ", req.body);
-        console.log("Uploaded applicant CV: ", req.file);
-
         const applicantProfile = await createApplicant(req, { userIdField: userId });
-        console.log(applicantProfile);
 
         QRCode.toDataURL(JSON.stringify(applicantProfile.id), (err, url) => {
             res.status(200).json({ url: url, applicantProfile: toApplicantJson(applicantProfile) });
@@ -322,12 +325,12 @@ const addApplicant = async (req, res) => {
                 }),
                 req.body.email,
                 `CASTO Office <${process.env.USER_EMAIL}>`
-            );
+            ).catch((e) => console.error("Ticket email failed:", e.message));
         });
 
     } catch (error) {
-        console.log("----this is the error---\n\n\n\n\n\n\n\n\n\n\n\n-", error, "---------\n\n\n\n\n\n\n\n");
-        res.status(500).json({ error: "Request is never sent...T-T" });
+        console.error("Failed to create applicant:", error.message);
+        res.status(500).json({ error: "Could not save your application. Please try again." });
     }
 };
 
@@ -342,7 +345,7 @@ const getApplicant = async (req, res) => {
         const applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
         res.status(200).json(toApplicantJson(applicant));
     } catch (error) {
-        console.log(error);
+        console.error("Failed to fetch applicant:", error.message);
         res.status(401).json({ error: "did not find the applicant" });
     }
 };
@@ -375,17 +378,14 @@ const updateApplicant = async (req, res) => {
 
         if (req.body.hasOwnProperty("user_id") && Array.isArray(req.body.user_id) && req.body.user_id[0]) {
             await addRelationByCompanyName(id, req.body.user_id[0], "applied")
-                .catch((err) => console.log({ error: err.message }));
+                .catch((err) => console.error("Failed to link company:", err.message));
         }
 
         const applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
-        console.log(id);
-        console.log(applicant);
-
         res.status(200).json(toApplicantJson(applicant));
 
     } catch (error) {
-        console.log({ error: error.message });
+        console.error("Applicant lookup failed:", error.message);
         res.status(404).json({ error: "No such id for an applicant" });
     }
 };
@@ -394,10 +394,13 @@ const addApplicantPublic = async (req, res) => {
     try {
         const applicantProfile = await createApplicant(req, { userIdField: null });
 
-        console.log(applicantProfile, "------this is the added applicant publically-----");
-
         QRCode.toDataURL((JSON.stringify(applicantProfile.id)), (err, url) => {
-            res.status(200).json({ url: url, applicantProfile: toApplicantJson(applicantProfile) });
+            // The applicant row is already committed at this point, so a QR
+            // rendering failure must not fail the submission — the frontend
+            // builds the ticket from applicantProfile._id regardless.
+            if (err) console.error("QR generation failed:", err.message);
+
+            res.status(200).json({ url: url ?? null, applicantProfile: toApplicantJson(applicantProfile) });
             const ticketUrl = `${req.body.dashboardUrl || 'https://job-fair-control.vercel.app'}/my-qr-code`;
             sendEmail(
                 `Your Entry Confirmation – Ticket #${req.body.uniId}`,
@@ -466,18 +469,16 @@ const addApplicantPublic = async (req, res) => {
                 </div>`,
                 req.body.email,
                 "CASTO – Internship Fair <internshipfair@sharjah.ac.ae>"
-            );
+            ).catch((e) => console.error("Ticket email failed:", e.message));
         });
 
     } catch (error) {
-        console.log("Error in addApplicantPublic:", error);
-        res.status(500).json({ error: error.message });
+        console.error("Failed to create applicant (public):", error.message);
+        res.status(500).json({ error: "Could not save your application. Please try again." });
     }
 };
 
 const emailRequest = async (req, res) => {
-    console.log(req.body, "This is the request\n\n\n\n\n");
-
     const emailTemplate = {
         i: `<div style="max-width:600px; padding:20px; background-color:#f9f9f9; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:center; font-family:Arial, sans-serif; color:#333; line-height:1.6;">
             <h1 style="margin-bottom:20px; font-size:24px;">Interview Invitation</h1>
@@ -551,9 +552,6 @@ const apply = async (req, res) => {
         }
 
         const applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
-        console.log(id);
-        console.log(applicant);
-
         res.status(200).json(toApplicantJson(applicant));
 
     } catch (error) {
@@ -598,16 +596,13 @@ const confirmAttendant = async (req, res) => {
         } else {
             applicant = await prisma.applicant.findUnique({ where: { id }, include: applicantWithRelationsInclude });
         }
-        console.log(id);
-        console.log(applicant);
-
         res.status(200).json(toApplicantJson(applicant));
 
     } catch (error) {
         // Was a hang-forever bug: this catch never sent a response, so a
         // well-formed but nonexistent id (isValidId only checks format,
         // not existence) left the request open with no reply.
-        console.log({ error: error.message });
+        console.error("Applicant lookup failed:", error.message);
         res.status(404).json({ error: "No such id for an applicant" });
     }
 };

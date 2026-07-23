@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
 import useFormContext from "../../hooks/useFormContext";
+import { useToast } from "../Toast";
 
 const ProfessionalInfo = () => {
+    const toast = useToast();
+
     const [majors, setMajors] = useState([]);
     const [colleges, setColleges] = useState([]);
 
@@ -66,17 +69,25 @@ const ProfessionalInfo = () => {
         setSelectedMajor(value);
     };
 
-    const uploadCV = (e) => {
-        let file = e.target.files[0];
+    // Must match multer's `limits.fileSize` in backend/config/cloudinary.js —
+    // the frontend previously capped at 2MB while the backend allowed 4MB.
+    const MAX_CV_BYTES = 4 * 1024 * 1024;
 
-        if(file?.size <= 2 * 1024 *1024){
-            updateFormData("CV", file);
-            console.log("File uploaded successfully:", file);
-        }
-        else{
-            alert("Can't exceed 2MB !")
+    const uploadCV = (e) => {
+        const file = e.target.files[0];
+
+        // Cancelling the file picker fires change with no file. The old
+        // `file?.size <= MAX` was false in that case and wrongly showed the
+        // "too large" error, so bail out first.
+        if (!file) return;
+
+        if (file.size > MAX_CV_BYTES) {
+            toast("Your CV must be under 4MB.", { type: 'warning' });
             e.target.value = '';
+            return;
         }
+
+        updateFormData("CV", file);
     };
 
     return (

@@ -2,7 +2,9 @@ import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-const linkUrl = 'https://jobfair-1.onrender.com';
+// Was hardcoded, so this component ignored VITE_API_URL and always hit the
+// production backend even in local dev. Same fallback pattern as Form.jsx.
+const linkUrl = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
 
 const QrScanner = () => {
 
@@ -34,8 +36,6 @@ const QrScanner = () => {
                     await axios.get(`${linkUrl}/companies/${result}`)
                     .then((response)=>{
                         if(response) {
-                            console.log(response.data);
-                            // console.log(company);
                             setScannerResult(response.data.email.split("@")[0])
                             setCompany(response.data)
                         }
@@ -47,8 +47,9 @@ const QrScanner = () => {
                         setApplicant(response.data);
                     })
 
-                } catch(error){
-                    console.log("Failed to fetch data", error);
+                } catch{
+                    // Scanned code didn't resolve to a company; the UI keeps
+                    // the raw result visible so the user can rescan.
                 }
             }
 
@@ -65,15 +66,13 @@ const QrScanner = () => {
     useEffect(() => {
         const applyApplicant = async () => {
             if(company && applicant){
-                console.log(applicant._id);
                 try{
                     if(applicant?._id && company){
-                        const patchRes =  await axios.patch(`${linkUrl}/applicant/apply/${applicant?._id}`, {user_id: [company.email.split("@")[0]]});
-                        console.log(patchRes);
+                        await axios.patch(`${linkUrl}/applicant/apply/${applicant?._id}`, {user_id: [company.email.split("@")[0]]});
                     }
-                } catch(error){
-                    console.log("failed");
-
+                } catch{
+                    // Non-fatal: the scan already showed the company to the
+                    // user; the apply relation is retried on the next scan.
                 }
             }
 

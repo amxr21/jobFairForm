@@ -72,8 +72,6 @@ export const FormProvider = ( {children} ) => {
       );
 
 
-    console.log(fieldMissing);
-    
 
     const updateFormData = (inputName, value) => {
         const updatedData = { ...formData, [inputName]: value };

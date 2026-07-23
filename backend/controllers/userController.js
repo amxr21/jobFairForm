@@ -38,10 +38,9 @@ const loginUser = async (req, res) => {
 
         res.status(200).json({ user_id, email, token });
     } catch (error) {
-        if (req.password) {
-            console.log("Incorrect password");
-            res.json({ error: "Incorrect password" });
-        }
+        // Was sending two responses when req.password was set (the second
+        // triggering ERR_HTTP_HEADERS_SENT); the error message already
+        // distinguishes the failure.
         res.status(400).json({ error: error.message });
     }
 };
@@ -81,7 +80,7 @@ const signupUser = async (req, res) => {
 
         res.status(200).json({ user_id, email, token });
     } catch (error) {
-        console.log("ERROR....");
+        console.error("Signup failed:", error.message);
         res.status(400).json({ error: error.message });
     }
 };

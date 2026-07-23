@@ -44,11 +44,10 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  console.log("Request type: ", req.method);
-  console.log("Request path: ", req.path);
-  console.log("Request body: ", req.body);
-  next();
+// Lightweight health endpoint — lets uptime checks (and a quick curl) confirm
+// the service is actually up without hitting the database or an auth'd route.
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
 });
 
 app.use("/", routers);

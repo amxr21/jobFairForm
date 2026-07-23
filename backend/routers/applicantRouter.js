@@ -56,11 +56,11 @@ router.post("/bulk-evaluation-emails", sendBulkEvaluationEmails);
 router.post("/applicants", (req, res, next) => {
     upload.single("cvfile")(req, res, (err) => {
         if (err) {
-            console.log("Upload middleware error:", err);
+            // Surface the real reason (file too large / wrong type) so the
+            // frontend can show something actionable.
+            console.error("CV upload failed:", err.message);
             return res.status(400).json({ error: err.message });
         }
-        console.log("After upload middleware - req.file:", req.file);
-        console.log("After upload middleware - req.body keys:", Object.keys(req.body));
         next();
     });
 }, addApplicantPublic);
