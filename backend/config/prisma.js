@@ -13,15 +13,34 @@ let poolConfig = rawUrl;
 if (wantsSsl) {
   const caPath = process.env.DB_CA_CERT_PATH;
   const caExists = caPath && fs.existsSync(caPath);
-  if (caPath && !caExists) {
-    console.warn(
-      `DB_CA_CERT_PATH is set to "${caPath}" but that file was not found. ` +
-        `Falling back to unverified TLS — download ca.pem from the Aiven console and save it there.`
-    );
+
+  // certs/ is gitignored, so ca.pem is never present on a host that deploys
+  // from git (Render). DB_CA_CERT reads the certificate's *contents* straight
+  // from an env var, which is how a managed host can supply it without a file.
+  const caInline = process.env.DB_CA_CERT;
+
+  let ssl;
+  if (caInline) {
+    ssl = { ca: caInline, rejectUnauthorized: true };
+  } else if (caExists) {
+    ssl = { ca: fs.readFileSync(caPath), rejectUnauthorized: true };
+  } else {
+    // Neither form of the CA is available. Keeping rejectUnauthorized:true
+    // here guarantees a handshake failure — the driver has nothing to verify
+    // against — which surfaces as "pool timeout: ... active=0 idle=0" after
+    // 30s rather than a TLS error, making it look like a network problem.
+    //
+    // Aiven's certificate chains to a public root, so Node's built-in CA
+    // bundle can verify it. Prefer that over disabling verification.
+    if (caPath) {
+      console.warn(
+        `DB_CA_CERT_PATH is set to "${caPath}" but that file was not found, ` +
+          `and DB_CA_CERT is empty. Falling back to Node's built-in CA bundle. ` +
+          `Set DB_CA_CERT to the contents of ca.pem to pin Aiven's CA explicitly.`
+      );
+    }
+    ssl = { rejectUnauthorized: process.env.DB_SSL_INSECURE !== "true" };
   }
-  const ssl = caExists
-    ? { ca: fs.readFileSync(caPath), rejectUnauthorized: true }
-    : { rejectUnauthorized: process.env.DB_SSL_INSECURE !== "true" };
 
   // The mariadb PoolConfig has no `url` field, so the connection string must
   // be broken into discrete fields to attach `ssl` alongside them.
