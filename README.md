@@ -16,6 +16,7 @@ A dedicated web application designed to simplify and digitize the application pr
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
+- [Troubleshooting](#troubleshooting)
 - [Recent Updates](#recent-updates)
 - [Contributing](#contributing)
 - [License](#license)
@@ -55,6 +56,12 @@ This application is built to work seamlessly with the [JobFair Dashboard](https:
 - Phone number validation (local 05XXXXXXXX or international +971XXXXXXXXX)
 - Email format validation
 - CGPA range validation (0-4)
+- CV upload capped at **4MB** (PDF/DOC/DOCX). This limit lives in two places
+  that must stay equal: `MAX_CV_BYTES` in `ProfessionalInfo.jsx` and multer's
+  `limits.fileSize` in `backend/config/cloudinary.js`
+- Submission requires an explicit set of fields (`REQUIRED_FIELDS` in
+  `Form.jsx`) — never a count of how many fields happen to be filled, which
+  silently miscounts as optional fields are added or cleared
 
 ---
 
@@ -157,6 +164,12 @@ Frontend (React + Vite)
    VITE_API_URL=your_backend_url
    ```
 
+   > **Keep this in sync with the deployed host.** Every component reads
+   > `VITE_API_URL` and falls back to a hardcoded production URL only if it is
+   > unset. If the `.env` files and that fallback point at different hosts, the
+   > app silently talks to whichever one the build resolved — set
+   > `VITE_API_URL` explicitly in Vercel's environment variables.
+
 4. Run the development servers
 
    In two separate terminals:
@@ -233,7 +246,63 @@ jobFairForm/
 
 ---
 
+## Troubleshooting
+
+### Submissions fail with a CORS error
+
+```
+Access to XMLHttpRequest at '<backend>/applicants' has been blocked by CORS
+policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+AxiosError: Network Error
+```
+
+**Check whether the backend is actually running before touching any CORS
+config.** A missing `Access-Control-Allow-Origin` header means the response
+carried no CORS headers at all — which a *down* server produces just as
+readily as a misconfigured one. If the request never reaches Express, the CORS
+middleware never runs, and the browser reports it as a CORS failure.
+
+Diagnose with a direct request that bypasses the browser:
+
+```bash
+curl -i https://<your-backend-host>/health
+```
+
+| What you see | What it means |
+|---|---|
+| `404` + `x-render-routing: no-server`, answers in <1s | Render service is **down** — redeploy it |
+| `404` + `x-railway-fallback: true` | Railway app **not found** — wrong host or not deployed |
+| Hangs 30–60s, then responds | Free-tier **cold start**, not an error |
+| `{"status":"ok"}` | Backend is up — now it's genuinely worth checking CORS |
+
+The allowlist lives in `backend/app.js` (`ALLOWED_ORIGINS`). Note that
+`Access-Control-Allow-Origin` must be a **single origin string**, never an
+array — echo back `req.headers.origin` when it matches the allowlist.
+
+### The app talks to the wrong backend
+
+Every component reads `import.meta.env.VITE_API_URL` and falls back to a
+hardcoded production URL only when it's unset. If `.env` and that fallback name
+different hosts, the deployed build may reach neither. Set `VITE_API_URL`
+explicitly in Vercel and confirm it matches the host you actually deploy.
+
+### Health check
+
+`GET /health` returns `{ "status": "ok", "uptime": <seconds> }` without
+touching the database or requiring auth — use it for uptime monitors and for
+the curl check above.
+
+---
+
 ## Recent Updates
+
+### v2.3 (July 2026)
+- **Submission Reliability:** Replaced a fragile count-based submit gate (`filledFields.length >= 16`) with an explicit required-field list — it previously rejected complete applications when an optional field was cleared, and accepted incomplete ones padded with optional values
+- **Error Messaging:** Submission failures now distinguish timeout, offline, oversized-CV, validation, and server errors instead of a single generic message; added a request timeout so a cold-starting backend can't leave the overlay spinning
+- **Process Stability:** A failed ticket email or QR render can no longer crash the backend — post-response side effects are caught, with `unhandledRejection`/`uncaughtException` handlers as a backstop
+- **Privacy:** Removed request-body logging that wrote applicant PII (names, emails, phone numbers) into server logs
+- **Health Endpoint:** Added `GET /health` for uptime checks and deploy verification
+- **Consistency Fixes:** Aligned the CV size limit (UI 2MB vs. backend 4MB), stopped the "file too large" error firing when the picker is cancelled, and routed `CheckId`/`QrScanner` through `VITE_API_URL` instead of a hardcoded production host
 
 ### v2.2 (July 2026)
 - **Dark Mode:** Light/dark toggle with a fully designed dark palette — semantic surface/border/text tokens across every form component, not a blanket color inversion
