@@ -2,9 +2,7 @@ import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-// Was hardcoded, so this component ignored VITE_API_URL and always hit the
-// production backend even in local dev. Same fallback pattern as Form.jsx.
-const linkUrl = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
+import { API_URL as linkUrl } from "../../config/api";
 
 const QrScanner = () => {
 

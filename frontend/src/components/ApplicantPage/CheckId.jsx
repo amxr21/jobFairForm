@@ -5,9 +5,7 @@ import { IdContext } from "../../context/IdContext"
 
 import axios from "axios";
 
-// Was hardcoded, so this component ignored VITE_API_URL and always hit the
-// production backend even in local dev. Same fallback pattern as Form.jsx.
-const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
+import { API_URL as link } from "../../config/api";
 
 const CheckId = ({value}) => {
     const checkIdDiv = useRef();
