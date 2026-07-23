@@ -5,6 +5,10 @@ import { IdContext } from "../../context/IdContext"
 
 import axios from "axios";
 
+// Was hardcoded, so this component ignored VITE_API_URL and always hit the
+// production backend even in local dev. Same fallback pattern as Form.jsx.
+const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
+
 const CheckId = ({value}) => {
     const checkIdDiv = useRef();
 
@@ -17,22 +21,17 @@ const CheckId = ({value}) => {
     const getA = async () => {
         if(value){
             checkIdDiv.current.classList.replace("mt-0", "-mt-48")
-            console.log(checkIdDiv.current,checkIdDiv.current.classList);
         }
         try{
-            const response = await axios.get("https://jobfair-1.onrender.com/applicants/"+checkIdDiv.current.children[1].value)
-            console.log(inputValue);
+            const response = await axios.get(`${link}/applicants/${checkIdDiv.current.children[1].value}`)
             if(response && response.data.applicantDetails){
                 setInputValue(true);
-                console.log(response.data);
-                console.log(inputValue);
                 inputValue
                 ? checkIdDiv.current.classList.replace("mt-0", "-mt-48")
                 : checkIdDiv.current.classList.replace("mt-0", "mt-0")
             }
         }
-        catch(error){
-            console.log(inputValue);
+        catch{
             setInputValue(false);
             setError(true)
         }

@@ -17,8 +17,10 @@ const QuickApplyForm = () => {
         .then((response) => {
             setApplicant(response.data);
         })
-
-        console.log(inputValue);
+        // Without this the lookup rejects unhandled whenever the id doesn't
+        // exist (or the backend is unreachable); CheckId already surfaces the
+        // "No such an id" message to the user.
+        .catch(() => {})
     }, [inputValue])
 
 

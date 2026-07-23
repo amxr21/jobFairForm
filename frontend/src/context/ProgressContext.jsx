@@ -28,8 +28,6 @@ export const ProgressProvider = ({ children }) => {
 
     const updateProgress = (percentage) => {
         setProgress(percentage)
-        console.log(progress);
-        
     }
 
 

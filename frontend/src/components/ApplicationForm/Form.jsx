@@ -22,6 +22,30 @@ import AnimatedSuccess from "./AnimatedSuccess";
 import { useToast } from "../Toast";
 
 
+// The fields an application genuinely cannot be submitted without. Previously
+// the submit gate just counted how many values in formData were non-empty
+// (`filledFields.length >= 16`), which was wrong in both directions: filling
+// enough *optional* fields let an incomplete application through, and a
+// complete application could be rejected because the count happened to land
+// under the threshold. Gate on these specific keys instead.
+const REQUIRED_FIELDS = [
+    "Full Name",
+    "University ID",
+    "Date of Birth",
+    "Gender",
+    "City",
+    "Nationality",
+    "Email address",
+    "Mobile number",
+    "College",
+    "Major",
+    "Study Program",
+    "languages",
+    "Technical Skills",
+    "Non-technical skills",
+    "Experience",
+];
+
 const keyMap = {
     uniId: "University ID",
     fullName: "Full Name",
@@ -55,7 +79,7 @@ const keyMap = {
 
 const Form = () => {
 
-    const { formData, fieldMissing } = useFormContext()
+    const { formData } = useFormContext()
     const toast = useToast();
 
     const { user } = useAuthContext();
@@ -110,14 +134,45 @@ const Form = () => {
 
 
     const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Guard against a double submit (double-click, or Enter landing on the
+        // button while a request is already in flight) creating two applicants.
+        if (submitPhase !== "idle") return;
+
+        const isFieldFilled = (value) => {
+            if (typeof value === "string") return value.trim() !== "";
+            if (Array.isArray(value)) return value.length > 0;
+            if (value instanceof File) return value.size > 0;
+            if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
+            return value !== null && value !== undefined;
+        };
+
+        // Validate before showing the overlay, so a failed check never flashes
+        // a loading state.
+        const uniId = String(formData["University ID"] ?? "").trim();
+        const missingRequired = REQUIRED_FIELDS.filter((key) => !isFieldFilled(formData[key]));
+        const isUniIdValid = /^\d{8}$/.test(uniId);
+
+        if (missingRequired.length > 0 || !isUniIdValid) {
+            const summary = [
+                ...missingRequired,
+                ...(!isUniIdValid && isFieldFilled(formData["University ID"])
+                    ? ["University ID must be exactly 8 digits"]
+                    : []),
+            ];
+            const summaryText = summary.length > 3
+                ? `${summary.slice(0, 3).join(", ")} and ${summary.length - 3} more`
+                : summary.join(", ");
+            toast(summaryText ? `Please complete: ${summaryText}` : "Please complete the required fields", { type: 'warning' });
+            return;
+        }
 
         try {
 
             setSubmitPhase("loading")
 
-            e.preventDefault()
             const formDataToSend = new FormData();
-            console.log(formData);
 
             for (const [apiKey, formKey] of Object.entries(keyMap)) {
                 const value = formData[formKey];
@@ -142,74 +197,29 @@ const Form = () => {
 
 
 
-              const isFieldFilled = (value) => {
-                if (typeof value === "string") return value.trim() !== "";
-                if (Array.isArray(value)) return value.length > 0;
-                if (value instanceof File) return value.size > 0;
-                if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
-                return value !== null && value !== undefined;
-              };
-
-              const filledFields = Object.values(formData).filter(isFieldFilled);
-
-              console.log('====================================');
-              console.log(filledFields);
-              console.log('====================================');
-
-
-
-            // const requiredFieldsFilled = Object.values(requiredKey).every(key => requiredKey[key]?.trim() !== "");
-            // const validEmail = formData["Email address"]?.trim() !== "";
-            // const validUniversityId = formData["University ID"]?.trim().length === 8;
-
-            // if (requiredFieldsFilled && validEmail && validUniversityId) {
-
-            console.log('====================================');
-            console.log(filledFields);
-            console.log(formData["Email address"]);
-            console.log(formData["University ID"]?.length);
-            console.log('====================================');
-
-            if (filledFields.length >= 16 && formData["University ID"] && formData["University ID"].length == 8 && formData["Nationality"] != '' && formData["Major"] != '' ) {
-                    e.preventDefault();
-
-                    console.log("Application submitted successfully");
-
-
-                    let confirmationResponse;
-                    if(!user?.token){
-                        confirmationResponse = await axios.post(`${link}/applicants`, formDataToSend);
-
-                    }
-                    else{
-                        confirmationResponse = await axios.post(`${link}/applicants`, formDataToSend,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${user?.token}`
-                            }
-                        }
-                );}
-
-                // console.log(confirmationResponse, "\n\n\n\n-------------------------------\n\n\n\n");
-                console.log(confirmationResponse.data.applicantProfile._id);
-                setQRCodeSrc(confirmationResponse.data.applicantProfile._id);
-                if(!confirmationResponse){
-                    console.log("QR code has not been generated");
+            const confirmationResponse = await axios.post(
+                `${link}/applicants`,
+                formDataToSend,
+                {
+                    // A cold-starting free-tier backend can take well over the
+                    // default (no) timeout to answer; cap the wait so the user
+                    // gets an actionable error instead of an overlay that
+                    // spins forever.
+                    timeout: 60000,
+                    ...(user?.token
+                        ? { headers: { Authorization: `Bearer ${user.token}` } }
+                        : {}),
                 }
-                }
+            );
 
-            else{
-                setSubmitPhase("idle") // close the overlay; nothing was submitted
-
-                const missingSummary = (Array.isArray(fieldMissing) ? fieldMissing : (fieldMissing || "").split(", ")).filter(Boolean);
-                const summaryText = missingSummary.length > 3
-                    ? `${missingSummary.slice(0, 3).join(", ")} and ${missingSummary.length - 3} more`
-                    : missingSummary.join(", ");
-                toast(summaryText ? `Please complete: ${summaryText}` : "Please complete the required fields", { type: 'warning' });
-
-                return;
+            // The ticket QR is keyed off the created applicant's id. If the
+            // backend answered but not in the shape we expect, treat it as a
+            // failure rather than silently rendering a ticket with no QR.
+            const applicantId = confirmationResponse?.data?.applicantProfile?._id;
+            if (!applicantId) {
+                throw new Error("Submission succeeded but no ticket was returned.");
             }
-
+            setQRCodeSrc(applicantId);
 
             // Play the success sequence: dots → graduation cap ("success"),
             // hold, then fade the overlay out as the ticket is revealed.
@@ -220,15 +230,32 @@ const Form = () => {
                 setTimeout(() => setSubmitPhase("done"), 550);
             }, 1300);
 
-
-
         } catch (error) {
-            console.error(error);
             setSubmitPhase("idle");
-            toast('Something went wrong submitting your application. Please try again.', { type: 'error' });
-        }
-        finally{
-            console.log('We are done');
+
+            // Distinguish the failure modes so the user knows whether to retry
+            // now, fix their input, or come back later — "something went wrong"
+            // for an unreachable backend just reads as the form being broken.
+            let message = "Something went wrong submitting your application. Please try again.";
+            if (error?.code === "ECONNABORTED") {
+                message = "The server took too long to respond. Please try submitting again.";
+            } else if (error?.response) {
+                const status = error.response.status;
+                const serverMessage = error.response.data?.error || error.response.data?.message;
+                if (status === 413) {
+                    message = "Your CV is too large. Please upload a file under 4MB.";
+                } else if (status === 400) {
+                    message = serverMessage || "Some of your details were rejected. Please review the form and try again.";
+                } else if (status >= 500) {
+                    message = "The server had a problem saving your application. Please try again in a moment.";
+                } else if (serverMessage) {
+                    message = serverMessage;
+                }
+            } else if (error?.request) {
+                message = "Couldn't reach the server. Check your connection and try again.";
+            }
+
+            toast(message, { type: 'error' });
         }
 
 
