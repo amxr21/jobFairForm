@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
 
-const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
+import { API_URL as link } from "../config/api";
 
 export const useSignUp = () => {
     const [ error, setError ] = useState(null);

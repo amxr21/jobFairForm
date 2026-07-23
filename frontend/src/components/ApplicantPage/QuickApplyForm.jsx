@@ -4,7 +4,7 @@ import { useState, useEffect, useContext } from "react";
 
 import { CheckId, QrScanner, IdContext } from "./index"
 
-const linkUrl = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com"
+import { API_URL as linkUrl } from "../../config/api";
 
 const QuickApplyForm = () => {
     const [applicant, setApplicant] = useState({id: "", name: "Ammar"});

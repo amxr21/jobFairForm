@@ -5,7 +5,7 @@ import axios from "axios";
 import QRCode from "qrcode.react";
 import { X, Ticket, Search } from "lucide-react";
 
-const link = import.meta.env.VITE_API_URL || "https://jobfair-1.onrender.com";
+import { API_URL as link } from "../../config/api";
 
 // A student who already applied can retrieve their ticket (QR + attendance
 // status) by University ID instead of filling the whole form again. Modeled on

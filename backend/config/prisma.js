@@ -25,6 +25,17 @@ if (wantsSsl) {
 
   // The mariadb PoolConfig has no `url` field, so the connection string must
   // be broken into discrete fields to attach `ssl` alongside them.
+  //
+  // `new URL("")` throws TypeError at MODULE LOAD time, which happens before
+  // app.js can mount any routes — so a missing/blank DATABASE_URL (with
+  // DB_CA_CERT_PATH set) would kill the process at startup with an opaque
+  // "Invalid URL". Fail with a message that names the actual problem.
+  if (!rawUrl) {
+    throw new Error(
+      "DATABASE_URL is not set. The database connection cannot be configured — " +
+        "set it in the deployment's environment variables."
+    );
+  }
   const parsed = new URL(rawUrl);
   poolConfig = {
     host: parsed.hostname,
