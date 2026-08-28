@@ -11,11 +11,22 @@ dotenv.config();
 // an array — setting it to an array serialized to a comma-joined value the
 // browser rejects, which broke every cross-origin request (e.g. the ticket
 // lookup). Echo back the request's Origin when it's in the allowlist.
-const ALLOWED_ORIGINS = [
+// Deployment hosts come from ALLOWED_ORIGINS (comma-separated), mirroring
+// apps/dashboard/backend. Hardcoding them here is what left the Coolify
+// frontend permanently blocked — a new host needed a code change, not a
+// config change. Localhost dev origins stay built in.
+const DEFAULT_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:3001",
-  "https://job-fair-form.vercel.app",
+  "http://localhost:5173",
 ];
+
+const ENV_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const ALLOWED_ORIGINS = [...DEFAULT_ORIGINS, ...ENV_ORIGINS];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;

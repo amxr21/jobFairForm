@@ -7,6 +7,26 @@
 //
 // Set VITE_API_URL in the deployment's environment variables — Vite inlines it
 // at BUILD time, so changing it requires a redeploy, not just a restart.
-export const API_URL = import.meta.env.VITE_API_URL || "https://jobfairform-backend.onrender.com";
+//
+// There is deliberately NO production fallback host. Defaulting to one meant a
+// production build with a missing VITE_API_URL came out looking healthy while
+// silently talking to a decommissioned server. A misconfigured deploy must
+// fail loudly instead.
+const CUSTOM_URL = import.meta.env.VITE_API_URL;
+
+function resolveApiUrl() {
+    if (CUSTOM_URL) return CUSTOM_URL;
+
+    if (import.meta.env.PROD) {
+        throw new Error(
+            'VITE_API_URL is not set. Production builds must define it at build time — ' +
+            'there is no default backend host.'
+        );
+    }
+
+    return 'http://localhost:2001';
+}
+
+export const API_URL = resolveApiUrl();
 
 export default API_URL;

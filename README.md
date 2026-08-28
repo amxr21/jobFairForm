@@ -86,8 +86,11 @@ This application is built to work seamlessly with the [JobFair Dashboard](https:
 
 ### Hosting
 
-- Frontend: Vercel
-- Backend: Render
+- Frontend + Backend: Hostinger KVM VPS via Coolify (Docker), behind Traefik
+- Database: shared MySQL on the same VPS, also used by the dashboard app
+
+See [docs/deployment-coolify.md](docs/deployment-coolify.md) for the full
+deployment procedure, environment variables, and schema loading.
 
 ### CI
 
@@ -164,11 +167,10 @@ Frontend (React + Vite)
    VITE_API_URL=your_backend_url
    ```
 
-   > **Keep this in sync with the deployed host.** Every component reads
-   > `VITE_API_URL` and falls back to a hardcoded production URL only if it is
-   > unset. If the `.env` files and that fallback point at different hosts, the
-   > app silently talks to whichever one the build resolved — set
-   > `VITE_API_URL` explicitly in Vercel's environment variables.
+   > **Required for production builds.** Vite inlines `VITE_API_URL` at build
+   > time, so changing it needs a redeploy, not a restart, and it must be set as
+   > a *build* variable. There is deliberately no fallback host: a production
+   > build with it unset fails rather than silently talking to a dead server.
 
 4. Run the development servers
 
@@ -270,21 +272,29 @@ curl -i https://<your-backend-host>/health
 
 | What you see | What it means |
 |---|---|
-| `404` + `x-render-routing: no-server`, answers in <1s | Render service is **down** — redeploy it |
-| `404` + `x-railway-fallback: true` | Railway app **not found** — wrong host or not deployed |
-| Hangs 30–60s, then responds | Free-tier **cold start**, not an error |
+| `404` from Traefik | No app is bound to that domain — check the Domains field in Coolify |
+| Connection refused / times out | Container is down or crash-looping — check the deploy logs |
+| TLS/certificate warning | Let's Encrypt has not issued yet — DNS must resolve to the server first |
 | `{"status":"ok"}` | Backend is up — now it's genuinely worth checking CORS |
 
-The allowlist lives in `backend/app.js` (`ALLOWED_ORIGINS`). Note that
+The allowlist is the built-in localhost dev origins plus the comma-separated
+`ALLOWED_ORIGINS` environment variable, combined in `backend/app.js`. A deployed
+frontend origin must appear there **exactly** — scheme included, no trailing
+slash — or the browser blocks the request. Note that
 `Access-Control-Allow-Origin` must be a **single origin string**, never an
 array — echo back `req.headers.origin` when it matches the allowlist.
 
 ### The app talks to the wrong backend
 
-Every component reads `import.meta.env.VITE_API_URL` and falls back to a
-hardcoded production URL only when it's unset. If `.env` and that fallback name
-different hosts, the deployed build may reach neither. Set `VITE_API_URL`
-explicitly in Vercel and confirm it matches the host you actually deploy.
+Every component reads `import.meta.env.VITE_API_URL`, which Vite inlines at
+**build** time. A running container therefore cannot be corrected by editing an
+environment variable and restarting — the value is already baked into the
+JavaScript, and only a rebuild changes it. In Coolify, set it as a *Build
+Variable* and redeploy.
+
+There is no fallback host: a production build with it unset throws on load, and
+the frontend Dockerfile fails the build outright, so this should surface before
+anything ships.
 
 ### Health check
 
