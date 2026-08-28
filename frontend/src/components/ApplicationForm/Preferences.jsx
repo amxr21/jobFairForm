@@ -63,14 +63,19 @@ const Preferences = () => {
     // Handle click outside for field dropdown — the panel is portaled to
     // document.body, so it's checked separately from fieldDropdownRef.
     useEffect(() => {
+        if (!isFieldOpen) return;
+        // `pointerdown` rather than `mousedown` — see the note in
+        // SelectInput.jsx about synthetic touch events racing React's click.
+        // Also gated on isFieldOpen; with `[]` deps it stayed subscribed for
+        // the component's whole life and read stale refs.
         const handleClickOutside = (e) => {
             const insideTrigger = fieldDropdownRef.current && fieldDropdownRef.current.contains(e.target);
             const insidePanel = fieldPanelRef.current && fieldPanelRef.current.contains(e.target);
             if (!insideTrigger && !insidePanel) setIsFieldOpen(false);
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+        document.addEventListener("pointerdown", handleClickOutside);
+        return () => document.removeEventListener("pointerdown", handleClickOutside);
+    }, [isFieldOpen]);
 
     const filteredFields = INDUSTRY_FIELDS.filter(field =>
         field.toLowerCase().includes(fieldSearchTerm.toLowerCase()) &&
@@ -123,7 +128,7 @@ const Preferences = () => {
                         {/* Multi-select Input Container */}
                         <div
                             ref={fieldTriggerRef}
-                            className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 transition-all duration-200 ${
+                            className={`relative w-full min-h-[44px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 transition-all duration-200 ${
                                 isFieldOpen ? 'ring-2 ring-primary border-transparent' : 'hover:border-fg-faint'
                             }`}
                             onClick={() => {
@@ -174,8 +179,14 @@ const Preferences = () => {
                         {isFieldOpen && fieldTriggerRect && createPortal(
                             <div
                                 ref={fieldPanelRef}
-                                className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
-                                style={{ top: fieldTriggerRect.bottom + 4, left: fieldTriggerRect.left, width: fieldTriggerRect.width }}
+                                className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg overflow-y-auto overscroll-contain"
+                                style={{
+                                    top: fieldTriggerRect.top,
+                                    bottom: fieldTriggerRect.bottom,
+                                    left: fieldTriggerRect.left,
+                                    width: fieldTriggerRect.width,
+                                    maxHeight: fieldTriggerRect.maxHeight,
+                                }}
                             >
                                 {filteredFields.length > 0 ? (
                                     filteredFields.slice(0, 15).map((field) => (

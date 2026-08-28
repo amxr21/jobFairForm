@@ -50,7 +50,7 @@ const FieldHint = ({ text }) => {
                 onFocus={show}
                 onBlur={hide}
                 onClick={(e) => { e.preventDefault(); open ? hide() : show(); }}
-                className="p-1.5 text-fg-faint hover:text-[#0E7F41] transition-colors"
+                className="p-2.5 md:p-1.5 -m-1 md:m-0 inline-flex items-center justify-center text-fg-faint hover:text-[#0E7F41] transition-colors"
             >
                 <Info className="w-3.5 h-3.5" />
             </button>
