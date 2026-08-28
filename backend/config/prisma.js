@@ -8,7 +8,17 @@ const rawUrl = process.env.DATABASE_URL || "";
 const wantsSsl =
   /ssl-mode=REQUIRED/i.test(rawUrl) || Boolean(process.env.DB_CA_CERT_PATH);
 
-let poolConfig = rawUrl;
+// The mariadb driver accepts ONLY the `mariadb://` scheme, while Prisma, the
+// MySQL docs, and Coolify's generated connection URL all use `mysql://`. Handing
+// the driver a mysql:// string fails with "error parsing connection string",
+// which reads like a malformed URL rather than an unsupported scheme.
+//
+// Only the non-TLS path is affected: the TLS branch below parses the URL into
+// discrete fields and never passes the string to the driver, which is why this
+// surfaced on Coolify's internal network but never against Aiven.
+const driverUrl = rawUrl.replace(/^mysql:\/\//i, "mariadb://");
+
+let poolConfig = driverUrl;
 
 if (wantsSsl) {
   const caPath = process.env.DB_CA_CERT_PATH;
