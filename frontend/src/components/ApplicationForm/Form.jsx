@@ -21,23 +21,41 @@ import { useToast } from "../Toast";
 // enough *optional* fields let an incomplete application through, and a
 // complete application could be rejected because the count happened to land
 // under the threshold. Gate on these specific keys instead.
-const REQUIRED_FIELDS = [
-    "Full Name",
-    "University ID",
-    "Date of Birth",
-    "Gender",
-    "City",
-    "Nationality",
-    "Email address",
-    "Mobile number",
-    "College",
-    "Major",
-    "Study Program",
-    "languages",
-    "Technical Skills",
-    "Non-technical skills",
-    "Experience",
-];
+// Grouped by the step that collects them so Continue can validate just that
+// step. REQUIRED_FIELDS stays derived from these rather than being a second
+// list that can drift out of sync with them.
+const REQUIRED_BY_STEP = {
+    1: [
+        "Full Name",
+        "University ID",
+        "Date of Birth",
+        "Gender",
+        "City",
+        "Nationality",
+        "Email address",
+        "Mobile number",
+        "languages",
+    ],
+    2: [
+        "College",
+        "Major",
+        "Study Program",
+        "Technical Skills",
+        "Non-technical skills",
+        "Experience",
+    ],
+    3: [],
+};
+
+const REQUIRED_FIELDS = Object.values(REQUIRED_BY_STEP).flat();
+
+const isFieldFilled = (value) => {
+    if (typeof value === "string") return value.trim() !== "";
+    if (Array.isArray(value)) return value.length > 0;
+    if (value instanceof File) return value.size > 0;
+    if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
+    return value !== null && value !== undefined;
+};
 
 const keyMap = {
     uniId: "University ID",
@@ -72,7 +90,7 @@ const keyMap = {
 
 const Form = () => {
 
-    const { formData } = useFormContext()
+    const { formData, setFieldMissing } = useFormContext()
     const toast = useToast();
 
     const { user } = useAuthContext();
@@ -112,8 +130,51 @@ const Form = () => {
         }, 180);
     };
 
+    // Validate the current step before advancing. Previously nothing was
+    // checked until the final submit, so a user could fill three steps and
+    // only then be told — via a toast listing at most three problems — that
+    // something on step 1 was missing, with no per-field indication of what.
     const goToNextStep = (e) => {
         e.preventDefault();
+
+        const missing = (REQUIRED_BY_STEP[currentStep] || [])
+            .filter((key) => !isFieldFilled(formData[key]));
+
+        if (missing.length > 0) {
+            // "Full Name" is collected as two fields; name them as the user
+            // sees them rather than by the formData key.
+            const labels = missing.flatMap((key) =>
+                key === "Full Name" ? ["First Name", "Last Name"]
+                    : key === "languages" ? ["Languages"]
+                    : [key]
+            );
+            const summary = labels.length > 3
+                ? `${labels.slice(0, 3).join(", ")} and ${labels.length - 3} more`
+                : labels.join(", ");
+            toast(`Please complete: ${summary}`, { type: 'warning' });
+            // Push into the same channel Input/SelectInput already read, so
+            // each offending field shows its own inline error rather than the
+            // user having to map a toast back onto the form.
+            setFieldMissing(labels.map((l) => `${l} is required`).join(", "));
+
+            // Inline field errors only render once a field is `touched`, which
+            // by definition an untouched missing field is not — so scroll the
+            // user to the first offender rather than leaving them to map the
+            // toast back onto the form themselves.
+            const firstLabel = labels[0];
+            window.setTimeout(() => {
+                const el = document.querySelector(
+                    `[name="${CSS.escape(firstLabel)}"], #${CSS.escape(firstLabel)}`
+                );
+                const target = el?.closest("div") || el;
+                target?.scrollIntoView({ block: "center", behavior: "smooth" });
+                if (el && typeof el.focus === "function" && el.type !== "hidden") {
+                    el.focus({ preventScroll: true });
+                }
+            }, 0);
+            return;
+        }
+
         goToStep(currentStep + 1);
     };
 
@@ -132,14 +193,6 @@ const Form = () => {
         // Guard against a double submit (double-click, or Enter landing on the
         // button while a request is already in flight) creating two applicants.
         if (submitPhase !== "idle") return;
-
-        const isFieldFilled = (value) => {
-            if (typeof value === "string") return value.trim() !== "";
-            if (Array.isArray(value)) return value.length > 0;
-            if (value instanceof File) return value.size > 0;
-            if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
-            return value !== null && value !== undefined;
-        };
 
         // Validate before showing the overlay, so a failed check never flashes
         // a loading state.
