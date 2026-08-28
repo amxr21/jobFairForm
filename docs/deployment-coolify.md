@@ -6,13 +6,22 @@ provisioned and Coolify is installed.
 
 Target hosts:
 
-| Service  | Base Directory | Domain                     | Port |
-|----------|----------------|----------------------------|------|
-| Frontend | `/frontend`    | `https://form.amxr.site`     | 80   |
-| Backend  | `/backend`     | `https://api.form.amxr.site` | 2001 |
+| Service  | Base Directory | Dockerfile Location | Domain                       | Port |
+|----------|----------------|---------------------|------------------------------|------|
+| Frontend | `/frontend`    | `/Dockerfile`       | `https://form.amxr.site`     | 80   |
+| Backend  | `/backend`     | `/Dockerfile`       | `https://api.form.amxr.site` | 2001 |
 
 Both use the **Dockerfile** build pack — the Dockerfiles are committed, so
 build steps live in the repo and do not need to be re-entered in the UI.
+
+> **Dockerfile Location is relative to the Base Directory, not the repo root.**
+> Coolify concatenates the two, so setting it to `/backend/Dockerfile` alongside
+> a `/backend` base directory resolves to `backend/backend/Dockerfile` and the
+> build fails with `lstat .../backend/backend: no such file or directory`.
+> It is `/Dockerfile` for both apps.
+
+Leave **Build Command** and **Start Command** empty. They live in the
+Dockerfiles; filling them in the UI overrides what the repo specifies.
 
 ---
 
@@ -73,6 +82,7 @@ Aiven-hosted setup.)
 **New → Application → Private Repository (GitHub App) → this repo.**
 
 - Base Directory: `/backend`
+- Dockerfile Location: `/Dockerfile` (relative to the base directory — see above)
 - Build Pack: **Dockerfile**
 - Ports Exposes: `2001`
 - Domain: `https://api.form.amxr.site`
@@ -127,6 +137,7 @@ node -e "require('./config/prisma').\$queryRaw\`SELECT 1\`.then(r=>{console.log(
 **New → Application → same repository.**
 
 - Base Directory: `/frontend`
+- Dockerfile Location: `/Dockerfile` (relative to the base directory — see above)
 - Build Pack: **Dockerfile**
 - Ports Exposes: `80`
 - Domain: `https://form.amxr.site`
