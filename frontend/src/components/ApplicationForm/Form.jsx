@@ -21,23 +21,41 @@ import { useToast } from "../Toast";
 // enough *optional* fields let an incomplete application through, and a
 // complete application could be rejected because the count happened to land
 // under the threshold. Gate on these specific keys instead.
-const REQUIRED_FIELDS = [
-    "Full Name",
-    "University ID",
-    "Date of Birth",
-    "Gender",
-    "City",
-    "Nationality",
-    "Email address",
-    "Mobile number",
-    "College",
-    "Major",
-    "Study Program",
-    "languages",
-    "Technical Skills",
-    "Non-technical skills",
-    "Experience",
-];
+// Grouped by the step that collects them so Continue can validate just that
+// step. REQUIRED_FIELDS stays derived from these rather than being a second
+// list that can drift out of sync with them.
+const REQUIRED_BY_STEP = {
+    1: [
+        "Full Name",
+        "University ID",
+        "Date of Birth",
+        "Gender",
+        "City",
+        "Nationality",
+        "Email address",
+        "Mobile number",
+        "languages",
+    ],
+    2: [
+        "College",
+        "Major",
+        "Study Program",
+        "Technical Skills",
+        "Non-technical skills",
+        "Experience",
+    ],
+    3: [],
+};
+
+const REQUIRED_FIELDS = Object.values(REQUIRED_BY_STEP).flat();
+
+const isFieldFilled = (value) => {
+    if (typeof value === "string") return value.trim() !== "";
+    if (Array.isArray(value)) return value.length > 0;
+    if (value instanceof File) return value.size > 0;
+    if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
+    return value !== null && value !== undefined;
+};
 
 const keyMap = {
     uniId: "University ID",
@@ -72,7 +90,7 @@ const keyMap = {
 
 const Form = () => {
 
-    const { formData } = useFormContext()
+    const { formData, setFieldMissing } = useFormContext()
     const toast = useToast();
 
     const { user } = useAuthContext();
@@ -112,8 +130,51 @@ const Form = () => {
         }, 180);
     };
 
+    // Validate the current step before advancing. Previously nothing was
+    // checked until the final submit, so a user could fill three steps and
+    // only then be told — via a toast listing at most three problems — that
+    // something on step 1 was missing, with no per-field indication of what.
     const goToNextStep = (e) => {
         e.preventDefault();
+
+        const missing = (REQUIRED_BY_STEP[currentStep] || [])
+            .filter((key) => !isFieldFilled(formData[key]));
+
+        if (missing.length > 0) {
+            // "Full Name" is collected as two fields; name them as the user
+            // sees them rather than by the formData key.
+            const labels = missing.flatMap((key) =>
+                key === "Full Name" ? ["First Name", "Last Name"]
+                    : key === "languages" ? ["Languages"]
+                    : [key]
+            );
+            const summary = labels.length > 3
+                ? `${labels.slice(0, 3).join(", ")} and ${labels.length - 3} more`
+                : labels.join(", ");
+            toast(`Please complete: ${summary}`, { type: 'warning' });
+            // Push into the same channel Input/SelectInput already read, so
+            // each offending field shows its own inline error rather than the
+            // user having to map a toast back onto the form.
+            setFieldMissing(labels.map((l) => `${l} is required`).join(", "));
+
+            // Inline field errors only render once a field is `touched`, which
+            // by definition an untouched missing field is not — so scroll the
+            // user to the first offender rather than leaving them to map the
+            // toast back onto the form themselves.
+            const firstLabel = labels[0];
+            window.setTimeout(() => {
+                const el = document.querySelector(
+                    `[name="${CSS.escape(firstLabel)}"], #${CSS.escape(firstLabel)}`
+                );
+                const target = el?.closest("div") || el;
+                target?.scrollIntoView({ block: "center", behavior: "smooth" });
+                if (el && typeof el.focus === "function" && el.type !== "hidden") {
+                    el.focus({ preventScroll: true });
+                }
+            }, 0);
+            return;
+        }
+
         goToStep(currentStep + 1);
     };
 
@@ -132,14 +193,6 @@ const Form = () => {
         // Guard against a double submit (double-click, or Enter landing on the
         // button while a request is already in flight) creating two applicants.
         if (submitPhase !== "idle") return;
-
-        const isFieldFilled = (value) => {
-            if (typeof value === "string") return value.trim() !== "";
-            if (Array.isArray(value)) return value.length > 0;
-            if (value instanceof File) return value.size > 0;
-            if (typeof value === "object" && value !== null) return Object.keys(value).length > 0;
-            return value !== null && value !== undefined;
-        };
 
         // Validate before showing the overlay, so a failed check never flashes
         // a loading state.
@@ -265,8 +318,8 @@ const Form = () => {
     const confirmRegistration = () => {
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
-        form.current.classList.replace("h-[86vh]", "h-0");
-        form.current.classList.replace("xl:h-[90vh]", "h-0");
+        form.current.classList.replace("h-[86dvh]", "h-0");
+        form.current.classList.replace("xl:h-[90dvh]", "h-0");
         form.current.classList.replace("p-5", "p-0");
         form.current.classList.replace("md:p-6", "p-0");
         form.current.classList.replace("xl:p-8", "p-0");
@@ -284,7 +337,7 @@ const Form = () => {
 
         // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
         document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
-        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[86vh]");
+        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[86dvh]");
         document.querySelector(".confirmMessageRef").classList.add("md:h-fit");
         document.querySelector(".confirmMessageRef").classList.replace("md:p-0", "md:p-8");
         document.querySelector(".confirmMessageRef").classList.replace("p-0", "p-5");
@@ -318,7 +371,7 @@ const Form = () => {
                     if (currentStep < 3) goToNextStep(e);
                     else handleSubmit(e);
                 }}
-                className={`relative bg-surface-card border-line rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
+                className={`relative bg-surface-card border-line rounded-xl border h-[86dvh] xl:h-[90dvh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
             >
 
                 <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">
@@ -346,14 +399,20 @@ const Form = () => {
                             {/* Section 3: Preferences (Optional) */}
                             {currentStep === 3 && <Preferences />}
 
-                            {/* Navigation buttons */}
-                            <div className="w-full flex items-center justify-between gap-3 mt-3 shrink-0">
+                            {/* Navigation buttons. Pinned to the bottom of the
+                                step pane on mobile with a safe-area inset, so
+                                Continue/Submit stay reachable on notched
+                                devices instead of trailing a long scroll. */}
+                            <div
+                                className="w-full flex items-center justify-between gap-3 mt-3 shrink-0 border-t border-line pt-3 md:border-0 md:pt-0 bg-surface-card"
+                                style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+                            >
                                 {currentStep > 1 ? (
                                     <button
                                         type="button"
                                         onClick={goToPrevStep}
                                         disabled={isSubmitting}
-                                        className="group inline-flex items-center gap-1.5 border-line border rounded-lg h-9 md:h-10 px-3 md:px-4 text-sm md:text-base text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors disabled:opacity-50"
+                                        className="group inline-flex items-center gap-1.5 border-line border rounded-lg h-11 md:h-10 px-4 md:px-4 text-sm md:text-base text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors disabled:opacity-50"
                                     >
                                         <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-translate-x-0.5" />
                                         Back
@@ -364,7 +423,7 @@ const Form = () => {
                                     <button
                                         type="button"
                                         onClick={goToNextStep}
-                                        className="group inline-flex items-center gap-1.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-9 md:h-10 px-5 md:px-6 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all"
+                                        className="group inline-flex items-center gap-1.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-11 md:h-10 px-5 md:px-6 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all"
                                     >
                                         Continue
                                         <ChevronRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-0.5" />
@@ -375,7 +434,7 @@ const Form = () => {
                                         onClick={handleSubmit}
                                         disabled={isSubmitting}
                                         id="submitForm"
-                                        className="inline-flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-9 md:h-10 px-6 md:px-7 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                        className="inline-flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-11 md:h-10 px-6 md:px-7 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
                                             <>

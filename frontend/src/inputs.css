@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Mobile input sizing — two rules that must stay together.
+     
+     iOS Safari auto-zooms the viewport whenever a focused input's computed
+     font-size is under 16px, then scroll-locks to that field and never zooms
+     back out. Every field in this form is `text-xs md:text-sm` (12px mobile,
+     14px desktop), so *every* field triggered it. Forcing 16px below the md
+     breakpoint is the only reliable fix — `maximum-scale=1` in the viewport
+     meta is ignored by iOS 10+ and only helps Android.
+
+     16px text does not fit the old h-8 (32px) fields, so the components were
+     raised to h-11 (44px) on mobile at the same time. 44px is also the WCAG
+     2.5.8 / Apple HIG minimum touch target, which the 32px fields failed.
+     Changing one without the other looks broken. */
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea,
+    [role="button"][aria-haspopup="listbox"] {
+      font-size: 16px;
+    }
+  }
+}
+
+/* Dynamic viewport height fallback. The form and intro use `dvh` so they
+   shrink when the on-screen keyboard opens — `vh` is measured against the
+   URL-bar-hidden viewport and never updates, which pushed the Continue and
+   Submit buttons behind the keyboard with no way to scroll to them. Browsers
+   without dvh support (pre-iOS 16.4 / Chrome 108) fall back to the old
+   behaviour rather than collapsing to zero height. */
+@supports not (height: 100dvh) {
+  .h-\[86dvh\] { height: 86vh; }
+  .h-\[100dvh\] { height: 100vh; }
+  @media (min-width: 1280px) {
+    .xl\:h-\[90dvh\] { height: 90vh; }
+  }
+}

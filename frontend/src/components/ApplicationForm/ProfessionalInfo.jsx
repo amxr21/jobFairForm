@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
+import { Upload, X } from "lucide-react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
 import useFormContext from "../../hooks/useFormContext";
 import { useToast } from "../Toast";
+import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 
 const ProfessionalInfo = () => {
     const toast = useToast();
+    const handleFocus = useScrollIntoViewOnFocus();
 
     const [majors, setMajors] = useState([]);
     const [colleges, setColleges] = useState([]);
@@ -73,6 +76,18 @@ const ProfessionalInfo = () => {
     // the frontend previously capped at 2MB while the backend allowed 4MB.
     const MAX_CV_BYTES = 4 * 1024 * 1024;
 
+    // Mirrors formData.CV so the styled control can show the chosen filename
+    // and size — a hidden native input can't display them itself.
+    const cvFile = formData.CV instanceof File ? formData.CV : null;
+
+    const clearCV = () => {
+        updateFormData("CV", null);
+        const input = document.getElementById("CV");
+        // Reset the input's value too, otherwise re-picking the same file
+        // fires no change event and the field silently stays empty.
+        if (input) input.value = "";
+    };
+
     const uploadCV = (e) => {
         const file = e.target.files[0];
 
@@ -100,14 +115,14 @@ const ProfessionalInfo = () => {
                             label={"Study Program"}
                             options={Object.keys(DegreePrograms)}
                             handleChange={setSelectedProgram}
-                            fieldClasses="col-span-6 md:col-span-3"
+                            fieldClasses="col-span-12 md:col-span-3"
                         />
                         <SelectInput
                             label={"College"}
                             options={colleges}
                             value={selectedCollege}
                             handleChange={handleCollegeChange}
-                            fieldClasses="col-span-6 md:col-span-4"
+                            fieldClasses="col-span-12 md:col-span-4"
                         />
                         <SelectInput
                             label={"Major"}
@@ -134,8 +149,8 @@ const ProfessionalInfo = () => {
 
                     {/* Row 3: CGPA, Expected to Graduate, Experience */}
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 items-start">
-                        <Input fieldClasses="col-span-4 md:col-span-2" label="CGPA" />
-                        <Input fieldClasses="col-span-8 md:col-span-3" label="Expected to Graduate" />
+                        <Input fieldClasses="col-span-5 md:col-span-2" label="CGPA" />
+                        <Input fieldClasses="col-span-7 md:col-span-3" label="Expected to Graduate" />
                         <div className="col-span-12 md:col-span-7">
                             <div className="flex flex-col h-full">
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 mb-1">
@@ -148,7 +163,7 @@ const ProfessionalInfo = () => {
                                             id="noExperience"
                                             checked={noExperience}
                                             onChange={handleNoExperienceChange}
-                                            className="w-3.5 h-3.5 md:w-4 md:h-4 accent-[#0E7F41]"
+                                            className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                                         />
                                         <label htmlFor="noExperience" className="text-xs md:text-sm text-fg-muted">
                                             No prior experience
@@ -159,6 +174,7 @@ const ProfessionalInfo = () => {
                                     disabled={noExperience}
                                     value={noExperience ? "No prior work experience" : (formData.Experience === "No prior work experience" ? "" : formData.Experience)}
                                     onChange={(e) => updateFormData("Experience", e.target.value)}
+                                    onFocus={handleFocus}
                                     placeholder="E.g., Internship at ABC Company, Part-time job, Volunteer work, University projects..."
                                     className={`flex-1 w-full border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm resize-none min-h-16 md:min-h-20 ${noExperience ? 'bg-surface-hover text-fg-faint border-line' : 'bg-white dark:bg-[#1a2438]'}`}
                                 />
@@ -170,16 +186,49 @@ const ProfessionalInfo = () => {
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3">
                         <div className="col-span-12 md:col-span-6 flex flex-col justify-start">
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-1.5 md:gap-x-3">
-                                <h2 className="text-xs md:text-sm shrink-0">Attach your resume:</h2>
-                                <div className="flex items-center gap-1">
+                                <h2 className="text-xs md:text-sm shrink-0">
+                                    Attach your resume: <RequiredAstrik required={true} />
+                                </h2>
+                                {/* The native file input renders an unstyleable
+                                    OS button and overflows with a long filename,
+                                    so it is hidden and driven by a label styled
+                                    as a proper 44px control. */}
+                                <div className="flex items-center gap-2 w-full md:w-auto min-w-0">
                                     <input
                                         id="CV"
                                         onChange={uploadCV}
                                         type="file"
                                         name="cvfile"
-                                        className="text-xs md:text-sm w-full md:max-w-56 bg-white dark:bg-[#1a2438] border border-line-strong rounded-lg py-1 px-2 h-8 md:h-9"
+                                        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                        className="sr-only"
                                     />
-                                    <RequiredAstrik required={true} />
+                                    <label
+                                        htmlFor="CV"
+                                        className="inline-flex items-center gap-1.5 h-11 md:h-9 px-3 shrink-0 bg-white dark:bg-[#1a2438] border border-line-strong rounded-lg text-xs md:text-sm cursor-pointer hover:bg-surface-hover transition-colors"
+                                    >
+                                        <Upload className="w-4 h-4 text-fg-muted" />
+                                        {cvFile ? "Change file" : "Choose file"}
+                                    </label>
+                                    {cvFile ? (
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <span className="text-xs md:text-sm text-fg truncate" title={cvFile.name}>
+                                                {cvFile.name}
+                                            </span>
+                                            <span className="text-[11px] text-fg-muted shrink-0">
+                                                {(cvFile.size / 1024 / 1024).toFixed(1)}MB
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={clearCV}
+                                                aria-label="Remove attached resume"
+                                                className="shrink-0 w-8 h-8 md:w-6 md:h-6 inline-flex items-center justify-center rounded-md text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-fg-muted truncate">PDF or Word, under 4MB</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

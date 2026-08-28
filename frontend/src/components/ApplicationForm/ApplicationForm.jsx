@@ -4,7 +4,7 @@ import { Form } from "./index";
 
 const ApplicationForm = () => {
   return (
-    <div className="relative xl:bg-surface-page p-2 md:p-4 xl:p-6 h-full xl:h-[90vh]">
+    <div className="relative xl:bg-surface-page p-2 md:p-4 xl:p-6 h-full xl:h-[90dvh]">
       <FormProvider>
         <Form/>
       </FormProvider>
