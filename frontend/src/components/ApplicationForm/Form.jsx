@@ -265,8 +265,8 @@ const Form = () => {
     const confirmRegistration = () => {
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
-        form.current.classList.replace("h-[86vh]", "h-0");
-        form.current.classList.replace("xl:h-[90vh]", "h-0");
+        form.current.classList.replace("h-[86dvh]", "h-0");
+        form.current.classList.replace("xl:h-[90dvh]", "h-0");
         form.current.classList.replace("p-5", "p-0");
         form.current.classList.replace("md:p-6", "p-0");
         form.current.classList.replace("xl:p-8", "p-0");
@@ -284,7 +284,7 @@ const Form = () => {
 
         // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
         document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
-        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[86vh]");
+        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[86dvh]");
         document.querySelector(".confirmMessageRef").classList.add("md:h-fit");
         document.querySelector(".confirmMessageRef").classList.replace("md:p-0", "md:p-8");
         document.querySelector(".confirmMessageRef").classList.replace("p-0", "p-5");
@@ -318,7 +318,7 @@ const Form = () => {
                     if (currentStep < 3) goToNextStep(e);
                     else handleSubmit(e);
                 }}
-                className={`relative bg-surface-card border-line rounded-xl border h-[86vh] xl:h-[90vh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
+                className={`relative bg-surface-card border-line rounded-xl border h-[86dvh] xl:h-[90dvh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
             >
 
                 <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">

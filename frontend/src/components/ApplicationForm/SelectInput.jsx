@@ -109,7 +109,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                         setTouched(true);
                     }
                 }}
-                className={`relative w-full min-h-[32px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-pointer transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${getBorderClass()} ${selectClasses || ''}`}
+                className={`relative w-full min-h-[44px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-pointer transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${getBorderClass()} ${selectClasses || ''}`}
                 onClick={() => {
                     setIsOpen(true);
                     inputRef.current?.focus();

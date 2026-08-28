@@ -61,26 +61,26 @@ const Languages = ({ classes }) => {
             {/* Language checkboxes - flex wrap (this is the field itself) */}
             <div id="Languages" className="flex flex-wrap gap-x-3 gap-y-2">
                 {COMMON_LANGUAGES.slice(0, 6).map((lang) => (
-                    <div key={lang} className="checkbox flex items-center">
+                    <div key={lang} className="checkbox flex items-center min-h-[44px] md:min-h-0 pr-2">
                         <input
                             type="checkbox"
                             id={lang}
                             checked={formData.languages?.includes(lang) || false}
                             onChange={() => handleLanguageToggle(lang)}
-                            className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 accent-[#0E7F41]"
+                            className="w-5 h-5 md:w-4 md:h-4 mr-1.5 accent-[#0E7F41] shrink-0"
                         />
-                        <label htmlFor={lang} className="text-xs md:text-sm cursor-pointer">{lang}</label>
+                        <label htmlFor={lang} className="text-sm md:text-sm cursor-pointer py-2 md:py-0">{lang}</label>
                     </div>
                 ))}
-                <div className="checkbox flex items-center">
+                <div className="checkbox flex items-center min-h-[44px] md:min-h-0 pr-2">
                     <input
                         type="checkbox"
                         id="Other"
                         checked={showOtherInput}
                         onChange={handleOtherToggle}
-                        className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 accent-[#0E7F41]"
+                        className="w-5 h-5 md:w-4 md:h-4 mr-1.5 accent-[#0E7F41] shrink-0"
                     />
-                    <label htmlFor="Other" className="text-xs md:text-sm cursor-pointer">Other</label>
+                    <label htmlFor="Other" className="text-sm md:text-sm cursor-pointer py-2 md:py-0">Other</label>
                 </div>
             </div>
 
@@ -137,7 +137,7 @@ const Languages = ({ classes }) => {
                             onChange={(e) => setOtherLanguage(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOtherLanguage())}
                             placeholder="Type a language..."
-                            className="flex-1 h-8 md:h-9 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm"
+                            className="flex-1 h-11 md:h-9 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm"
                         />
                         <button
                             type="button"

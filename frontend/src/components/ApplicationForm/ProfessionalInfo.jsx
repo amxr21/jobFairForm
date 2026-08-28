@@ -148,7 +148,7 @@ const ProfessionalInfo = () => {
                                             id="noExperience"
                                             checked={noExperience}
                                             onChange={handleNoExperienceChange}
-                                            className="w-3.5 h-3.5 md:w-4 md:h-4 accent-[#0E7F41]"
+                                            className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                                         />
                                         <label htmlFor="noExperience" className="text-xs md:text-sm text-fg-muted">
                                             No prior experience

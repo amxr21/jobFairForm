@@ -8,20 +8,20 @@ import FieldHint from "./FieldHint";
 // Unified label styles
 const LABEL_CLASSES = "text-xs md:text-sm mb-1 shrink-0";
 // Unified input styles (border color is appended per-instance via getBorderClass)
-const INPUT_CLASSES = "h-8 md:h-9 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1 px-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200";
+const INPUT_CLASSES = "h-11 md:h-9 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1 px-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200";
 // Unified wrapper styles
 const WRAPPER_CLASSES = "flex flex-col";
 
 // Field configurations
 const FIELD_CONFIG = {
-    'First Name': { type: 'text', required: true, placeholder: 'First Name' },
-    'Last Name': { type: 'text', required: true, placeholder: 'Last Name' },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', hint: 'Must be above U18 and not older than U25.' },
+    'First Name': { type: 'text', required: true, placeholder: 'First Name', autoComplete: 'given-name' },
+    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', autoComplete: 'family-name' },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'Must be above U18 and not older than U25.' },
     'Date of Birth': { type: 'date', required: true },
-    'Email address': { type: 'email', required: true, placeholder: 'Email address' },
-    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', maxLength: 15 },
-    'CGPA': { type: 'number', required: false, placeholder: 'CGPA', min: 0, max: 4, step: 0.01, hint: 'Include only if it is more than 3.0.' },
-    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name' },
+    'Email address': { type: 'email', required: true, placeholder: 'Email address', inputMode: 'email', autoComplete: 'email' },
+    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', autoComplete: 'tel', maxLength: 15 },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.' },
+    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', inputMode: 'url', autoComplete: 'url' },
     'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings' },
     'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities' },
     'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy' },
@@ -114,7 +114,18 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             }
 
             case 'CGPA': {
-                let cgpaValue = parseFloat(refLabel.current.value);
+                // This field is type="text" (so iOS offers a decimal keypad and
+                // a stray scroll can't nudge the value), which means the browser
+                // no longer rejects letters for us — strip anything that isn't a
+                // digit or a single leading decimal point before parsing.
+                let raw = refLabel.current.value.replace(/[^\d.]/g, '');
+                const firstDot = raw.indexOf('.');
+                if (firstDot !== -1) {
+                    raw = raw.slice(0, firstDot + 1) + raw.slice(firstDot + 1).replace(/\./g, '');
+                }
+                refLabel.current.value = raw;
+
+                let cgpaValue = parseFloat(raw);
                 if (!isNaN(cgpaValue)) {
                     if (cgpaValue > 4) refLabel.current.value = '4.00';
                     else if (cgpaValue < 0) refLabel.current.value = '0.00';
@@ -267,7 +278,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                         type="checkbox"
                         onChange={(e) => setIsFocused(e.target.checked)}
                         id="currentStudent"
-                        className="w-4 h-4"
+                        className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                     />
                     <label htmlFor="currentStudent" className="text-sm">Are you a current student?</label>
                 </div>
@@ -306,12 +317,13 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         name: name || label,
         placeholder: config.placeholder,
         className: config.hasPrefix
-            ? "h-8 md:h-9 w-full bg-transparent border-0 outline-none py-1 px-1 text-xs md:text-sm"
+            ? "h-11 md:h-9 w-full bg-transparent border-0 outline-none py-1 px-1 text-xs md:text-sm"
             : `${INPUT_CLASSES} ${getBorderClass()}`,
     };
 
     // Add optional attributes
     if (config.inputMode) inputProps.inputMode = config.inputMode;
+    if (config.autoComplete) inputProps.autoComplete = config.autoComplete;
     if (config.pattern) inputProps.pattern = config.pattern;
     if (config.maxLength) inputProps.maxLength = config.maxLength;
     if (config.min !== undefined) inputProps.min = config.min;
@@ -323,7 +335,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         return (
             <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
                 {renderLabel()}
-                <div className={`flex items-center h-8 md:h-9 w-full bg-white dark:bg-[#1a2438] overflow-hidden border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${getBorderClass()}`}>
+                <div className={`flex items-center h-11 md:h-9 w-full bg-white dark:bg-[#1a2438] overflow-hidden border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${getBorderClass()}`}>
                     <span className="px-2 text-xs md:text-sm font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md">
                         {config.hasPrefix}
                     </span>
