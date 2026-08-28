@@ -5,6 +5,7 @@ import { ChevronDown, Check } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useDropdownPosition from "../../hooks/useDropdownPosition";
 import { RequiredAstrik } from "./index";
+import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 
 // Type-to-filter is a desktop affordance. On touch it costs more than it
 // gives: focusing the search input raises the keyboard over the option list.
@@ -19,6 +20,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
     const triggerRef = useRef(null);
     const inputRef = useRef(null);
     const triggerRect = useDropdownPosition(triggerRef, isOpen);
+    const handleFocus = useScrollIntoViewOnFocus();
 
     const { formData, updateFormData, fieldMissing } = useFormContext();
 
@@ -109,6 +111,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                 ref={triggerRef}
                 role="button"
                 tabIndex={0}
+                onFocus={handleFocus}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 aria-label={`${label}: ${currentValue || placeholder || `Select ${label === "Study Program" ? "Program" : label}`}`}

@@ -11,10 +11,10 @@ const Intro = () => {
 
 
     return (
-        <div id="intro" className="intro fixed p-4 md:p-6 w-full h-[100dvh] top-0 left-0 bg-surface-page z-[999999] overflow-hidden">
+        <div id="intro" className="intro fixed p-3 md:p-6 w-full h-[100dvh] top-0 left-0 bg-surface-page z-[999999] overflow-hidden">
             <PrivacyPopup />
             
-            <div id="intro" className={`relative bg-[#0E7F41] text-white flex flex-col gap-8 px-6 py-4 md:px-14 md:py-12 h-full rounded-[2em] md:rounded-t-[4em] md:rounded-b-[2em] overflow-y-auto overflow-x-hidden`}>
+            <div id="intro" className="relative bg-[#0E7F41] text-white flex flex-col gap-5 md:gap-8 px-5 py-5 md:px-14 md:py-12 h-full rounded-[2em] md:rounded-t-[4em] md:rounded-b-[2em] overflow-y-auto overflow-x-hidden overscroll-contain">
                 <UpperPart />
                 <LowerPart />
 

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import useFormContext from "../../hooks/useFormContext";
 import DatePicker from "./DatePicker";
 import FieldHint from "./FieldHint";
+import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 
 // Unified label styles
 const LABEL_CLASSES = "text-xs md:text-sm mb-1 shrink-0";
@@ -36,6 +37,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     const [isFocused, setIsFocused] = useState(false);
     const [touched, setTouched] = useState(false);
     const { updateFormData, setFormData, setFieldMissing, fieldMissing } = useFormContext();
+    const handleFocus = useScrollIntoViewOnFocus();
 
     const config = FIELD_CONFIG[label] || { type: type || 'text', required: true, placeholder: label };
 
@@ -249,6 +251,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     ref={refLabel}
                     onChange={handleChange}
                     onBlur={handleBlur}
+                    onFocus={handleFocus}
                     name={name || label}
                     placeholder={config.placeholder}
                     className={`flex-1 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1.5 px-2 text-sm resize-none min-h-0 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${getBorderClass()}`}
@@ -313,6 +316,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         ref: refLabel,
         onChange: handleChange,
         onBlur: handleBlur,
+        onFocus: handleFocus,
         type: config.type,
         name: name || label,
         placeholder: config.placeholder,

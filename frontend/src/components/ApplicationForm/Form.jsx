@@ -346,14 +346,20 @@ const Form = () => {
                             {/* Section 3: Preferences (Optional) */}
                             {currentStep === 3 && <Preferences />}
 
-                            {/* Navigation buttons */}
-                            <div className="w-full flex items-center justify-between gap-3 mt-3 shrink-0">
+                            {/* Navigation buttons. Pinned to the bottom of the
+                                step pane on mobile with a safe-area inset, so
+                                Continue/Submit stay reachable on notched
+                                devices instead of trailing a long scroll. */}
+                            <div
+                                className="w-full flex items-center justify-between gap-3 mt-3 shrink-0 border-t border-line pt-3 md:border-0 md:pt-0 bg-surface-card"
+                                style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+                            >
                                 {currentStep > 1 ? (
                                     <button
                                         type="button"
                                         onClick={goToPrevStep}
                                         disabled={isSubmitting}
-                                        className="group inline-flex items-center gap-1.5 border-line border rounded-lg h-9 md:h-10 px-3 md:px-4 text-sm md:text-base text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors disabled:opacity-50"
+                                        className="group inline-flex items-center gap-1.5 border-line border rounded-lg h-11 md:h-10 px-4 md:px-4 text-sm md:text-base text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors disabled:opacity-50"
                                     >
                                         <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-translate-x-0.5" />
                                         Back
@@ -364,7 +370,7 @@ const Form = () => {
                                     <button
                                         type="button"
                                         onClick={goToNextStep}
-                                        className="group inline-flex items-center gap-1.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-9 md:h-10 px-5 md:px-6 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all"
+                                        className="group inline-flex items-center gap-1.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-11 md:h-10 px-5 md:px-6 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all"
                                     >
                                         Continue
                                         <ChevronRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-0.5" />
@@ -375,7 +381,7 @@ const Form = () => {
                                         onClick={handleSubmit}
                                         disabled={isSubmitting}
                                         id="submitForm"
-                                        className="inline-flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-9 md:h-10 px-6 md:px-7 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                        className="inline-flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-11 md:h-10 px-6 md:px-7 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                     >
                                         {isSubmitting ? (
                                             <>
