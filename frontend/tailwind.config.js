@@ -1,3 +1,9 @@
+// package.json sets "type": "module", so this file is ESM and `require` is not
+// defined in it. Node 22.13+ tolerates require() inside ESM, which is why this
+// built locally and in CI while failing on the pinned 22.12.0 in the Docker
+// build. An import statement works on every version.
+import tailwindcssAnimate from "tailwindcss-animate";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: "class",
@@ -57,6 +63,6 @@ export default {
       }
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 }
 
