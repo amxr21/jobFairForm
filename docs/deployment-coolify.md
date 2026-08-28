@@ -9,7 +9,7 @@ Target hosts:
 | Service  | Base Directory | Domain                     | Port |
 |----------|----------------|----------------------------|------|
 | Frontend | `/frontend`    | `https://form.amxr.site`     | 80   |
-| Backend  | `/backend`     | `https://form-api.amxr.site` | 2001 |
+| Backend  | `/backend`     | `https://api.form.amxr.site` | 2001 |
 
 Both use the **Dockerfile** build pack — the Dockerfiles are committed, so
 build steps live in the repo and do not need to be re-entered in the UI.
@@ -18,13 +18,25 @@ build steps live in the repo and do not need to be re-entered in the UI.
 
 ## 1. DNS
 
-A wildcard `A` record (`*` → server IP) covers both subdomains with no
-per-app DNS work. Confirm before adding domains in Coolify, or the
-Let's Encrypt certificate request fails:
+`form.amxr.site` is covered by the wildcard `A` record (`*` → server IP).
+
+**`api.form.amxr.site` is not.** A DNS wildcard matches exactly one label, so
+`*.amxr.site` covers `form.amxr.site` but not the two-level
+`api.form.amxr.site`. That needs its own record:
+
+| Type | Name           | Value       |
+|------|----------------|-------------|
+| A    | `api.form`     | server IP   |
+
+(A `*.form` wildcard would work too if more sub-subdomains are coming.)
+
+Confirm both resolve before adding the domains in Coolify — Let's Encrypt
+validates over HTTP, so a name that does not resolve fails cert issuance and
+the app comes up without TLS:
 
 ```bash
 dig +short form.amxr.site       # expect the server IP
-dig +short form-api.amxr.site
+dig +short api.form.amxr.site
 ```
 
 On Cloudflare, records must be **DNS only** (grey cloud), not proxied.
@@ -63,7 +75,7 @@ Aiven-hosted setup.)
 - Base Directory: `/backend`
 - Build Pack: **Dockerfile**
 - Ports Exposes: `2001`
-- Domain: `https://form-api.amxr.site`
+- Domain: `https://api.form.amxr.site`
 
 Environment variables (runtime):
 
@@ -122,7 +134,7 @@ node -e "require('./config/prisma').\$queryRaw\`SELECT 1\`.then(r=>{console.log(
 Environment variable — **must be marked as a Build Variable**:
 
 ```
-VITE_API_URL=https://form-api.amxr.site
+VITE_API_URL=https://api.form.amxr.site
 ```
 
 Vite inlines this into the bundle at build time, so:
@@ -138,7 +150,7 @@ breaks on load.
 ## 6. Verify
 
 ```bash
-curl -s https://form-api.amxr.site/health          # {"status":"ok",...}
+curl -s https://api.form.amxr.site/health          # {"status":"ok",...}
 curl -sI https://form.amxr.site/my-qr-code | head -1   # HTTP/2 200, not 404
 ```
 
