@@ -17,8 +17,8 @@ const WRAPPER_CLASSES = "flex flex-col";
 const FIELD_CONFIG = {
     'First Name': { type: 'text', required: true, placeholder: 'First Name', autoComplete: 'given-name' },
     'Last Name': { type: 'text', required: true, placeholder: 'Last Name', autoComplete: 'family-name' },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'Must be above U18 and not older than U25.' },
-    'Date of Birth': { type: 'date', required: true },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).' },
+    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.' },
     'Email address': { type: 'email', required: true, placeholder: 'Email address', inputMode: 'email', autoComplete: 'email' },
     'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', autoComplete: 'tel', maxLength: 15 },
     'CGPA': { type: 'text', required: false, placeholder: 'CGPA', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.' },
