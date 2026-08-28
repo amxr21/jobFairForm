@@ -38,14 +38,20 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
     // Handle click outside to close dropdown — the panel is portaled to
     // document.body, so it's checked separately from dropdownRef.
     useEffect(() => {
+        if (!isOpen) return;
+        // `pointerdown` rather than `mousedown` — see the note in
+        // SelectInput.jsx: synthetic mouse events on touch raced React's
+        // click and closed the panel the trigger had just opened. The effect
+        // is also gated on isOpen now; with `[]` deps it stayed subscribed
+        // for the component's whole life and read stale refs.
         const handleClickOutside = (e) => {
             const insideTrigger = dropdownRef.current && dropdownRef.current.contains(e.target);
             const insidePanel = panelRef.current && panelRef.current.contains(e.target);
             if (!insideTrigger && !insidePanel) setIsOpen(false);
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+        document.addEventListener("pointerdown", handleClickOutside);
+        return () => document.removeEventListener("pointerdown", handleClickOutside);
+    }, [isOpen]);
 
     const filteredSkills = skills.filter(skill =>
         skill.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -144,8 +150,14 @@ const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) 
             {isOpen && triggerRect && createPortal(
                 <div
                     ref={panelRef}
-                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-40 md:max-h-48 overflow-y-auto"
-                    style={{ top: triggerRect.bottom + 4, left: triggerRect.left, width: triggerRect.width }}
+                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg overflow-y-auto overscroll-contain"
+                    style={{
+                        top: triggerRect.top,
+                        bottom: triggerRect.bottom,
+                        left: triggerRect.left,
+                        width: triggerRect.width,
+                        maxHeight: triggerRect.maxHeight,
+                    }}
                 >
                     {/* Quick add custom skill */}
                     {searchTerm && !skills.includes(searchTerm) && !selectedSkills.includes(searchTerm) && (

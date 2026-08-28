@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar as CalendarIcon, Check } from "lucide-react";
 import useDropdownPosition from "../../hooks/useDropdownPosition";
@@ -63,7 +63,25 @@ const DatePicker = ({
     const wrapRef = useRef(null);
     const triggerRef = useRef(null);
     const panelRef = useRef(null);
-    const rect = useDropdownPosition(triggerRef, isOpen);
+    // The calendar is a fixed-width panel rather than trigger-width, so the
+    // hook is given that width to clamp against — at w-[280px] anchored to
+    // `left: rect.left`, any field not flush-left pushed the calendar off the
+    // right edge of a 360px phone. Capped to the viewport on very narrow
+    // screens.
+    // Memoised because it feeds the hook's effect deps; recomputing it inline
+    // on every render would resubscribe the scroll/resize listeners each time.
+    // Recalculated whenever the picker opens, which is enough to catch a
+    // rotation between uses.
+    const panelWidth = useMemo(
+        () => (typeof window !== "undefined" ? Math.min(280, window.innerWidth - 16) : 280),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [isOpen]
+    );
+    const positionOptions = useMemo(
+        () => ({ panelWidth, estimatedHeight: 340 }),
+        [panelWidth]
+    );
+    const rect = useDropdownPosition(triggerRef, isOpen, positionOptions);
 
     // Close on outside click (panel is portaled, so check it separately).
     // Only fires onBlur when the picker was actually open — otherwise every
@@ -72,16 +90,20 @@ const DatePicker = ({
     // user ever interacted with it.
     useEffect(() => {
         if (!isOpen) return;
+        // `pointerdown` rather than `mousedown` — see the note in
+        // SelectInput.jsx about synthetic touch events racing React's click.
         const onDown = (e) => {
             const inTrigger = wrapRef.current && wrapRef.current.contains(e.target);
             const inPanel = panelRef.current && panelRef.current.contains(e.target);
             if (!inTrigger && !inPanel) {
                 setIsOpen(false);
+                setMonthPickerOpen(false);
+                setYearPickerOpen(false);
                 onBlur?.();
             }
         };
-        document.addEventListener("mousedown", onDown);
-        return () => document.removeEventListener("mousedown", onDown);
+        document.addEventListener("pointerdown", onDown);
+        return () => document.removeEventListener("pointerdown", onDown);
     }, [isOpen, onBlur]);
 
     // When opening, reset the view to the selected date (or the sensible
@@ -164,8 +186,14 @@ const DatePicker = ({
             {isOpen && rect && createPortal(
                 <div
                     ref={panelRef}
-                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg p-3 w-[280px]"
-                    style={{ top: rect.bottom + 4, left: rect.left }}
+                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg p-3 overflow-y-auto overscroll-contain"
+                    style={{
+                        top: rect.top,
+                        bottom: rect.bottom,
+                        left: rect.left,
+                        width: rect.width,
+                        maxHeight: rect.maxHeight,
+                    }}
                 >
                     {/* Header: prev arrow, month + year pickers, next arrow */}
                     <div className="flex items-center justify-between gap-1 mb-2">

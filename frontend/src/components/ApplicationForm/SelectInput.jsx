@@ -6,6 +6,11 @@ import useFormContext from "../../hooks/useFormContext";
 import useDropdownPosition from "../../hooks/useDropdownPosition";
 import { RequiredAstrik } from "./index";
 
+// Type-to-filter is a desktop affordance. On touch it costs more than it
+// gives: focusing the search input raises the keyboard over the option list.
+const isDesktop = () =>
+    typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+
 const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handleChange, required = true, placeholder }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -41,17 +46,25 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
     // wraps the label + trigger, not the portaled panel).
     const panelRef = useRef(null);
     useEffect(() => {
+        if (!isOpen) return;
+        // `pointerdown`, not `mousedown`: touch devices fire *synthetic* mouse
+        // events ~300ms after the touch, and their ordering against React's
+        // synthetic click is not consistent across iOS Safari and Android
+        // Chrome. That let this handler close the panel that the trigger's
+        // onClick had just opened, so taps alternated open/closed and the
+        // dropdown appeared to need three taps. pointerdown fires once per
+        // interaction on both input types, always before click.
         const handleClickOutside = (event) => {
             const insideTrigger = dropdownRef.current && dropdownRef.current.contains(event.target);
             const insidePanel = panelRef.current && panelRef.current.contains(event.target);
             if (!insideTrigger && !insidePanel) {
-                if (isOpen) setTouched(true);
+                setTouched(true);
                 setIsOpen(false);
                 setSearchTerm("");
             }
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        document.addEventListener("pointerdown", handleClickOutside);
+        return () => document.removeEventListener("pointerdown", handleClickOutside);
     }, [isOpen]);
 
     const filteredOptions = options.filter(opt =>
@@ -103,7 +116,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                     if (!isOpen && (e.key === "Enter" || e.key === " " || e.key === "ArrowDown")) {
                         e.preventDefault();
                         setIsOpen(true);
-                        setTimeout(() => inputRef.current?.focus(), 0);
+                        if (isDesktop()) setTimeout(() => inputRef.current?.focus(), 0);
                     } else if (isOpen && e.key === "Escape") {
                         setIsOpen(false);
                         setTouched(true);
@@ -111,8 +124,19 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                 }}
                 className={`relative w-full min-h-[44px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-pointer transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${getBorderClass()} ${selectClasses || ''}`}
                 onClick={() => {
-                    setIsOpen(true);
-                    inputRef.current?.focus();
+                    setIsOpen((wasOpen) => {
+                        if (wasOpen) {
+                            setSearchTerm("");
+                            setTouched(true);
+                            return false;
+                        }
+                        // Focusing the search box opens the on-screen keyboard,
+                        // which covers exactly where the panel is about to be
+                        // placed. Desktop keeps type-to-filter; mobile opens
+                        // straight to a tappable list.
+                        if (isDesktop()) setTimeout(() => inputRef.current?.focus(), 0);
+                        return true;
+                    });
                 }}
             >
                 <div className="flex items-center justify-between h-full">
@@ -126,7 +150,7 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
                             onKeyDown={handleKeyDown}
                             placeholder={currentValue || placeholder || `Search ${label === "Study Program" ? "Program" : label}...`}
                             className="flex-1 outline-none text-xs md:text-sm bg-transparent"
-                            autoFocus
+                            autoFocus={isDesktop()}
                         />
                     ) : (
                         <span className={`flex-1 text-xs md:text-sm truncate ${!currentValue ? 'text-fg-faint' : 'text-fg'}`}>
@@ -147,8 +171,14 @@ const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handl
             {isOpen && triggerRect && createPortal(
                 <div
                     ref={panelRef}
-                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-48 overflow-y-auto"
-                    style={{ top: triggerRect.bottom + 4, left: triggerRect.left, width: triggerRect.width }}
+                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg overflow-y-auto overscroll-contain"
+                    style={{
+                        top: triggerRect.top,
+                        bottom: triggerRect.bottom,
+                        left: triggerRect.left,
+                        width: triggerRect.width,
+                        maxHeight: triggerRect.maxHeight,
+                    }}
                 >
                     {filteredOptions.length > 0 ? (
                         filteredOptions.map((option, idx) => (
