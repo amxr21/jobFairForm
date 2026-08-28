@@ -1,0 +1,7 @@
+node_modules
+.env
+.env.*
+!.env.example
+certs
+tests
+npm-debug.log*
