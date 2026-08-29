@@ -18,6 +18,11 @@ import { DURATION, DISTANCE, EASE } from "../lib/motionTokens";
 // Elements opt in with data-intro="<name>". Anything not marked simply
 // renders normally, so adding markup to the page can never break the sequence
 // or leave a new element stuck invisible.
+//
+// SAFETY: this hook hides things in order to animate them in, so any failure
+// mid-setup can strand an element at opacity 0 — present and clickable but
+// invisible, which is worse than no animation. Everything below is wrapped so
+// that an error restores visibility rather than leaving the page broken.
 
 export default function useIntroTimeline() {
     const scope = useRef(null);
@@ -25,18 +30,7 @@ export default function useIntroTimeline() {
     useGSAP(
         () => {
             const reduced = prefersReducedMotion();
-
             const pick = (name) => scope.current?.querySelectorAll(`[data-intro="${name}"]`);
-
-            // gsap.from throughout: the resting DOM state is the finished
-            // state, so a failure here leaves the page fully visible rather
-            // than blank. Never gsap.to from opacity 0 on a landing page.
-            const tl = gsap.timeline({
-                defaults: {
-                    ease: EASE.out,
-                    duration: reduced ? DURATION.fast : DURATION.slow,
-                },
-            });
 
             const logos = pick("logos");
             const heading = pick("heading");
@@ -44,60 +38,89 @@ export default function useIntroTimeline() {
             const cta = pick("cta");
             const meta = pick("meta");
 
-            if (logos?.length) {
-                tl.from(logos, {
-                    y: reduced ? 0 : -DISTANCE.md,
-                    opacity: 0,
-                    stagger: { amount: reduced ? 0 : 0.15 },
+            // Flattened to a plain array of nodes, dropping any group that
+            // matched nothing. Passing GSAP an array that contains NodeLists
+            // AND undefined entries is what broke this before: it could not
+            // resolve the targets, threw partway through, and left whatever it
+            // had already set to opacity 0 stuck there — the Register button
+            // was invisible but still clickable.
+            const all = [logos, heading, art, cta, meta]
+                .filter((nodes) => nodes && nodes.length)
+                .flatMap((nodes) => Array.from(nodes));
+
+            if (!all.length) return;
+
+            // If anything below fails, make certain nothing stays hidden. An
+            // intro that fails should show the page, never conceal it.
+            const restore = () => gsap.set(all, { clearProps: "opacity,transform" });
+
+            try {
+                // gsap.from throughout: the resting DOM state is the finished
+                // state, so content is visible if these tweens never run.
+                // Never gsap.to from opacity 0 on a landing page.
+                const tl = gsap.timeline({
+                    defaults: {
+                        ease: EASE.out,
+                        duration: reduced ? DURATION.fast : DURATION.slow,
+                    },
+                    onInterrupt: restore,
                 });
-            }
 
-            if (heading?.length) {
-                tl.from(
-                    heading,
-                    {
-                        y: reduced ? 0 : DISTANCE.md,
+                if (logos?.length) {
+                    tl.from(logos, {
+                        y: reduced ? 0 : -DISTANCE.md,
                         opacity: 0,
-                    },
-                    reduced ? "<" : "-=0.3"
-                );
-            }
+                        stagger: { amount: reduced ? 0 : 0.15 },
+                    });
+                }
 
-            if (art?.length) {
-                tl.from(
-                    art,
-                    {
-                        // Scale rather than travel: the illustration is large,
-                        // and sliding something that size across the viewport
-                        // is the kind of movement reduced-motion users report
-                        // as uncomfortable.
-                        scale: reduced ? 1 : 0.94,
-                        opacity: 0,
-                        duration: reduced ? DURATION.fast : DURATION.celebrate,
-                    },
-                    reduced ? "<" : "-=0.4"
-                );
-            }
+                if (heading?.length) {
+                    tl.from(
+                        heading,
+                        { y: reduced ? 0 : DISTANCE.md, opacity: 0 },
+                        reduced ? "<" : "-=0.3"
+                    );
+                }
 
-            if (cta?.length) {
-                tl.from(
-                    cta,
-                    {
-                        y: reduced ? 0 : DISTANCE.md,
-                        opacity: 0,
-                        stagger: { amount: reduced ? 0 : 0.12 },
-                    },
-                    reduced ? "<" : "-=0.35"
-                );
-            }
+                if (art?.length) {
+                    tl.from(
+                        art,
+                        {
+                            // Scale rather than travel: the illustration is
+                            // large, and sliding something that size across the
+                            // viewport is the movement reduced-motion users
+                            // report as uncomfortable.
+                            scale: reduced ? 1 : 0.94,
+                            opacity: 0,
+                            duration: reduced ? DURATION.fast : DURATION.celebrate,
+                        },
+                        reduced ? "<" : "-=0.4"
+                    );
+                }
 
-            if (meta?.length) {
-                tl.from(meta, { opacity: 0 }, reduced ? "<" : "-=0.25");
-            }
+                if (cta?.length) {
+                    tl.from(
+                        cta,
+                        {
+                            y: reduced ? 0 : DISTANCE.md,
+                            opacity: 0,
+                            stagger: { amount: reduced ? 0 : 0.12 },
+                        },
+                        reduced ? "<" : "-=0.35"
+                    );
+                }
 
-            // Leaves no inline transforms behind, so the buttons' own
-            // hover/press transforms aren't fighting a leftover matrix.
-            tl.set([logos, heading, art, cta, meta], { clearProps: "transform" });
+                if (meta?.length) {
+                    tl.from(meta, { opacity: 0 }, reduced ? "<" : "-=0.25");
+                }
+
+                // Leaves no inline transforms behind, so the buttons' own
+                // hover/press transforms aren't fighting a leftover matrix.
+                tl.set(all, { clearProps: "transform" });
+            } catch (err) {
+                console.error("Intro animation failed; showing the page unanimated.", err);
+                restore();
+            }
         },
         { scope }
     );
