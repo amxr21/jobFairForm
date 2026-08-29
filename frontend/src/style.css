@@ -92,6 +92,14 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* The rules above only collapse transition *duration*, which turns a press
+     scale into an instant snap rather than removing it — still movement, just
+     abrupt. Drop the transform itself so the button reports the press through
+     its colour change alone. */
+  .active\:scale-\[0\.97\]:active {
+    transform: none !important;
+  }
 }
 
 body {

@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { RequiredAstrik } from "./index";
 import FieldHint from "./FieldHint";
+import useShake from "../../hooks/useShake";
 import { LABEL_CLASSES, WRAPPER_CLASSES } from "./fieldStyles";
 
 // Label + control + error, wired together properly.
@@ -38,8 +39,17 @@ const FieldShell = ({
     const LabelTag = labelAs;
     const labelProps = labelAs === "label" ? { htmlFor } : {};
 
+    // Shakes once on the transition into an error state — the moment a field
+    // is rejected. Every field routes its error through this component, so
+    // wiring it here covers inputs, selects, multi-selects and the date
+    // picker without each of them repeating it.
+    const shakeRef = useShake(Boolean(error));
+
     return (
-        <div className={`${WRAPPER_CLASSES} ${className}`}>
+        // data-reveal opts this field into StepContainer's staggered entrance.
+        // The stagger is capped as a total, so adding fields to a step slows
+        // nothing down.
+        <div data-reveal ref={shakeRef} className={`${WRAPPER_CLASSES} ${className}`}>
             <LabelTag
                 {...labelProps}
                 id={`${label}-label`}
