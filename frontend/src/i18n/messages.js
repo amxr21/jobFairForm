@@ -66,6 +66,8 @@ export const messages = {
             changeFile: "Change file",
             fileHint: "PDF or Word, under 4MB",
             noOptionsFound: "No matching options found",
+            selectPreferredLocation: "Select preferred location",
+            selectAvailability: "Select availability",
         },
         datePicker: {
             chooseDate: "Choose a date",
@@ -76,6 +78,40 @@ export const messages = {
             monthLabel: "Month: {month}",
             yearLabel: "Year: {year}",
             setGraduationDateHint: 'Check "Are you a current student?" below to set your expected graduation date.',
+        },
+        // SkillsMultiSelect's `noun` prop only ever takes these two English
+        // values ("skill" from ProfessionalInfo, "field" from Preferences).
+        // English can template "{noun}s selected" onto either noun with no
+        // grammar issue, so it does.
+        // English can safely template "{noun}s" onto either "skill" or
+        // "field" with no grammar issue, unlike Arabic (see the ar block for
+        // why that side is two full noun-specific phrase sets instead).
+        // Structured the same way regardless — skill/field/remove — so
+        // both locales resolve through one consistent lookup shape.
+        multiSelect: {
+            skill: {
+                searchPlaceholder: "Search skills...",
+                addCustom: '+ Add "{value}"',
+                noMatching: "No matching skills",
+                typeToSearch: "Type to search or add custom skills...",
+                allSelected: "All skills selected",
+                countSelected: "{count} skills selected",
+                countSelectedOne: "1 skill selected",
+                noneSelectedYet: "No skills selected yet",
+                optionsSuffix: "{label} options",
+            },
+            field: {
+                searchPlaceholder: "Search fields...",
+                addCustom: '+ Add "{value}"',
+                noMatching: "No matching fields",
+                typeToSearch: "Type to search or add custom fields...",
+                allSelected: "All fields selected",
+                countSelected: "{count} fields selected",
+                countSelectedOne: "1 field selected",
+                noneSelectedYet: "No fields selected yet",
+                optionsSuffix: "{label} options",
+            },
+            remove: "Remove {value}",
         },
         errors: {
             required: "This field is required",
@@ -167,6 +203,8 @@ export const messages = {
             changeFile: "غير الملف",
             fileHint: "PDF أو Word، أقل من 4 ميجابايت",
             noOptionsFound: "لا توجد خيارات مطابقة",
+            selectPreferredLocation: "اختر الموقع المفضل",
+            selectAvailability: "اختر التوفر",
         },
         datePicker: {
             chooseDate: "اختر تاريخا",
@@ -177,6 +215,37 @@ export const messages = {
             monthLabel: "الشهر: {month}",
             yearLabel: "السنة: {year}",
             setGraduationDateHint: "حدد \"هل أنت طالب حالي؟\" أدناه لتعيين تاريخ التخرج المتوقع.",
+        },
+        // "مهارة" (skill) is feminine and "مجال" (field) is masculine, so a
+        // single Arabic template cannot correctly agree with both nouns the
+        // way the English template does — "لا توجد مهارات مطابقة" (skill,
+        // feminine plural adjective) is simply a different sentence from "لا
+        // يوجد مجال مطابق" (field, masculine). Two complete noun-specific
+        // phrase sets, keyed by noun, rather than one broken template.
+        multiSelect: {
+            skill: {
+                searchPlaceholder: "ابحث عن مهارة...",
+                addCustom: 'إضافة "{value}"+',
+                noMatching: "لا توجد مهارات مطابقة",
+                typeToSearch: "اكتب للبحث أو أضف مهارات مخصصة...",
+                allSelected: "تم اختيار جميع المهارات",
+                countSelected: "تم اختيار {count} مهارات",
+                countSelectedOne: "تم اختيار مهارة واحدة",
+                noneSelectedYet: "لم يتم اختيار أي مهارة بعد",
+                optionsSuffix: "خيارات {label}",
+            },
+            field: {
+                searchPlaceholder: "ابحث عن مجال...",
+                addCustom: 'إضافة "{value}"+',
+                noMatching: "لا يوجد مجال مطابق",
+                typeToSearch: "اكتب للبحث أو أضف مجالات مخصصة...",
+                allSelected: "تم اختيار جميع المجالات",
+                countSelected: "تم اختيار {count} مجالات",
+                countSelectedOne: "تم اختيار مجال واحد",
+                noneSelectedYet: "لم يتم اختيار أي مجال بعد",
+                optionsSuffix: "خيارات {label}",
+            },
+            remove: "إزالة {value}",
         },
         errors: {
             required: "هذا الحقل مطلوب",

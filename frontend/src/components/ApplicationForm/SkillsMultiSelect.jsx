@@ -5,7 +5,9 @@ import useUniqueId from "../../hooks/useUniqueId";
 import { X, ChevronDown } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
 import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 import FieldShell from "./FieldShell";
 import {
     FIELD_MIN_HEIGHT,
@@ -77,7 +79,16 @@ const SkillsMultiSelect = ({
 }) => {
     const { formData, setFormData } = useFormContext();
     const { locale } = useLocaleContext();
+    const t = useTranslation();
     const displayLabel = (val) => (locale === "ar" ? labelFor(labelMap, val) : val);
+    // noun is always "skill" or "field" (see the callers in
+    // ProfessionalInfo.jsx / Preferences.jsx) — messages.js keys its
+    // multiSelect copy the same way, as two full noun-specific phrase sets
+    // rather than one template, since "مهارة" (skill) and "مجال" (field) take
+    // different grammatical agreement in Arabic and a single template can't
+    // correctly serve both.
+    const nounKey = noun === "field" ? "field" : "skill";
+    const tn = (key, vars) => t(`multiSelect.${nounKey}.${key}`, vars);
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -220,7 +231,7 @@ const SkillsMultiSelect = ({
                                     // just "button" — one of many identical
                                     // ones — with no way to tell which chip it
                                     // belongs to.
-                                    aria-label={`Remove ${skill}`}
+                                    aria-label={t("multiSelect.remove", { value: displayLabel(skill) })}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         removeSkill(skill);
@@ -255,7 +266,7 @@ const SkillsMultiSelect = ({
                             onKeyDown={handleKeyDown}
                             placeholder={
                                 selectedSkills.length === 0
-                                    ? (placeholder || `Search ${label.toLowerCase()}...`)
+                                    ? (placeholder || tn("searchPlaceholder"))
                                     : ""
                             }
                             className={`flex-1 min-w-[80px] outline-none ${FIELD_TEXT} py-0.5 bg-transparent`}
@@ -314,7 +325,7 @@ const SkillsMultiSelect = ({
                             id={listboxId}
                             role="listbox"
                             aria-multiselectable="true"
-                            aria-label={`${label} options`}
+                            aria-label={tn("optionsSuffix", { label: locale === "ar" ? labelFor(fieldLabelMap, label) : label })}
                             className="p-1 m-0 list-none"
                         >
                             {rows.length > 0 ? (
@@ -336,16 +347,16 @@ const SkillsMultiSelect = ({
                                             run through displayLabel. Only a
                                             recognized "skill" row has an
                                             Arabic translation to show. */}
-                                        {row.type === "custom" ? `+ Add "${row.value}"` : displayLabel(row.value)}
+                                        {row.type === "custom" ? tn("addCustom", { value: row.value }) : displayLabel(row.value)}
                                     </li>
                                 ))
                             ) : (
                                 <li className={`px-2 md:px-3 py-2 ${FIELD_TEXT} text-fg-muted`}>
                                     {searchTerm
-                                        ? `No matching ${noun}s`
+                                        ? tn("noMatching")
                                         : allowCustom
-                                            ? `Type to search or add custom ${noun}s...`
-                                            : `All ${noun}s selected`}
+                                            ? tn("typeToSearch")
+                                            : tn("allSelected")}
                                 </li>
                             )}
                         </ul>
@@ -367,8 +378,8 @@ const SkillsMultiSelect = ({
 
             <p id={`${reactId}-count`} className="text-[10px] md:text-xs text-fg-muted mt-0.5">
                 {selectedSkills.length > 0
-                    ? `${selectedSkills.length} ${noun}${selectedSkills.length !== 1 ? "s" : ""} selected`
-                    : `No ${noun}s selected yet`}
+                    ? (selectedSkills.length === 1 ? tn("countSelectedOne") : tn("countSelected", { count: selectedSkills.length }))
+                    : tn("noneSelectedYet")}
             </p>
         </FieldShell>
     );

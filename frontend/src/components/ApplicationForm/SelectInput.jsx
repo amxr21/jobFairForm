@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Check, Search } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
 import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
 import { labelFor } from "../../i18n/options";
 import { fieldLabelMap } from "../../i18n/messages";
 import FieldShell from "./FieldShell";
@@ -64,6 +65,7 @@ const SelectInput = ({
     const [searchTerm, setSearchTerm] = useState("");
     const { formData, updateFormData } = useFormContext();
     const { locale } = useLocaleContext();
+    const t = useTranslation();
     // What the user actually SEES for a given English option value — the
     // Arabic label when one exists, else the English value itself.
     const displayLabel = (option) => (locale === "ar" ? labelFor(labelMap, option) : option);
@@ -225,7 +227,7 @@ const SelectInput = ({
                                 ))
                             ) : (
                                 <div className={`px-2 md:px-3 py-2 ${FIELD_TEXT} text-fg-muted`}>
-                                    No matching options found
+                                    {t("placeholders.noOptionsFound")}
                                 </div>
                             )}
                         </Select.Viewport>
