@@ -1,133 +1,99 @@
 import PropTypes from "prop-types";
-import { useState, useRef, useEffect, useMemo } from "react";
-import { createPortal } from "react-dom";
+import { useState, useRef, useEffect, useId } from "react";
+import * as Popover from "@radix-ui/react-popover";
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar as CalendarIcon, Check } from "lucide-react";
-import useDropdownPosition from "../../hooks/useDropdownPosition";
+import {
+    FIELD_HEIGHT,
+    FIELD_SURFACE,
+    FIELD_TEXT,
+    PANEL_CLASSES,
+} from "./fieldStyles";
 
-// A self-contained date picker built from scratch — no react-day-picker, no
-// Radix. A plain trigger button plus a panel portaled to document.body (so it
-// escapes the step containers' overflow-hidden) with hand-built month grid,
-// working prev/next arrows, and a custom month/year dropdown (not native
-// <select>, so it can be styled/themed consistently). No enter animation, so
-// it appears in place rather than sliding in from a corner.
+// The month grid is hand-built (a calendar is a genuinely custom widget and
+// react-day-picker would have to be restyled from scratch anyway), but the
+// overlay mechanics now come from Radix Popover instead of the third
+// hand-rolled portal + outside-click + position implementation in this folder.
+//
+// The accessibility work here is the `role="grid"` layer. Previously the
+// calendar was 42 anonymous <button>s in a flat div: a screen reader user got
+// "1, 2, 3…" with no month, no weekday, no indication of which was selected or
+// today, and no way to know they were in a calendar at all. The ARIA grid
+// pattern fixes that:
+//
+//   - role="grid" with an accessible name carrying the visible month/year
+//   - role="row" / role="gridcell" structure matching the visual layout
+//   - each day button's accessible name is the full date ("14 March 2004"),
+//     not the bare number
+//   - aria-selected on the chosen day, aria-current="date" on today
+//   - roving tabindex + arrow/PageUp/PageDown/Home/End navigation, so the grid
+//     is one tab stop that you then arrow around, rather than 42 tab stops
+//
+// The month/year dropdowns are Radix Popovers too, so they dismiss and manage
+// focus correctly instead of relying on the parent's outside-click handler.
 
 const MONTHS = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
 ];
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const WEEKDAYS = [
+    { short: "Su", long: "Sunday" },
+    { short: "Mo", long: "Monday" },
+    { short: "Tu", long: "Tuesday" },
+    { short: "We", long: "Wednesday" },
+    { short: "Th", long: "Thursday" },
+    { short: "Fr", long: "Friday" },
+    { short: "Sa", long: "Saturday" },
+];
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
 const formatDisplay = (date) =>
-    date
-        ? date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-        : "";
+    date ? date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
 
-// Build the 6-row grid (42 cells) for a given month, including leading/trailing
-// days from adjacent months so the calendar is always a full rectangle.
+const formatFull = (date) =>
+    date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+
+const sameDay = (a, b) => a && b && a.getTime() === b.getTime();
+
 function buildMonthGrid(viewYear, viewMonth) {
-    const firstOfMonth = new Date(viewYear, viewMonth, 1);
-    const startWeekday = firstOfMonth.getDay(); // 0 = Sunday
+    const startWeekday = new Date(viewYear, viewMonth, 1).getDay();
     const gridStart = new Date(viewYear, viewMonth, 1 - startWeekday);
-    const cells = [];
-    for (let i = 0; i < 42; i++) {
-        const d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
-        cells.push(d);
-    }
-    return cells;
+    return Array.from({ length: 42 }, (_, i) =>
+        new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i)
+    );
 }
 
 const DatePicker = ({
-    value,          // Date | null
-    onSelect,       // (Date) => void
-    minDate,        // Date | undefined
-    maxDate,        // Date | undefined
+    value,
+    onSelect,
+    minDate,
+    maxDate,
     disabled = false,
-    disabledMessage, // shown when a disabled trigger is clicked
+    disabledMessage,
     placeholder = "Select a date",
     triggerClassName = "",
     onBlur,
+    id,
+    ariaInvalid,
+    ariaDescribedBy,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showDisabledNote, setShowDisabledNote] = useState(false);
     const [monthPickerOpen, setMonthPickerOpen] = useState(false);
     const [yearPickerOpen, setYearPickerOpen] = useState(false);
-    // The month currently being viewed in the panel. Defaults to the selected
-    // date's month, else the maxDate's month (e.g. 20 years ago for DOB), else
-    // today — so DOB opens near the right decade instead of the current month.
+
     const initialView = value || maxDate || new Date();
     const [viewYear, setViewYear] = useState(initialView.getFullYear());
     const [viewMonth, setViewMonth] = useState(initialView.getMonth());
 
-    const wrapRef = useRef(null);
-    const triggerRef = useRef(null);
-    const panelRef = useRef(null);
-    // The calendar is a fixed-width panel rather than trigger-width, so the
-    // hook is given that width to clamp against — at w-[280px] anchored to
-    // `left: rect.left`, any field not flush-left pushed the calendar off the
-    // right edge of a 360px phone. Capped to the viewport on very narrow
-    // screens.
-    // Memoised because it feeds the hook's effect deps; recomputing it inline
-    // on every render would resubscribe the scroll/resize listeners each time.
-    // Recalculated whenever the picker opens, which is enough to catch a
-    // rotation between uses.
-    const panelWidth = useMemo(
-        () => (typeof window !== "undefined" ? Math.min(280, window.innerWidth - 16) : 280),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [isOpen]
-    );
-    const positionOptions = useMemo(
-        () => ({ panelWidth, estimatedHeight: 340 }),
-        [panelWidth]
-    );
-    const rect = useDropdownPosition(triggerRef, isOpen, positionOptions);
-
-    // Close on outside click (panel is portaled, so check it separately).
-    // Only fires onBlur when the picker was actually open — otherwise every
-    // unrelated click anywhere on the page (e.g. into a different field)
-    // would mark this field "touched" and show a validation error before the
-    // user ever interacted with it.
-    useEffect(() => {
-        if (!isOpen) return;
-        // `pointerdown` rather than `mousedown` — see the note in
-        // SelectInput.jsx about synthetic touch events racing React's click.
-        const onDown = (e) => {
-            const inTrigger = wrapRef.current && wrapRef.current.contains(e.target);
-            const inPanel = panelRef.current && panelRef.current.contains(e.target);
-            if (!inTrigger && !inPanel) {
-                setIsOpen(false);
-                setMonthPickerOpen(false);
-                setYearPickerOpen(false);
-                onBlur?.();
-            }
-        };
-        document.addEventListener("pointerdown", onDown);
-        return () => document.removeEventListener("pointerdown", onDown);
-    }, [isOpen, onBlur]);
-
-    // When opening, reset the view to the selected date (or the sensible
-    // default) so it never opens on a stale month.
-    const open = () => {
-        if (disabled) return;
-        const v = value || maxDate || new Date();
-        setViewYear(v.getFullYear());
-        setViewMonth(v.getMonth());
-        setIsOpen(true);
-    };
-
-    const goToPrevMonth = () => {
-        setViewMonth((m) => {
-            if (m === 0) { setViewYear((y) => y - 1); return 11; }
-            return m - 1;
-        });
-    };
-    const goToNextMonth = () => {
-        setViewMonth((m) => {
-            if (m === 11) { setViewYear((y) => y + 1); return 0; }
-            return m + 1;
-        });
-    };
+    // The day the roving tabindex currently sits on.
+    const [focusedDay, setFocusedDay] = useState(() => startOfDay(initialView));
+    // Only move real DOM focus when the user is actually navigating the grid,
+    // so opening the panel doesn't rip focus off the trigger unexpectedly.
+    const shouldFocusRef = useRef(false);
+    const gridRef = useRef(null);
+    const reactId = useId();
+    const gridId = `${reactId}-grid`;
 
     const isDisabledDay = (d) => {
         const day = startOfDay(d);
@@ -136,190 +102,348 @@ const DatePicker = ({
         return false;
     };
 
+    // Move DOM focus onto whichever day the roving index points at, after the
+    // grid has re-rendered for a month change.
+    useEffect(() => {
+        if (!isOpen || !shouldFocusRef.current) return;
+        const el = gridRef.current?.querySelector('[data-day][tabindex="0"]');
+        el?.focus();
+        shouldFocusRef.current = false;
+    }, [isOpen, focusedDay, viewMonth, viewYear]);
+
+    const open = () => {
+        if (disabled) return;
+        const v = value || maxDate || new Date();
+        setViewYear(v.getFullYear());
+        setViewMonth(v.getMonth());
+        setFocusedDay(startOfDay(v));
+        setIsOpen(true);
+    };
+
+    const goToPrevMonth = () => {
+        setViewMonth((m) => (m === 0 ? (setViewYear((y) => y - 1), 11) : m - 1));
+    };
+    const goToNextMonth = () => {
+        setViewMonth((m) => (m === 11 ? (setViewYear((y) => y + 1), 0) : m + 1));
+    };
+
+    // Move the roving cursor by `days`, following it into an adjacent month
+    // when it crosses a boundary.
+    const moveFocus = (days) => {
+        const next = new Date(
+            focusedDay.getFullYear(),
+            focusedDay.getMonth(),
+            focusedDay.getDate() + days
+        );
+        shouldFocusRef.current = true;
+        setFocusedDay(next);
+        setViewYear(next.getFullYear());
+        setViewMonth(next.getMonth());
+    };
+
+    const moveFocusMonths = (months) => {
+        const next = new Date(
+            focusedDay.getFullYear(),
+            focusedDay.getMonth() + months,
+            focusedDay.getDate()
+        );
+        shouldFocusRef.current = true;
+        setFocusedDay(next);
+        setViewYear(next.getFullYear());
+        setViewMonth(next.getMonth());
+    };
+
     const handlePick = (d) => {
         if (isDisabledDay(d)) return;
         onSelect?.(startOfDay(d));
         setIsOpen(false);
     };
 
-    // Year range for the dropdown: from (maxDate or today) back 80 years.
+    const handleGridKeyDown = (e) => {
+        switch (e.key) {
+            case "ArrowLeft":  e.preventDefault(); moveFocus(-1); break;
+            case "ArrowRight": e.preventDefault(); moveFocus(1); break;
+            case "ArrowUp":    e.preventDefault(); moveFocus(-7); break;
+            case "ArrowDown":  e.preventDefault(); moveFocus(7); break;
+            case "PageUp":     e.preventDefault(); moveFocusMonths(-1); break;
+            case "PageDown":   e.preventDefault(); moveFocusMonths(1); break;
+            case "Home": {
+                e.preventDefault();
+                shouldFocusRef.current = true;
+                setFocusedDay(new Date(focusedDay.getFullYear(), focusedDay.getMonth(), 1));
+                break;
+            }
+            case "End": {
+                e.preventDefault();
+                shouldFocusRef.current = true;
+                setFocusedDay(new Date(focusedDay.getFullYear(), focusedDay.getMonth() + 1, 0));
+                break;
+            }
+            case "Enter":
+            case " ":
+                e.preventDefault();
+                handlePick(focusedDay);
+                break;
+            default:
+                break;
+        }
+    };
+
     const yearAnchor = (maxDate || new Date()).getFullYear();
-    const yearOptions = [];
-    for (let y = yearAnchor; y >= yearAnchor - 80; y--) yearOptions.push(y);
+    const yearOptions = Array.from({ length: 81 }, (_, i) => yearAnchor - i);
 
     const cells = buildMonthGrid(viewYear, viewMonth);
+    const weeks = Array.from({ length: 6 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
     const selectedDay = value ? startOfDay(value) : null;
     const today = startOfDay(new Date());
 
+    const dropdownPanel = `${PANEL_CLASSES} z-[1001] p-1`;
+
     return (
-        <div ref={wrapRef} className="w-full">
-            <button
-                ref={triggerRef}
-                type="button"
-                aria-disabled={disabled}
-                onClick={() => {
-                    // Kept clickable even when disabled so we can explain *why*
-                    // it's disabled rather than silently doing nothing.
-                    if (disabled) {
-                        if (disabledMessage) {
-                            setShowDisabledNote(true);
-                            setTimeout(() => setShowDisabledNote(false), 3000);
-                        }
-                        return;
+        <>
+            <Popover.Root
+                open={isOpen}
+                onOpenChange={(next) => {
+                    if (!next) {
+                        setIsOpen(false);
+                        setMonthPickerOpen(false);
+                        setYearPickerOpen(false);
+                        onBlur?.();
                     }
-                    isOpen ? setIsOpen(false) : open();
                 }}
-                onBlur={onBlur}
-                className={`h-11 md:h-9 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1 px-2 text-xs md:text-sm flex items-center justify-between text-left transition-all duration-200 ${disabled ? "cursor-not-allowed" : ""} ${triggerClassName}`}
             >
-                <span className={value ? "text-fg" : "text-fg-faint"}>
-                    {value ? formatDisplay(value) : placeholder}
-                </span>
-                <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted shrink-0" />
-            </button>
+                <Popover.Trigger asChild>
+                    <button
+                        id={id}
+                        type="button"
+                        aria-disabled={disabled}
+                        aria-invalid={ariaInvalid || undefined}
+                        aria-describedby={ariaDescribedBy}
+                        aria-haspopup="dialog"
+                        onClick={() => {
+                            // Kept clickable while disabled so we can explain
+                            // *why* rather than silently doing nothing.
+                            if (disabled) {
+                                if (disabledMessage) {
+                                    setShowDisabledNote(true);
+                                    setTimeout(() => setShowDisabledNote(false), 3000);
+                                }
+                                return;
+                            }
+                            isOpen ? setIsOpen(false) : open();
+                        }}
+                        className={`${FIELD_HEIGHT} ${FIELD_SURFACE} py-1 px-2 ${FIELD_TEXT} flex items-center justify-between text-left
+                            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-surface-hover
+                            ${disabled ? "cursor-not-allowed" : "cursor-pointer"} ${triggerClassName}`}
+                    >
+                        <span className={value ? "text-fg" : "text-fg-faint"}>
+                            {value ? formatDisplay(value) : placeholder}
+                        </span>
+                        <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted shrink-0" />
+                    </button>
+                </Popover.Trigger>
+
+                <Popover.Portal>
+                    <Popover.Content
+                        side="bottom"
+                        align="start"
+                        sideOffset={4}
+                        collisionPadding={8}
+                        role="dialog"
+                        aria-label="Choose a date"
+                        className={`overlay-pop z-[1000] ${PANEL_CLASSES} p-3`}
+                        style={{
+                            width: "min(280px, calc(100vw - 16px))",
+                            maxHeight: "var(--radix-popover-content-available-height)",
+                            WebkitOverflowScrolling: "touch",
+                        }}
+                        onOpenAutoFocus={(e) => {
+                            // Land on the focused day rather than the first
+                            // header button, so arrow keys work immediately.
+                            e.preventDefault();
+                            gridRef.current?.querySelector('[data-day][tabindex="0"]')?.focus();
+                        }}
+                    >
+                        {/* Header: prev, month + year pickers, next */}
+                        <div className="flex items-center justify-between gap-1 mb-2">
+                            <button
+                                type="button"
+                                onClick={goToPrevMonth}
+                                className="h-8 w-8 md:h-7 md:w-7 rounded-md border-line border text-fg-muted hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center shrink-0"
+                                aria-label="Previous month"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                <Popover.Root open={monthPickerOpen} onOpenChange={setMonthPickerOpen}>
+                                    <Popover.Trigger asChild>
+                                        <button
+                                            type="button"
+                                            aria-label={`Month: ${MONTHS[viewMonth]}`}
+                                            className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
+                                        >
+                                            {MONTHS[viewMonth]}
+                                            <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
+                                        </button>
+                                    </Popover.Trigger>
+                                    <Popover.Portal>
+                                        <Popover.Content
+                                            side="bottom"
+                                            align="start"
+                                            sideOffset={4}
+                                            collisionPadding={8}
+                                            className={`${dropdownPanel} max-h-48 w-32`}
+                                            role="listbox"
+                                            aria-label="Select month"
+                                        >
+                                            {MONTHS.map((m, i) => (
+                                                <button
+                                                    key={m}
+                                                    type="button"
+                                                    role="option"
+                                                    aria-selected={i === viewMonth}
+                                                    onClick={() => { setViewMonth(i); setMonthPickerOpen(false); }}
+                                                    className={`w-full text-left px-2.5 py-2 text-sm rounded flex items-center justify-between transition-colors focus:outline-none focus-visible:bg-surface-hover ${
+                                                        i === viewMonth ? "bg-primary/10 text-primary font-medium" : "text-fg hover:bg-surface-hover"
+                                                    }`}
+                                                >
+                                                    {m}
+                                                    {i === viewMonth && <Check className="h-3.5 w-3.5" />}
+                                                </button>
+                                            ))}
+                                        </Popover.Content>
+                                    </Popover.Portal>
+                                </Popover.Root>
+
+                                <Popover.Root open={yearPickerOpen} onOpenChange={setYearPickerOpen}>
+                                    <Popover.Trigger asChild>
+                                        <button
+                                            type="button"
+                                            aria-label={`Year: ${viewYear}`}
+                                            className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
+                                        >
+                                            {viewYear}
+                                            <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
+                                        </button>
+                                    </Popover.Trigger>
+                                    <Popover.Portal>
+                                        <Popover.Content
+                                            side="bottom"
+                                            align="end"
+                                            sideOffset={4}
+                                            collisionPadding={8}
+                                            className={`${dropdownPanel} max-h-48 w-24`}
+                                            role="listbox"
+                                            aria-label="Select year"
+                                        >
+                                            {yearOptions.map((y) => (
+                                                <button
+                                                    key={y}
+                                                    type="button"
+                                                    role="option"
+                                                    aria-selected={y === viewYear}
+                                                    onClick={() => { setViewYear(y); setYearPickerOpen(false); }}
+                                                    className={`w-full text-left px-2.5 py-2 text-sm rounded flex items-center justify-between transition-colors focus:outline-none focus-visible:bg-surface-hover ${
+                                                        y === viewYear ? "bg-primary/10 text-primary font-medium" : "text-fg hover:bg-surface-hover"
+                                                    }`}
+                                                >
+                                                    {y}
+                                                    {y === viewYear && <Check className="h-3.5 w-3.5" />}
+                                                </button>
+                                            ))}
+                                        </Popover.Content>
+                                    </Popover.Portal>
+                                </Popover.Root>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={goToNextMonth}
+                                className="h-8 w-8 md:h-7 md:w-7 rounded-md border-line border text-fg-muted hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center shrink-0"
+                                aria-label="Next month"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        {/* The grid's accessible name carries the month being
+                            viewed, and is announced when the month changes. */}
+                        <div
+                            ref={gridRef}
+                            role="grid"
+                            id={gridId}
+                            aria-label={`${MONTHS[viewMonth]} ${viewYear}`}
+                            onKeyDown={handleGridKeyDown}
+                        >
+                            <div role="row" className="grid grid-cols-7 mb-1">
+                                {WEEKDAYS.map((wd) => (
+                                    <div
+                                        key={wd.short}
+                                        role="columnheader"
+                                        aria-label={wd.long}
+                                        className="h-7 flex items-center justify-center text-[0.7rem] text-fg-muted font-normal"
+                                    >
+                                        {wd.short}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div key={`${viewYear}-${viewMonth}`} className="animate-in fade-in duration-200">
+                                {weeks.map((week, wi) => (
+                                    <div role="row" key={wi} className="grid grid-cols-7 gap-y-0.5">
+                                        {week.map((d) => {
+                                            const day = startOfDay(d);
+                                            const inMonth = d.getMonth() === viewMonth;
+                                            const isSelected = sameDay(day, selectedDay);
+                                            const isToday = sameDay(day, today);
+                                            const dayDisabled = isDisabledDay(d);
+                                            const isFocused = sameDay(day, startOfDay(focusedDay));
+                                            return (
+                                                <div role="gridcell" key={day.getTime()}>
+                                                    <button
+                                                        type="button"
+                                                        data-day
+                                                        // Roving tabindex: exactly one day is
+                                                        // tabbable, the rest are reached with
+                                                        // arrows. 42 tab stops would be a maze.
+                                                        tabIndex={isFocused ? 0 : -1}
+                                                        disabled={dayDisabled}
+                                                        aria-label={formatFull(day)}
+                                                        aria-selected={isSelected}
+                                                        aria-current={isToday ? "date" : undefined}
+                                                        onClick={() => handlePick(d)}
+                                                        onFocus={() => setFocusedDay(day)}
+                                                        className={[
+                                                            "h-9 md:h-8 w-full flex items-center justify-center text-sm rounded-md transition-colors",
+                                                            "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                                                            dayDisabled
+                                                                ? "text-fg-faint cursor-not-allowed"
+                                                                : "text-fg hover:bg-primary/10 cursor-pointer",
+                                                            !inMonth && !dayDisabled ? "text-fg-muted" : "",
+                                                            isSelected ? "bg-primary text-white hover:bg-primary-dark" : "",
+                                                            isToday && !isSelected ? "border border-primary text-primary" : "",
+                                                        ].join(" ")}
+                                                    >
+                                                        {d.getDate()}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </Popover.Content>
+                </Popover.Portal>
+            </Popover.Root>
+
             {showDisabledNote && disabledMessage && (
-                <p className="text-[11px] text-amber-600 mt-0.5 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                <p role="status" className="text-[11px] text-amber-600 mt-0.5 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">
                     {disabledMessage}
                 </p>
             )}
-
-            {isOpen && rect && createPortal(
-                <div
-                    ref={panelRef}
-                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg p-3 overflow-y-auto overscroll-contain"
-                    style={{
-                        top: rect.top,
-                        bottom: rect.bottom,
-                        left: rect.left,
-                        width: rect.width,
-                        maxHeight: rect.maxHeight,
-                    }}
-                >
-                    {/* Header: prev arrow, month + year pickers, next arrow */}
-                    <div className="flex items-center justify-between gap-1 mb-2">
-                        <button
-                            type="button"
-                            onClick={goToPrevMonth}
-                            className="h-7 w-7 rounded-md border-line border text-fg-muted hover:bg-surface-hover transition-colors inline-flex items-center justify-center shrink-0"
-                            aria-label="Previous month"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </button>
-
-                        <div className="flex items-center gap-1">
-                            <div className="relative">
-                                <button
-                                    type="button"
-                                    onClick={() => { setMonthPickerOpen((o) => !o); setYearPickerOpen(false); }}
-                                    className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover transition-all duration-200 ease-out inline-flex items-center gap-0.5"
-                                >
-                                    {MONTHS[viewMonth]}
-                                    <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
-                                </button>
-                                {monthPickerOpen && (
-                                    <div className="absolute z-10 top-full left-0 mt-1 bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-48 overflow-y-auto w-32">
-                                        {MONTHS.map((m, i) => (
-                                            <button
-                                                key={m}
-                                                type="button"
-                                                onClick={() => { setViewMonth(i); setMonthPickerOpen(false); }}
-                                                className={`w-full text-left px-2.5 py-1.5 text-sm flex items-center justify-between transition-colors ${
-                                                    i === viewMonth ? "bg-primary/10 text-primary font-medium" : "text-fg hover:bg-surface-hover"
-                                                }`}
-                                            >
-                                                {m}
-                                                {i === viewMonth && <Check className="h-3.5 w-3.5" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="relative">
-                                <button
-                                    type="button"
-                                    onClick={() => { setYearPickerOpen((o) => !o); setMonthPickerOpen(false); }}
-                                    className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover transition-all duration-200 ease-out inline-flex items-center gap-0.5"
-                                >
-                                    {viewYear}
-                                    <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
-                                </button>
-                                {yearPickerOpen && (
-                                    <div className="absolute z-10 top-full right-0 mt-1 bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg max-h-48 overflow-y-auto w-24">
-                                        {yearOptions.map((y) => (
-                                            <button
-                                                key={y}
-                                                type="button"
-                                                onClick={() => { setViewYear(y); setYearPickerOpen(false); }}
-                                                className={`w-full text-left px-2.5 py-1.5 text-sm flex items-center justify-between transition-colors ${
-                                                    y === viewYear ? "bg-primary/10 text-primary font-medium" : "text-fg hover:bg-surface-hover"
-                                                }`}
-                                            >
-                                                {y}
-                                                {y === viewYear && <Check className="h-3.5 w-3.5" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            onClick={goToNextMonth}
-                            className="h-7 w-7 rounded-md border-line border text-fg-muted hover:bg-surface-hover transition-colors inline-flex items-center justify-center shrink-0"
-                            aria-label="Next month"
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </button>
-                    </div>
-
-                    {/* Weekday header */}
-                    <div className="grid grid-cols-7 mb-1">
-                        {WEEKDAYS.map((wd) => (
-                            <div key={wd} className="h-7 flex items-center justify-center text-[0.7rem] text-fg-muted font-normal">
-                                {wd}
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Day grid — keyed on the view month so it re-mounts and
-                        fades in on each month/year change, making navigation
-                        feel smooth rather than an instant swap. */}
-                    <div
-                        key={`${viewYear}-${viewMonth}`}
-                        className="grid grid-cols-7 gap-y-0.5 animate-in fade-in duration-200"
-                    >
-                        {cells.map((d, i) => {
-                            const inMonth = d.getMonth() === viewMonth;
-                            const day = startOfDay(d);
-                            const isSelected = selectedDay && day.getTime() === selectedDay.getTime();
-                            const isToday = day.getTime() === today.getTime();
-                            const disabledDay = isDisabledDay(d);
-                            return (
-                                <button
-                                    key={i}
-                                    type="button"
-                                    disabled={disabledDay}
-                                    onClick={() => handlePick(d)}
-                                    className={[
-                                        "h-8 w-full flex items-center justify-center text-sm rounded-md transition-colors",
-                                        disabledDay
-                                            ? "text-fg-faint cursor-not-allowed"
-                                            : "text-fg hover:bg-primary/10 cursor-pointer",
-                                        !inMonth && !disabledDay ? "text-fg-muted" : "",
-                                        isSelected ? "bg-[#0E7F41] text-white hover:bg-[#0a5f31]" : "",
-                                        isToday && !isSelected ? "border border-[#0E7F41] text-[#0E7F41]" : "",
-                                    ].join(" ")}
-                                >
-                                    {d.getDate()}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>,
-                document.body
-            )}
-        </div>
+        </>
     );
 };
 
@@ -333,6 +457,9 @@ DatePicker.propTypes = {
     placeholder: PropTypes.string,
     triggerClassName: PropTypes.string,
     onBlur: PropTypes.func,
+    id: PropTypes.string,
+    ariaInvalid: PropTypes.bool,
+    ariaDescribedBy: PropTypes.string,
 };
 
 export default DatePicker;

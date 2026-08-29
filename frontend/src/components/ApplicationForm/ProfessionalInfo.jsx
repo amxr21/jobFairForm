@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Upload, X } from "lucide-react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
+import StepContainer from "./StepContainer";
 import useFormContext from "../../hooks/useFormContext";
 import { useToast } from "../Toast";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
+import { LABEL_CLASSES, TEXTAREA_CLASSES, FIELD_TEXT } from "./fieldStyles";
 
 const ProfessionalInfo = () => {
     const toast = useToast();
@@ -106,9 +108,8 @@ const ProfessionalInfo = () => {
     };
 
     return (
-        <div id="ProfessionalInfo" className="h-full flex flex-col w-full overflow-hidden">
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1 -m-1">
-                <div className="flex flex-col gap-y-3 md:gap-y-4">
+        <StepContainer id="ProfessionalInfo">
+            <div className="flex flex-col gap-y-3 md:gap-y-4">
                     {/* Row 1: Study Program, College, Major */}
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3">
                         <SelectInput
@@ -151,12 +152,19 @@ const ProfessionalInfo = () => {
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 items-start">
                         <Input fieldClasses="col-span-5 md:col-span-2" label="CGPA" />
                         <Input fieldClasses="col-span-7 md:col-span-3" label="Expected to Graduate" />
+                        {/* Experience keeps its own markup rather than using
+                            <Input label="Experience" />: it is a controlled
+                            field driven by the "No prior experience" checkbox,
+                            while Input is uncontrolled (ref-based) and would
+                            fight that. It does share the styling constants and
+                            now carries a real <label htmlFor>, which the bare
+                            <h2> never gave it. */}
                         <div className="col-span-12 md:col-span-7">
                             <div className="flex flex-col h-full">
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 mb-1">
-                                    <h2 className="text-xs md:text-sm">
+                                    <label htmlFor="Experience" className={`${LABEL_CLASSES} mb-0 cursor-pointer`}>
                                         Experience: <RequiredAstrik required={true} />
-                                    </h2>
+                                    </label>
                                     <div className="flex items-center gap-1.5">
                                         <input
                                             type="checkbox"
@@ -165,18 +173,20 @@ const ProfessionalInfo = () => {
                                             onChange={handleNoExperienceChange}
                                             className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                                         />
-                                        <label htmlFor="noExperience" className="text-xs md:text-sm text-fg-muted">
+                                        <label htmlFor="noExperience" className={`${FIELD_TEXT} text-fg-muted cursor-pointer`}>
                                             No prior experience
                                         </label>
                                     </div>
                                 </div>
                                 <textarea
+                                    id="Experience"
+                                    name="Experience"
                                     disabled={noExperience}
                                     value={noExperience ? "No prior work experience" : (formData.Experience === "No prior work experience" ? "" : formData.Experience)}
                                     onChange={(e) => updateFormData("Experience", e.target.value)}
                                     onFocus={handleFocus}
                                     placeholder="E.g., Internship at ABC Company, Part-time job, Volunteer work, University projects..."
-                                    className={`flex-1 w-full border border-line-strong rounded-md py-1 px-2 text-xs md:text-sm resize-none min-h-16 md:min-h-20 ${noExperience ? 'bg-surface-hover text-fg-faint border-line' : 'bg-white dark:bg-[#1a2438]'}`}
+                                    className={`flex-1 ${TEXTAREA_CLASSES} min-h-16 md:min-h-20 ${noExperience ? 'bg-surface-hover text-fg-faint border-line' : 'border-line-strong'}`}
                                 />
                             </div>
                         </div>
@@ -186,9 +196,9 @@ const ProfessionalInfo = () => {
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3">
                         <div className="col-span-12 md:col-span-6 flex flex-col justify-start">
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-1.5 md:gap-x-3">
-                                <h2 className="text-xs md:text-sm shrink-0">
+                                <label htmlFor="CV" className={`${LABEL_CLASSES} mb-0 cursor-pointer`}>
                                     Attach your resume: <RequiredAstrik required={true} />
-                                </h2>
+                                </label>
                                 {/* The native file input renders an unstyleable
                                     OS button and overflows with a long filename,
                                     so it is hidden and driven by a label styled
@@ -233,9 +243,8 @@ const ProfessionalInfo = () => {
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
-        </div>
+        </StepContainer>
     );
 };
 
