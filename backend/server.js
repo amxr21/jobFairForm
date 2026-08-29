@@ -1,6 +1,11 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
+// Required before anything else: this throws on a missing or unknown
+// APP_MODE, so a misconfigured deploy fails at startup instead of running
+// against the wrong data.
+const { APP_MODE } = require("./config/appMode");
+
 const app = require("./app");
 const prisma = require("./config/prisma");
 
@@ -32,5 +37,5 @@ process.on("uncaughtException", (err) => {
 
 const port = process.env.PORT || 2001;
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`Server listening on port ${port} [mode: ${APP_MODE}]`);
 });

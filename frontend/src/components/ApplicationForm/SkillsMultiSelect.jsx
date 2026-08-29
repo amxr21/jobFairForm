@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
-import { useState, useRef, useMemo, useId } from "react";
+import { useState, useRef, useMemo } from "react";
 import * as Popover from "@radix-ui/react-popover";
+import useUniqueId from "../../hooks/useUniqueId";
 import { X, ChevronDown } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import FieldShell from "./FieldShell";
@@ -73,7 +74,7 @@ const SkillsMultiSelect = ({
     const [announcement, setAnnouncement] = useState("");
     const inputRef = useRef(null);
 
-    const reactId = useId();
+    const reactId = useUniqueId("multiselect");
     const listboxId = `${reactId}-listbox`;
     const inputId = `${reactId}-input`;
     const optionId = (i) => `${reactId}-option-${i}`;

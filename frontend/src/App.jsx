@@ -5,10 +5,12 @@ import { ApplicationForm } from "./components/ApplicationForm";
 import Intro from "./pages/Intro"
 import ThemeToggle from "./components/ThemeToggle";
 import ThemeTourHint from "./components/ThemeTourHint";
+import ModeBadge from "./components/ModeBadge";
 
 function App() {
     return (
         <div className="App relative">
+            <ModeBadge />
             <ThemeToggle />
             <ThemeTourHint />
             <BrowserRouter>
