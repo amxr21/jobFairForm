@@ -6,6 +6,7 @@ import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
 import useLocaleContext from "../../hooks/useLocaleContext";
 import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 import FieldShell from "./FieldShell";
 import {
     FIELD_MIN_HEIGHT,
@@ -63,6 +64,12 @@ const SelectInput = ({
     // What the user actually SEES for a given English option value — the
     // Arabic label when one exists, else the English value itself.
     const displayLabel = (option) => (locale === "ar" ? labelFor(labelMap, option) : option);
+    // The FIELD's own name (e.g. "Nationality"), for the placeholder/search
+    // text — distinct from displayLabel above, which translates the OPTIONS
+    // inside the field. FieldShell already translates the visible <label>
+    // itself; this covers this component's own two extra mentions of the
+    // field name (the closed-state placeholder and the search box).
+    const displayFieldName = locale === "ar" ? labelFor(fieldLabelMap, label) : label;
 
     const currentValue = value !== undefined ? value : (formData[label] || "");
 
@@ -73,7 +80,10 @@ const SelectInput = ({
     });
 
     const fallbackPlaceholder =
-        placeholder || `Select ${label === "Study Program" ? "Program" : label}`;
+        placeholder ||
+        (locale === "ar"
+            ? displayFieldName
+            : `Select ${label === "Study Program" ? "Program" : label}`);
 
     const showSearch = options.length > SEARCH_THRESHOLD;
 
@@ -175,8 +185,8 @@ const SelectInput = ({
                                         // options while the user is typing a
                                         // filter.
                                         onKeyDown={(e) => e.stopPropagation()}
-                                        placeholder={`Search ${label}...`}
-                                        aria-label={`Search ${label}`}
+                                        placeholder={locale === "ar" ? displayFieldName : `Search ${label}...`}
+                                        aria-label={locale === "ar" ? displayFieldName : `Search ${label}`}
                                         className={`flex-1 min-w-0 h-8 bg-transparent outline-none ${FIELD_TEXT}`}
                                     />
                                 </div>

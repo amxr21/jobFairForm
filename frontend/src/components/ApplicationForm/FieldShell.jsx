@@ -2,6 +2,9 @@ import PropTypes from "prop-types";
 import { RequiredAstrik } from "./index";
 import FieldHint from "./FieldHint";
 import useShake from "../../hooks/useShake";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 import { LABEL_CLASSES, WRAPPER_CLASSES } from "./fieldStyles";
 
 // Label + control + error, wired together properly.
@@ -38,6 +41,12 @@ const FieldShell = ({
 }) => {
     const LabelTag = labelAs;
     const labelProps = labelAs === "label" ? { htmlFor } : {};
+    const { locale } = useLocaleContext();
+    // Only the VISIBLE text translates. `id`/`htmlFor` above stay the raw
+    // English `label` — they're DOM identity (aria wiring, formData lookups
+    // upstream), not content, and translating them would silently break the
+    // label/control association and every id-based lookup in the form.
+    const displayLabel = locale === "ar" ? labelFor(fieldLabelMap, label) : label;
 
     // Shakes once on the transition into an error state — the moment a field
     // is rejected. Every field routes its error through this component, so
@@ -55,7 +64,7 @@ const FieldShell = ({
                 id={`${label}-label`}
                 className={`${LABEL_CLASSES} ${labelAs === "label" ? "cursor-pointer" : ""}`}
             >
-                {label}:{required && <RequiredAstrik required={true} />}
+                {displayLabel}:{required && <RequiredAstrik required={true} />}
                 {hint && <FieldHint text={hint} />}
             </LabelTag>
 

@@ -44,7 +44,7 @@ export const messages = {
             college: "College",
             major: "Major",
             technicalSkills: "Technical Skills",
-            nonTechnicalSkills: "Non-technical skills",
+            nonTechnicalSkills: "Non-technical Skills",
             cgpa: "CGPA",
             expectedGraduate: "Expected to Graduate",
             currentStudent: "Are you a current student?",
@@ -132,5 +132,19 @@ export const messages = {
         },
     },
 };
+
+// Field labels are passed around the form as raw English literals
+// (`label={"Gender"}`, `label={"City"}`, ...) rather than as message keys —
+// that's how FieldShell, Input, SelectInput and SkillsMultiSelect all
+// identify a field (used for formData lookups, ids, aria wiring). Rebuilding
+// every call site to pass a translation key instead would touch dozens of
+// lines for no functional gain, so this derives an { "English label": "Arabic
+// label" } map straight from messages.en.fields / messages.ar.fields instead
+// — the same shape as the *Labels maps in i18n/options.js, so it works with
+// the existing labelFor() helper. FieldShell is the single place every field
+// renders its label, so wiring it there covers the whole form.
+export const fieldLabelMap = Object.fromEntries(
+    Object.entries(messages.en.fields).map(([key, english]) => [english, messages.ar.fields[key] || ""])
+);
 
 export default messages;
