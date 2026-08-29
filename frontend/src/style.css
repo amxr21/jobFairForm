@@ -104,8 +104,13 @@
 
 body {
   position: relative;
-  background-color: #ffffff;
-  color: #111827;
+  /* Tokens, not literals. These were #ffffff / #111827 hardcoded, which is
+     why a `.dark body` override further down existed at all — it was fighting
+     this rule rather than the token being in charge. --surface-page and --fg
+     are already re-pointed under .dark, so one declaration now serves both
+     themes and the override is gone. */
+  background-color: var(--surface-page);
+  color: var(--fg);
   /* background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.jpg") no-repeat; */
   /* background-size: 100% auto;
   background-attachment: fixed;
@@ -178,10 +183,10 @@ body {
   --fg-faint: #6b7690;
 }
 
-.dark body {
-  background-color: var(--surface-page);
-  color: var(--fg);
-}
+/* (The former `.dark body` override lived here. It is gone: the base `body`
+   rule above now reads --surface-page / --fg directly, and those tokens are
+   already re-pointed under .dark, so both themes are served by one
+   declaration.) */
 
 #intro::-webkit-scrollbar {
   display: none;

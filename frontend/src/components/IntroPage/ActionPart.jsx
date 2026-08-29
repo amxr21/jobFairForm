@@ -52,10 +52,15 @@ const ActionPart = () => {
     return (
         <div ref={inroCover} className="flex flex-col gap-3 mt-4 md:mt-10 z-50">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
+                {/* transition-[box-shadow,transform], not transition-all:
+                    `all` includes opacity, so the CSS transition fought the
+                    GSAP intro tween animating this button in — it appeared,
+                    then CSS transitioned it back out of the state GSAP had
+                    just set, and it sank and faded away. */}
                 <button
                     onClick={hideCover}
                     data-intro="cta"
-                    className="register-button group inline-flex items-center justify-center gap-2 w-full md:w-72 rounded-xl border-2 border-white bg-white text-[#0E7F41] font-semibold p-2.5 md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                    className="register-button group inline-flex items-center justify-center gap-2 w-full md:w-72 rounded-xl border-2 border-white bg-white text-[#0E7F41] font-semibold p-2.5 md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200"
                 >
                     Register Now
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />

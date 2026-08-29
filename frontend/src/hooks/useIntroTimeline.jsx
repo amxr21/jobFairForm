@@ -114,9 +114,32 @@ export default function useIntroTimeline() {
                     tl.from(meta, { opacity: 0 }, reduced ? "<" : "-=0.25");
                 }
 
-                // Leaves no inline transforms behind, so the buttons' own
-                // hover/press transforms aren't fighting a leftover matrix.
-                tl.set(all, { clearProps: "transform" });
+                // Clear the inline transform GSAP leaves behind, so the
+                // buttons' own hover transforms aren't fighting a leftover
+                // matrix.
+                //
+                // This has to be done WITHOUT going through the CSS
+                // transition: several of these elements declare a transition
+                // that includes `transform`, so removing the inline style
+                // makes CSS animate from the tween's final value back to the
+                // resting one — the button visibly sank and faded out
+                // immediately after arriving.
+                //
+                // Suppressing transitions for one frame lets the cleanup land
+                // instantly, after which normal hover behaviour resumes.
+                tl.call(() => {
+                    const previous = all.map((el) => el.style.transition);
+                    all.forEach((el) => { el.style.transition = "none"; });
+
+                    gsap.set(all, { clearProps: "transform" });
+
+                    // Force a reflow so the transition:none is applied before
+                    // it is removed again; without this the browser can batch
+                    // both changes and the suppression never takes effect.
+                    void all[0].offsetHeight;
+
+                    all.forEach((el, i) => { el.style.transition = previous[i] || ""; });
+                });
             } catch (err) {
                 console.error("Intro animation failed; showing the page unanimated.", err);
                 restore();
