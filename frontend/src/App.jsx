@@ -6,12 +6,16 @@ import Intro from "./pages/Intro"
 import ThemeToggle from "./components/ThemeToggle";
 import ThemeTourHint from "./components/ThemeTourHint";
 import ModeBadge from "./components/ModeBadge";
+import LanguageToggle from "./components/LanguageToggle";
+import { LocaleProvider } from "./context/LocaleContext";
 
 function App() {
     return (
+        <LocaleProvider>
         <div className="App relative">
             <ModeBadge />
             <ThemeToggle />
+            <LanguageToggle />
             <ThemeTourHint />
             <BrowserRouter>
                 <Intro />
@@ -21,6 +25,7 @@ function App() {
                 </Routes>
             </BrowserRouter>
         </div>
+        </LocaleProvider>
     )
 }
 
