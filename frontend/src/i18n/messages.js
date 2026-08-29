@@ -126,6 +126,27 @@ export const messages = {
             cvTooLarge: "Your CV must be under 4MB.",
             cvUnreadable: "That file could not be read. Please choose it again.",
         },
+        // Every inline field-error message the app can show, keyed by REASON
+        // rather than by the literal sentence a validator happened to write.
+        // Input.jsx, FormContext.jsx, and Form.jsx's step gate each build the
+        // STORED string independently (three places, historically with
+        // slightly different wording for the same reason) — that stored
+        // string still starts with the raw English field name, because
+        // useFieldState.jsx matches an error to a field via
+        // `msg.startsWith(label)` and changing that string at all would
+        // silently break which field shows which error. What changed is
+        // display: getFieldErrorDisplay() in useFieldState.jsx recognizes
+        // which of these reasons produced the stored string and renders the
+        // translated version instead, with {field} filled in by the
+        // ALREADY-TRANSLATED field name (fieldLabelMap).
+        fieldValidation: {
+            required: "{field} is required",
+            invalidEmail: "{field} is not a valid email",
+            universityIdLength: "{field} must be exactly 8 digits",
+            universityIdYear: "{field} - first 2 digits must be between 14 and 26",
+            mobileFormat: "{field} - must be 10 digits (05XXXXXXXX) or country code format (+971XXXXXXXXX)",
+            birthdateAge: "{field} - you must be at least 20 years old",
+        },
         confirmation: {
             submittingOverlay: "Submitting your application…",
             heading: "You're all set!",
@@ -142,6 +163,16 @@ export const messages = {
             selectOrType: "Select additional languages or type your own:",
             typePlaceholder: "Type a language...",
             add: "Add",
+        },
+        ticketLookup: {
+            enterUniversityId: "Enter the University ID you applied with",
+            idPlaceholder: "e.g. 20211234",
+            lookingUp: "Looking up…",
+            getMyTicket: "Get My Ticket",
+            genericError: "Something went wrong. Please try again.",
+            checkedIn: "You're checked in — see you there!",
+            showAtEntrance: "Show this QR code at the entrance to check in",
+            lookupDifferentId: "Look up a different ID",
         },
     },
     // Empty strings fall back to English via t(). Fill these in progressively
@@ -260,6 +291,14 @@ export const messages = {
             cvTooLarge: "يجب أن تكون السيرة الذاتية أقل من 4 ميجابايت.",
             cvUnreadable: "تعذرت قراءة هذا الملف. يرجى اختياره مرة أخرى.",
         },
+        fieldValidation: {
+            required: "{field} مطلوب",
+            invalidEmail: "{field} غير صالح",
+            universityIdLength: "يجب أن يتكون {field} من 8 أرقام بالضبط",
+            universityIdYear: "{field} - يجب أن يكون أول رقمين بين 14 و26",
+            mobileFormat: "{field} - يجب أن يتكون من 10 أرقام (05XXXXXXXX) أو بصيغة رمز الدولة (+971XXXXXXXXX)",
+            birthdateAge: "{field} - يجب أن يكون عمرك 20 عامًا على الأقل",
+        },
         confirmation: {
             submittingOverlay: "جاري إرسال طلبك…",
             heading: "تم كل شيء!",
@@ -278,6 +317,16 @@ export const messages = {
             selectOrType: "اختر لغات إضافية أو اكتب لغتك الخاصة:",
             typePlaceholder: "اكتب لغة...",
             add: "إضافة",
+        },
+        ticketLookup: {
+            enterUniversityId: "أدخل الرقم الجامعي الذي تقدمت به",
+            idPlaceholder: "مثال: 20211234",
+            lookingUp: "جاري البحث…",
+            getMyTicket: "احصل على تذكرتي",
+            genericError: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+            checkedIn: "تم تسجيل حضورك — نراك هناك!",
+            showAtEntrance: "أظهر رمز QR هذا عند الدخول لتسجيل الحضور",
+            lookupDifferentId: "البحث عن رقم جامعي آخر",
         },
     },
 };
