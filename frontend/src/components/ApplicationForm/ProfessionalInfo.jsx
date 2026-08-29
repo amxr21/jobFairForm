@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Upload, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Upload, X, Loader2, FileText } from "lucide-react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
 import StepContainer from "./StepContainer";
@@ -12,15 +12,35 @@ const ProfessionalInfo = () => {
     const toast = useToast();
     const handleFocus = useScrollIntoViewOnFocus();
 
-    const [majors, setMajors] = useState([]);
-    const [colleges, setColleges] = useState([]);
-
-    const [selectedProgram, setSelectedProgram] = useState('Select');
-    const [selectedCollege, setSelectedCollege] = useState('Select');
-    const [selectedMajor, setSelectedMajor] = useState('Select');
-    const [noExperience, setNoExperience] = useState(false);
-
     const { updateFormData, formData } = useFormContext();
+
+    // All of these seed from context rather than a literal default. This step
+    // unmounts whenever the user navigates, and resetting them to 'Select'
+    // meant the three dropdowns came back blank — then the cascading effects
+    // below fired on that "changed" value and actively CLEARED College and
+    // Major out of formData. Stepping away and back didn't just look like
+    // data loss, it caused it.
+    const [selectedProgram, setSelectedProgram] = useState(
+        () => formData["Study Program"] || 'Select'
+    );
+    const [selectedCollege, setSelectedCollege] = useState(
+        () => formData.College || 'Select'
+    );
+    const [selectedMajor, setSelectedMajor] = useState(
+        () => formData.Major || 'Select'
+    );
+    const [noExperience, setNoExperience] = useState(
+        () => formData.Experience === "No prior work experience"
+    );
+
+    // Derived from the restored program/college so the option lists are
+    // populated on the first render after a remount, not one effect later.
+    const [colleges, setColleges] = useState(
+        () => Object.keys(DegreePrograms[formData["Study Program"]] || {})
+    );
+    const [majors, setMajors] = useState(
+        () => DegreePrograms[formData["Study Program"]]?.[formData.College] || []
+    );
 
     const handleNoExperienceChange = (e) => {
         const checked = e.target.checked;
@@ -32,6 +52,16 @@ const ProfessionalInfo = () => {
         }
     };
 
+    // These two effects clear the downstream selections, which is right when
+    // the user actually picks a different program — a college from the old
+    // program is not valid under the new one. But they also run on MOUNT, and
+    // this step remounts on every navigation, so returning to step 2 wiped
+    // College and Major out of formData before the user could see them.
+    //
+    // The ref makes the first run a no-op: on mount the state was just seeded
+    // from context and there is nothing to cascade from.
+    const isFirstRun = useRef(true);
+
     // When program changes, update college list
     useEffect(() => {
         if (DegreePrograms[selectedProgram]) {
@@ -39,6 +69,8 @@ const ProfessionalInfo = () => {
         } else {
             setColleges([]);
         }
+
+        if (isFirstRun.current) return;
 
         // Reset downstream values
         setSelectedCollege('Select');
@@ -58,6 +90,13 @@ const ProfessionalInfo = () => {
         }
         else {
             setMajors([]);
+        }
+
+        // Same first-run guard as above, and this is the effect that clears
+        // the flag — it is the last of the two to run on mount.
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            return;
         }
 
         // Reset major
@@ -90,6 +129,13 @@ const ProfessionalInfo = () => {
         if (input) input.value = "";
     };
 
+    // The file is held in memory until the form is submitted — it is not
+    // uploaded here. But reading and validating a multi-MB file off a phone's
+    // storage is not instant, and without feedback the button appears to do
+    // nothing after the picker closes. This flag drives a brief busy state so
+    // the tap is acknowledged.
+    const [isReadingCV, setIsReadingCV] = useState(false);
+
     const uploadCV = (e) => {
         const file = e.target.files[0];
 
@@ -104,7 +150,24 @@ const ProfessionalInfo = () => {
             return;
         }
 
-        updateFormData("CV", file);
+        setIsReadingCV(true);
+        // Confirm the file is actually readable before accepting it. A file on
+        // a disconnected network drive, or one deleted between the picker
+        // opening and closing, produces a File object that fails only later at
+        // submit — by which point the user has finished the form.
+        const reader = new FileReader();
+        reader.onload = () => {
+            setIsReadingCV(false);
+            updateFormData("CV", file);
+        };
+        reader.onerror = () => {
+            setIsReadingCV(false);
+            toast("That file could not be read. Please choose it again.", { type: 'error' });
+            e.target.value = '';
+        };
+        // Reading a slice is enough to prove readability without pulling 4MB
+        // into memory for no reason.
+        reader.readAsArrayBuffer(file.slice(0, 1024));
     };
 
     return (
@@ -203,7 +266,12 @@ const ProfessionalInfo = () => {
                                     OS button and overflows with a long filename,
                                     so it is hidden and driven by a label styled
                                     as a proper 44px control. */}
-                                <div className="flex items-center gap-2 w-full md:w-auto min-w-0">
+                                {/* The button and the file details are stacked
+                                    rather than sitting on one line: a long
+                                    filename next to the button either
+                                    truncated to uselessness or pushed the
+                                    remove control off a narrow screen. */}
+                                <div className="flex flex-col gap-1.5 w-full min-w-0">
                                     <input
                                         id="CV"
                                         onChange={uploadCV}
@@ -211,34 +279,58 @@ const ProfessionalInfo = () => {
                                         name="cvfile"
                                         accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                         className="sr-only"
+                                        disabled={isReadingCV}
                                     />
+                                    {/* The busy state covers the control
+                                        itself, so the thing the user just
+                                        tapped is visibly the thing that is
+                                        working. aria-busy + the live region
+                                        below announce it rather than leaving
+                                        it purely visual. */}
                                     <label
                                         htmlFor="CV"
-                                        className="inline-flex items-center gap-1.5 h-11 md:h-9 px-3 shrink-0 bg-white dark:bg-[#1a2438] border border-line-strong rounded-lg text-xs md:text-sm cursor-pointer hover:bg-surface-hover transition-colors"
+                                        aria-busy={isReadingCV}
+                                        className={`relative inline-flex items-center justify-center gap-1.5 h-11 md:h-9 px-3 w-fit bg-white dark:bg-[#1a2438] border border-line-strong rounded-lg text-xs md:text-sm transition-colors overflow-hidden
+                                            ${isReadingCV
+                                                ? "cursor-wait text-transparent"
+                                                : "cursor-pointer hover:bg-surface-hover active:scale-[0.97]"}`}
                                     >
-                                        <Upload className="w-4 h-4 text-fg-muted" />
+                                        <Upload className={`w-4 h-4 text-fg-muted ${isReadingCV ? "invisible" : ""}`} />
                                         {cvFile ? "Change file" : "Choose file"}
+
+                                        {isReadingCV && (
+                                            <span className="absolute inset-0 flex items-center justify-center gap-1.5 bg-surface-hover">
+                                                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                                <span className="text-xs md:text-sm text-fg-muted">Reading…</span>
+                                            </span>
+                                        )}
                                     </label>
-                                    {cvFile ? (
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="text-xs md:text-sm text-fg truncate" title={cvFile.name}>
-                                                {cvFile.name}
-                                            </span>
-                                            <span className="text-[11px] text-fg-muted shrink-0">
-                                                {(cvFile.size / 1024 / 1024).toFixed(1)}MB
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={clearCV}
-                                                aria-label="Remove attached resume"
-                                                className="shrink-0 w-8 h-8 md:w-6 md:h-6 inline-flex items-center justify-center rounded-md text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <span className="text-xs text-fg-muted truncate">PDF or Word, under 4MB</span>
-                                    )}
+
+                                    <div aria-live="polite" className="min-w-0">
+                                        {isReadingCV ? (
+                                            <span className="text-xs text-fg-muted">Checking the file…</span>
+                                        ) : cvFile ? (
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                <span className="text-xs md:text-sm text-fg truncate" title={cvFile.name}>
+                                                    {cvFile.name}
+                                                </span>
+                                                <span className="text-[11px] text-fg-muted shrink-0">
+                                                    {(cvFile.size / 1024 / 1024).toFixed(1)}MB
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={clearCV}
+                                                    aria-label={`Remove ${cvFile.name}`}
+                                                    className="shrink-0 w-8 h-8 md:w-6 md:h-6 inline-flex items-center justify-center rounded-md text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-fg-muted">PDF or Word, under 4MB</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

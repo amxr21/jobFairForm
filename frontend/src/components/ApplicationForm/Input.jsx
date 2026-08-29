@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
 import DatePicker from "./DatePicker";
@@ -33,11 +33,50 @@ const FIELD_CONFIG = {
 
 const Input = ({ label, type, name, fieldClasses = '' }) => {
     const refLabel = useRef();
-    const [isFocused, setIsFocused] = useState(false);
-    const { updateFormData, setFormData, setFieldMissing } = useFormContext();
+    // Doubles as the "Are you a current student?" checkbox state for the
+    // Expected to Graduate field. Seeded from context so returning to step 2
+    // doesn't re-disable a picker the user already filled in — the date would
+    // still be in formData while its control showed as locked.
+    const { formData, updateFormData, setFormData, setFieldMissing } = useFormContext();
+    const [isFocused, setIsFocused] = useState(
+        () => label === "Expected to Graduate" && Boolean(formData[label])
+    );
     const handleFocus = useScrollIntoViewOnFocus();
 
     const config = FIELD_CONFIG[label] || { type: type || 'text', required: true, placeholder: label };
+
+    // Restore the value from context when the field mounts.
+    //
+    // Form.jsx renders exactly one step at a time, so navigating Back or
+    // Continue UNMOUNTS the step and mounts it fresh. This input is
+    // uncontrolled — it holds its value in the DOM node via refLabel, not in
+    // React — so that remount produced an empty box even though formData had
+    // kept the value all along. Everything the user typed appeared to be lost
+    // the moment they stepped away and came back, and a submit then failed
+    // validation on fields they had definitely filled in.
+    //
+    // The write goes straight to the DOM node rather than through a `value`
+    // prop because the rest of this component (validate/handleChange) reads
+    // and rewrites refLabel.current.value directly; making it controlled would
+    // mean rewriting all of that.
+    //
+    // "Full Name" is stored joined, so first/last are restored from the
+    // tempFirst/tempLast halves that handleChange maintains.
+    const storedValue =
+        label === "First Name" ? formData.tempFirst
+        : label === "Last Name" ? formData.tempLast
+        : formData[label];
+
+    useEffect(() => {
+        if (!refLabel.current) return;
+        // CGPA defaults to 0 in the initial context, which would otherwise
+        // render a literal "0" in an untouched optional field.
+        if (storedValue === undefined || storedValue === null || storedValue === "" || storedValue === 0) return;
+        // Only populate an empty input: never fight the user mid-typing.
+        if (refLabel.current.value) return;
+        refLabel.current.value = storedValue;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // The error/validity/border derivation used to be duplicated verbatim
     // between this file and SelectInput.jsx; it now lives in useFieldState so
@@ -214,7 +253,21 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     // refLabel.current.value as a "YYYY-MM-DD" string, the same shape a
     // native <input type="date"> produces — write through a hidden input so
     // that data flow doesn't need to change for the DatePicker.
-    const [selectedDate, setSelectedDate] = useState(null);
+    // Seeded from context rather than null, for the same remount reason as the
+    // text inputs above — but worse here: this is React state, so a step
+    // change discarded the chosen date outright and the picker reopened
+    // showing "Select a date".
+    //
+    // Parsed as local components rather than `new Date("YYYY-MM-DD")`, which
+    // JS parses as UTC midnight and can render as the previous day west of
+    // Greenwich.
+    const [selectedDate, setSelectedDate] = useState(() => {
+        const stored = formData[label];
+        if (!stored || typeof stored !== "string") return null;
+        const [y, m, d] = stored.split("-").map(Number);
+        if (!y || !m || !d) return null;
+        return new Date(y, m - 1, d);
+    });
     const toIso = (date) => {
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -278,6 +331,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                 <div className="flex items-center gap-x-2 mt-2">
                     <input
                         type="checkbox"
+                        checked={isFocused}
                         onChange={(e) => setIsFocused(e.target.checked)}
                         id="currentStudent"
                         className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
