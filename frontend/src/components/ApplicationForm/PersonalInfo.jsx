@@ -1,13 +1,13 @@
 import { Input, SelectInput, Languages } from "./index";
+import StepContainer from "./StepContainer";
 import { CountriesList } from "../../CountriesList";
 
 
 const PersonalInfo = () => {
 
     return (
-        <div id="PersonalInfo" className="h-full flex flex-col w-full overflow-hidden">
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-1 -m-1">
-                <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 md:gap-y-4">
+        <StepContainer id="PersonalInfo">
+            <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 md:gap-y-4">
                     {/* Row 1: Name and ID */}
                     <Input fieldClasses="col-span-6 md:col-span-4" label={"First Name"} />
                     <Input fieldClasses="col-span-6 md:col-span-4" label={"Last Name"} />
@@ -29,11 +29,10 @@ const PersonalInfo = () => {
                     <Input fieldClasses="col-span-12 md:col-span-4" label={'Mobile number'} />
                     <Input label={"LinkedIn URL"} type={"text"} fieldClasses="col-span-12 md:col-span-4" />
 
-                    {/* Row 4: Languages */}
-                    <Languages classes="col-span-12"/>
-                </div>
+                {/* Row 4: Languages */}
+                <Languages classes="col-span-12"/>
             </div>
-        </div>
+        </StepContainer>
     )
 }
 

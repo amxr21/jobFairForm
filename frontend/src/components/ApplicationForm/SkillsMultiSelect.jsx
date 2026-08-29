@@ -1,10 +1,40 @@
 import PropTypes from "prop-types";
-import { useState, useContext, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState, useRef, useMemo, useId } from "react";
+import * as Popover from "@radix-ui/react-popover";
 import { X, ChevronDown } from "lucide-react";
-import { FormContext } from "../../context/FormContext";
-import useDropdownPosition from "../../hooks/useDropdownPosition";
-import { RequiredAstrik } from "./index";
+import useFormContext from "../../hooks/useFormContext";
+import FieldShell from "./FieldShell";
+import {
+    FIELD_MIN_HEIGHT,
+    FIELD_SURFACE,
+    FIELD_TEXT,
+    PANEL_CLASSES,
+    OPTION_CLASSES,
+} from "./fieldStyles";
+
+// Rebuilt on Radix Popover.
+//
+// Radix Select is single-value, so a multi-select can't use it — but the
+// accessibility contract is the same and was equally broken here before: the
+// old version had no ARIA at all. It was a bare <div> with an <input> inside,
+// portaling a list of <button>s. Assistive tech had no way to know this was a
+// multi-select, how many skills were chosen, what the options were, or that
+// the chips were removable.
+//
+// This is the WAI-ARIA editable-combobox-with-listbox pattern, built on Radix
+// Popover for the overlay mechanics (dismiss, focus management, collision
+// flipping against the visual viewport, iOS scroll locking) with the combobox
+// wiring done explicitly on top:
+//
+//   - the text input is role="combobox" with aria-expanded / aria-controls
+//   - the panel is role="listbox" with aria-multiselectable
+//   - rows are role="option" with aria-selected
+//   - aria-activedescendant tracks the highlighted row, so arrow keys move a
+//     virtual cursor while real focus stays in the input (the pattern that
+//     lets you keep typing while navigating)
+//   - a live region announces additions and removals, since a chip appearing
+//     is otherwise a silent DOM change
+//   - each chip's remove button has its own accessible name
 
 const TECHNICAL_SKILLS = [
     "JavaScript", "Python", "Java", "C++", "C#", "TypeScript", "PHP", "Ruby", "Swift", "Kotlin",
@@ -22,189 +52,276 @@ const NON_TECHNICAL_SKILLS = [
     "Coaching", "Innovation", "Risk Management", "Quality Assurance", "Process Improvement", "Change Management", "Resource Management", "Stakeholder Management", "Budgeting", "Reporting"
 ];
 
-const SkillsMultiSelect = ({ label, fieldName, skillsList, fieldClasses = "" }) => {
-    const { formData, setFormData } = useContext(FormContext);
+const MAX_VISIBLE = 15;
+
+const SkillsMultiSelect = ({
+    label,
+    fieldName,
+    skillsList,
+    fieldClasses = "",
+    required = true,
+    placeholder,
+    allowCustom = true,
+    // Wording for the count line and the empty-panel hint. Defaults suit
+    // skills; Preferences passes "field" for its industry list.
+    noun = "skill",
+}) => {
+    const { formData, setFormData } = useFormContext();
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
-    const triggerRef = useRef(null);
-    const panelRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [announcement, setAnnouncement] = useState("");
     const inputRef = useRef(null);
-    const triggerRect = useDropdownPosition(triggerRef, isOpen);
+
+    const reactId = useId();
+    const listboxId = `${reactId}-listbox`;
+    const inputId = `${reactId}-input`;
+    const optionId = (i) => `${reactId}-option-${i}`;
 
     const skills = skillsList || (fieldName === "Technical Skills" ? TECHNICAL_SKILLS : NON_TECHNICAL_SKILLS);
-    const selectedSkills = Array.isArray(formData[fieldName]) ? formData[fieldName] : [];
 
-    // Handle click outside to close dropdown — the panel is portaled to
-    // document.body, so it's checked separately from dropdownRef.
-    useEffect(() => {
-        if (!isOpen) return;
-        // `pointerdown` rather than `mousedown` — see the note in
-        // SelectInput.jsx: synthetic mouse events on touch raced React's
-        // click and closed the panel the trigger had just opened. The effect
-        // is also gated on isOpen now; with `[]` deps it stayed subscribed
-        // for the component's whole life and read stale refs.
-        const handleClickOutside = (e) => {
-            const insideTrigger = dropdownRef.current && dropdownRef.current.contains(e.target);
-            const insidePanel = panelRef.current && panelRef.current.contains(e.target);
-            if (!insideTrigger && !insidePanel) setIsOpen(false);
-        };
-        document.addEventListener("pointerdown", handleClickOutside);
-        return () => document.removeEventListener("pointerdown", handleClickOutside);
-    }, [isOpen]);
-
-    const filteredSkills = skills.filter(skill =>
-        skill.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !selectedSkills.includes(skill)
+    // Memoised so the `: []` fallback isn't a fresh array identity on every
+    // render — that would invalidate the filteredSkills memo below each time
+    // and make it pointless.
+    const selectedSkills = useMemo(
+        () => (Array.isArray(formData[fieldName]) ? formData[fieldName] : []),
+        [formData, fieldName]
     );
 
-    const handleSelect = (skill) => {
+    const filteredSkills = useMemo(() => {
+        const term = searchTerm.toLowerCase();
+        return skills.filter(
+            (skill) => skill.toLowerCase().includes(term) && !selectedSkills.includes(skill)
+        );
+    }, [skills, searchTerm, selectedSkills]);
+
+    const visibleSkills = filteredSkills.slice(0, MAX_VISIBLE);
+
+    // The "+ Add <custom>" row, when the typed term isn't a known or already
+    // selected skill. It occupies index 0 of the navigable rows when present.
+    const canAddCustom =
+        allowCustom &&
+        searchTerm.trim() &&
+        !skills.includes(searchTerm.trim()) &&
+        !selectedSkills.includes(searchTerm.trim());
+
+    const rows = canAddCustom
+        ? [{ type: "custom", value: searchTerm.trim() }, ...visibleSkills.map((s) => ({ type: "skill", value: s }))]
+        : visibleSkills.map((s) => ({ type: "skill", value: s }));
+
+    const addSkill = (skill) => {
         setFormData((prev) => {
-            const currentSkills = Array.isArray(prev[fieldName]) ? prev[fieldName] : [];
-            return { ...prev, [fieldName]: [...currentSkills, skill] };
+            const current = Array.isArray(prev[fieldName]) ? prev[fieldName] : [];
+            if (current.includes(skill)) return prev;
+            return { ...prev, [fieldName]: [...current, skill] };
         });
+        setAnnouncement(`${skill} added`);
         setSearchTerm("");
+        setActiveIndex(0);
         inputRef.current?.focus();
     };
 
-    const handleRemoveSkill = (skill) => {
+    const removeSkill = (skill) => {
         setFormData((prev) => ({
             ...prev,
-            [fieldName]: prev[fieldName].filter(s => s !== skill)
+            [fieldName]: (Array.isArray(prev[fieldName]) ? prev[fieldName] : []).filter((s) => s !== skill),
         }));
+        setAnnouncement(`${skill} removed`);
+    };
+
+    const commitRow = (row) => {
+        if (!row) return;
+        addSkill(row.value);
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === "Backspace" && searchTerm === "" && selectedSkills.length > 0) {
-            handleRemoveSkill(selectedSkills[selectedSkills.length - 1]);
-        }
-        if (e.key === "Enter") {
-            e.preventDefault();
-            if (searchTerm && !skills.includes(searchTerm) && !selectedSkills.includes(searchTerm)) {
-                // Add custom skill
-                handleSelect(searchTerm);
-            } else if (filteredSkills.length > 0) {
-                handleSelect(filteredSkills[0]);
-            }
-        }
-        if (e.key === "Escape") {
-            setIsOpen(false);
+        switch (e.key) {
+            case "ArrowDown":
+                e.preventDefault();
+                if (!isOpen) { setIsOpen(true); return; }
+                setActiveIndex((i) => (rows.length ? (i + 1) % rows.length : 0));
+                break;
+            case "ArrowUp":
+                e.preventDefault();
+                if (!isOpen) { setIsOpen(true); return; }
+                setActiveIndex((i) => (rows.length ? (i - 1 + rows.length) % rows.length : 0));
+                break;
+            case "Home":
+                if (isOpen) { e.preventDefault(); setActiveIndex(0); }
+                break;
+            case "End":
+                if (isOpen) { e.preventDefault(); setActiveIndex(Math.max(0, rows.length - 1)); }
+                break;
+            case "Enter":
+                e.preventDefault();
+                commitRow(rows[activeIndex]);
+                break;
+            case "Escape":
+                if (isOpen) { e.preventDefault(); setIsOpen(false); }
+                break;
+            case "Backspace":
+                // Only when the field is empty, so backspacing through typed
+                // text doesn't eat chips.
+                if (searchTerm === "" && selectedSkills.length > 0) {
+                    removeSkill(selectedSkills[selectedSkills.length - 1]);
+                }
+                break;
+            default:
+                break;
         }
     };
 
     return (
-        <div className={`flex flex-col ${fieldClasses}`} ref={dropdownRef}>
-            <h2 className="text-xs md:text-sm mb-1">
-                {label}: <RequiredAstrik required={true} />
-            </h2>
-
-            {/* Input Container with tags inside */}
-            <div
-                ref={triggerRef}
-                className={`relative w-full min-h-[44px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-text flex flex-wrap gap-1 items-center pr-8 ${isOpen ? 'ring-2 ring-primary border-transparent' : ''}`}
-                onClick={() => {
-                    setIsOpen(true);
-                    inputRef.current?.focus();
-                }}
-            >
-                {/* Selected Tags inside input */}
-                {selectedSkills.map((skill) => (
-                    <span
-                        key={skill}
-                        className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#0E7F41]/10 text-[#0E7F41] text-[10px] md:text-xs rounded-md"
+        <FieldShell
+            label={label}
+            htmlFor={inputId}
+            required={required}
+            className={fieldClasses}
+        >
+            <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
+                <Popover.Anchor asChild>
+                    <div
+                        className={`relative ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 pr-8 cursor-text flex flex-wrap gap-1 items-center border-line-strong
+                            focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent`}
+                        onClick={() => {
+                            setIsOpen(true);
+                            inputRef.current?.focus();
+                        }}
                     >
-                        {skill}
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveSkill(skill);
-                            }}
-                            className="hover:text-red-500 transition-colors ml-0.5"
-                        >
-                            <X className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                        </button>
-                    </span>
-                ))}
-
-                {/* Search Input */}
-                <input
-                    ref={inputRef}
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onFocus={() => setIsOpen(true)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={selectedSkills.length === 0 ? `Search ${label.toLowerCase()}...` : ""}
-                    className="flex-1 min-w-[80px] outline-none text-xs md:text-sm py-0.5 bg-transparent"
-                />
-
-                {/* Dropdown Arrow */}
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-                </div>
-            </div>
-
-            {/* Dropdown — portaled to document.body so it isn't clipped by
-                the step containers' overflow-hidden. */}
-            {isOpen && triggerRect && createPortal(
-                <div
-                    ref={panelRef}
-                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg overflow-y-auto overscroll-contain"
-                    style={{
-                        top: triggerRect.top,
-                        bottom: triggerRect.bottom,
-                        left: triggerRect.left,
-                        width: triggerRect.width,
-                        maxHeight: triggerRect.maxHeight,
-                    }}
-                >
-                    {/* Quick add custom skill */}
-                    {searchTerm && !skills.includes(searchTerm) && !selectedSkills.includes(searchTerm) && (
-                        <button
-                            type="button"
-                            onClick={() => handleSelect(searchTerm)}
-                            className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-[#0E7F41] hover:bg-[#0E7F41]/10 border-b"
-                        >
-                            + Add &quot;{searchTerm}&quot;
-                        </button>
-                    )}
-
-                    {filteredSkills.length > 0 ? (
-                        filteredSkills.slice(0, 15).map((skill) => (
-                            <button
+                        {selectedSkills.map((skill) => (
+                            <span
                                 key={skill}
-                                type="button"
-                                onClick={() => handleSelect(skill)}
-                                className="w-full text-left px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg hover:bg-surface-hover transition-colors"
+                                className="inline-flex items-center gap-0.5 pl-1.5 pr-0.5 py-0.5 bg-primary/10 text-primary text-[10px] md:text-xs rounded-md"
                             >
                                 {skill}
-                            </button>
-                        ))
-                    ) : (
-                        !searchTerm && (
-                            <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg-muted">
-                                Type to search or add custom skills...
-                            </div>
-                        )
-                    )}
+                                <button
+                                    type="button"
+                                    // Without this the button is announced as
+                                    // just "button" — one of many identical
+                                    // ones — with no way to tell which chip it
+                                    // belongs to.
+                                    aria-label={`Remove ${skill}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeSkill(skill);
+                                    }}
+                                    className="inline-flex items-center justify-center w-6 h-6 md:w-5 md:h-5 rounded hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+                                >
+                                    <X className="w-2.5 h-2.5 md:w-3 md:h-3" />
+                                </button>
+                            </span>
+                        ))}
 
-                    {filteredSkills.length > 15 && (
-                        <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-fg-faint border-line border-t">
-                            Type to filter more skills...
+                        <input
+                            ref={inputRef}
+                            id={inputId}
+                            type="text"
+                            role="combobox"
+                            aria-expanded={isOpen}
+                            aria-controls={isOpen ? listboxId : undefined}
+                            aria-autocomplete="list"
+                            aria-activedescendant={
+                                isOpen && rows.length ? optionId(activeIndex) : undefined
+                            }
+                            aria-describedby={`${reactId}-count`}
+                            autoComplete="off"
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setActiveIndex(0);
+                                setIsOpen(true);
+                            }}
+                            onFocus={() => setIsOpen(true)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={
+                                selectedSkills.length === 0
+                                    ? (placeholder || `Search ${label.toLowerCase()}...`)
+                                    : ""
+                            }
+                            className={`flex-1 min-w-[80px] outline-none ${FIELD_TEXT} py-0.5 bg-transparent`}
+                        />
+
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <ChevronDown
+                                className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                            />
                         </div>
-                    )}
-                </div>,
-                document.body
-            )}
+                    </div>
+                </Popover.Anchor>
 
-            {/* Selected count */}
-            {selectedSkills.length > 0 && (
-                <p className="text-[10px] md:text-xs text-fg-muted mt-0.5">
-                    {selectedSkills.length} skill{selectedSkills.length !== 1 ? 's' : ''} selected
-                </p>
-            )}
-        </div>
+                <Popover.Portal>
+                    <Popover.Content
+                        side="bottom"
+                        align="start"
+                        sideOffset={4}
+                        collisionPadding={8}
+                        className={`overlay-pop z-[1000] ${PANEL_CLASSES}`}
+                        style={{
+                            width: "var(--radix-popover-trigger-width)",
+                            maxHeight: "var(--radix-popover-content-available-height)",
+                            WebkitOverflowScrolling: "touch",
+                        }}
+                        // Focus must stay in the text input so the user can keep
+                        // typing; the listbox is driven by aria-activedescendant
+                        // rather than real focus.
+                        onOpenAutoFocus={(e) => e.preventDefault()}
+                        onCloseAutoFocus={(e) => e.preventDefault()}
+                    >
+                        <ul
+                            id={listboxId}
+                            role="listbox"
+                            aria-multiselectable="true"
+                            aria-label={`${label} options`}
+                            className="p-1 m-0 list-none"
+                        >
+                            {rows.length > 0 ? (
+                                rows.map((row, i) => (
+                                    <li
+                                        key={`${row.type}-${row.value}`}
+                                        id={optionId(i)}
+                                        role="option"
+                                        aria-selected={i === activeIndex}
+                                        onClick={() => commitRow(row)}
+                                        onMouseEnter={() => setActiveIndex(i)}
+                                        className={`${OPTION_CLASSES} rounded-md cursor-pointer ${
+                                            i === activeIndex ? "bg-surface-hover" : ""
+                                        } ${row.type === "custom" ? "text-primary" : "text-fg"}`}
+                                    >
+                                        {row.type === "custom" ? `+ Add "${row.value}"` : row.value}
+                                    </li>
+                                ))
+                            ) : (
+                                <li className={`px-2 md:px-3 py-2 ${FIELD_TEXT} text-fg-muted`}>
+                                    {searchTerm
+                                        ? `No matching ${noun}s`
+                                        : allowCustom
+                                            ? `Type to search or add custom ${noun}s...`
+                                            : `All ${noun}s selected`}
+                                </li>
+                            )}
+                        </ul>
+
+                        {filteredSkills.length > MAX_VISIBLE && (
+                            <div className="px-2 md:px-3 py-1.5 text-[10px] md:text-xs text-fg-faint border-line border-t">
+                                {filteredSkills.length - MAX_VISIBLE} more — type to filter
+                            </div>
+                        )}
+                    </Popover.Content>
+                </Popover.Portal>
+            </Popover.Root>
+
+            {/* Announces chip add/remove, which are otherwise silent DOM
+                changes to a screen reader. */}
+            <span aria-live="polite" className="sr-only">
+                {announcement}
+            </span>
+
+            <p id={`${reactId}-count`} className="text-[10px] md:text-xs text-fg-muted mt-0.5">
+                {selectedSkills.length > 0
+                    ? `${selectedSkills.length} ${noun}${selectedSkills.length !== 1 ? "s" : ""} selected`
+                    : `No ${noun}s selected yet`}
+            </p>
+        </FieldShell>
     );
 };
 
@@ -213,6 +330,10 @@ SkillsMultiSelect.propTypes = {
     fieldName: PropTypes.string.isRequired,
     skillsList: PropTypes.arrayOf(PropTypes.string),
     fieldClasses: PropTypes.string,
+    required: PropTypes.bool,
+    placeholder: PropTypes.string,
+    allowCustom: PropTypes.bool,
+    noun: PropTypes.string,
 };
 
 export default SkillsMultiSelect;

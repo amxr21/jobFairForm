@@ -1,17 +1,16 @@
 import PropTypes from "prop-types";
-import { RequiredAstrik } from "./index";
 import { useRef, useState } from "react";
 import useFormContext from "../../hooks/useFormContext";
+import useFieldState from "../../hooks/useFieldState";
 import DatePicker from "./DatePicker";
-import FieldHint from "./FieldHint";
+import FieldShell from "./FieldShell";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
-
-// Unified label styles
-const LABEL_CLASSES = "text-xs md:text-sm mb-1 shrink-0";
-// Unified input styles (border color is appended per-instance via getBorderClass)
-const INPUT_CLASSES = "h-11 md:h-9 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1 px-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200";
-// Unified wrapper styles
-const WRAPPER_CLASSES = "flex flex-col";
+import {
+    INPUT_CLASSES,
+    TEXTAREA_CLASSES,
+    FIELD_HEIGHT,
+    FIELD_TEXT,
+} from "./fieldStyles";
 
 // Field configurations
 const FIELD_CONFIG = {
@@ -35,29 +34,30 @@ const FIELD_CONFIG = {
 const Input = ({ label, type, name, fieldClasses = '' }) => {
     const refLabel = useRef();
     const [isFocused, setIsFocused] = useState(false);
-    const [touched, setTouched] = useState(false);
-    const { updateFormData, setFormData, setFieldMissing, fieldMissing } = useFormContext();
+    const { updateFormData, setFormData, setFieldMissing } = useFormContext();
     const handleFocus = useScrollIntoViewOnFocus();
 
     const config = FIELD_CONFIG[label] || { type: type || 'text', required: true, placeholder: label };
 
-    // fieldMissing starts as an array (FormContext.jsx's initial useState)
-    // and becomes a comma-joined string after the first updateFormData call —
-    // normalize both shapes, then match this field's own label against it to
-    // know if *this* field is currently flagged, without duplicating that
-    // validation logic.
-    const missingList = Array.isArray(fieldMissing) ? fieldMissing : (fieldMissing || "").split(", ");
-    const fieldErrorMsg = missingList.find((msg) => msg && msg.startsWith(label));
-    const showError = touched && config.required && Boolean(fieldErrorMsg);
-    const isValid = touched && config.required && !fieldErrorMsg && Boolean(refLabel.current?.value?.toString().trim());
+    // The error/validity/border derivation used to be duplicated verbatim
+    // between this file and SelectInput.jsx; it now lives in useFieldState so
+    // a fix to one is a fix to both.
+    const {
+        markTouched,
+        errorMessage,
+        showError,
+        borderClass,
+        errorId,
+    } = useFieldState({
+        label,
+        required: config.required,
+        hasValue: refLabel.current?.value?.toString().trim(),
+    });
 
-    const getBorderClass = () => {
-        if (showError) return "border-red-400 focus:ring-red-400";
-        if (isValid) return "border-primary focus:ring-primary";
-        return "border-line-strong focus:ring-primary hover:border-fg-faint";
-    };
+    const handleBlur = markTouched;
 
-    const handleBlur = () => setTouched(true);
+    // Every control gets a real id so FieldShell's <label htmlFor> binds to it.
+    const fieldId = name || label;
 
     const capitalize = (str) => {
         if (!str) return "";
@@ -228,36 +228,33 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         handleChange();
     };
 
-    // Render label
-    const renderLabel = () => (
-        <h2 className={LABEL_CLASSES}>
-            {label}:{config.required && <RequiredAstrik required={true} />}
-            {config.hint && <FieldHint text={config.hint} />}
-        </h2>
-    );
-
-    const renderError = () => (
-        showError && (
-            <p className="text-xs text-red-500 mt-0.5 ml-1">{fieldErrorMsg}</p>
-        )
-    );
+    // Common props shared by FieldShell across every branch below.
+    const shellProps = {
+        label,
+        htmlFor: fieldId,
+        required: config.required,
+        hint: config.hint,
+        error: showError ? errorMessage : undefined,
+        errorId,
+    };
 
     // Textarea fields
     if (config.type === 'textarea') {
         return (
-            <div className={`${WRAPPER_CLASSES} h-full ${fieldClasses}`}>
-                {renderLabel()}
+            <FieldShell {...shellProps} className={`h-full ${fieldClasses}`}>
                 <textarea
                     ref={refLabel}
+                    id={fieldId}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     name={name || label}
                     placeholder={config.placeholder}
-                    className={`flex-1 w-full bg-white dark:bg-[#1a2438] border rounded-md py-1.5 px-2 text-sm resize-none min-h-0 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${getBorderClass()}`}
+                    aria-invalid={showError || undefined}
+                    aria-describedby={errorId}
+                    className={`flex-1 ${TEXTAREA_CLASSES} ${borderClass}`}
                 />
-                {renderError()}
-            </div>
+            </FieldShell>
         );
     }
 
@@ -265,16 +262,18 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     // "current student" box is checked)
     if (label === 'Expected to Graduate') {
         return (
-            <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
-                {renderLabel()}
+            <FieldShell {...shellProps} className={fieldClasses}>
                 <input ref={refLabel} type="hidden" name={name || label} />
                 <DatePicker
+                    id={fieldId}
                     value={selectedDate}
                     onSelect={handleDateSelect}
                     onBlur={handleBlur}
                     disabled={!isFocused}
                     disabledMessage='Check "Are you a current student?" below to set your expected graduation date.'
-                    triggerClassName={!isFocused ? 'border-line text-fg-faint bg-surface-hover' : getBorderClass()}
+                    triggerClassName={!isFocused ? 'border-line text-fg-faint bg-surface-hover' : borderClass}
+                    ariaInvalid={showError}
+                    ariaDescribedBy={errorId}
                 />
                 <div className="flex items-center gap-x-2 mt-2">
                     <input
@@ -283,9 +282,9 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                         id="currentStudent"
                         className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                     />
-                    <label htmlFor="currentStudent" className="text-sm">Are you a current student?</label>
+                    <label htmlFor="currentStudent" className="text-sm cursor-pointer">Are you a current student?</label>
                 </div>
-            </div>
+            </FieldShell>
         );
     }
 
@@ -296,33 +295,37 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         const maxDate = new Date();
         maxDate.setFullYear(maxDate.getFullYear() - 20);
         return (
-            <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
-                {renderLabel()}
+            <FieldShell {...shellProps} className={fieldClasses}>
                 <input ref={refLabel} type="hidden" name={name || label} />
                 <DatePicker
+                    id={fieldId}
                     value={selectedDate}
                     onSelect={handleDateSelect}
                     onBlur={handleBlur}
                     maxDate={maxDate}
-                    triggerClassName={getBorderClass()}
+                    triggerClassName={borderClass}
+                    ariaInvalid={showError}
+                    ariaDescribedBy={errorId}
                 />
-                {renderError()}
-            </div>
+            </FieldShell>
         );
     }
 
     // Standard input fields
     const inputProps = {
         ref: refLabel,
+        id: fieldId,
         onChange: handleChange,
         onBlur: handleBlur,
         onFocus: handleFocus,
         type: config.type,
         name: name || label,
         placeholder: config.placeholder,
+        "aria-invalid": showError || undefined,
+        "aria-describedby": errorId,
         className: config.hasPrefix
-            ? "h-11 md:h-9 w-full bg-transparent border-0 outline-none py-1 px-1 text-xs md:text-sm"
-            : `${INPUT_CLASSES} ${getBorderClass()}`,
+            ? `${FIELD_HEIGHT} w-full bg-transparent border-0 outline-none py-1 px-1 ${FIELD_TEXT}`
+            : `${INPUT_CLASSES} ${borderClass}`,
     };
 
     // Add optional attributes
@@ -337,25 +340,27 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     // Input with prefix (like University ID with "U")
     if (config.hasPrefix) {
         return (
-            <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
-                {renderLabel()}
-                <div className={`flex items-center h-11 md:h-9 w-full bg-white dark:bg-[#1a2438] overflow-hidden border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${getBorderClass()}`}>
-                    <span className="px-2 text-xs md:text-sm font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md">
+            <FieldShell {...shellProps} className={fieldClasses}>
+                <div className={`flex items-center ${FIELD_HEIGHT} w-full bg-white dark:bg-[#1a2438] overflow-hidden border rounded-md focus-within:ring-2 focus-within:border-transparent transition-all duration-200 ${borderClass}`}>
+                    {/* aria-hidden: the "U" is decoration on the field, and
+                        the label already names it. Announcing "U" before the
+                        value would just be noise. */}
+                    <span
+                        aria-hidden="true"
+                        className={`px-2 ${FIELD_TEXT} font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md`}
+                    >
                         {config.hasPrefix}
                     </span>
                     <input {...inputProps} />
                 </div>
-                {renderError()}
-            </div>
+            </FieldShell>
         );
     }
 
     return (
-        <div className={`${WRAPPER_CLASSES} ${fieldClasses}`}>
-            {renderLabel()}
+        <FieldShell {...shellProps} className={fieldClasses}>
             <input {...inputProps} />
-            {renderError()}
-        </div>
+        </FieldShell>
     );
 };
 

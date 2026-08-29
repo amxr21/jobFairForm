@@ -1,220 +1,207 @@
 import PropTypes from "prop-types";
-import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { ChevronDown, Check } from "lucide-react";
+import { useMemo, useState } from "react";
+import * as Select from "@radix-ui/react-select";
+import { ChevronDown, ChevronUp, Check, Search } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
-import useDropdownPosition from "../../hooks/useDropdownPosition";
-import { RequiredAstrik } from "./index";
-import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
+import useFieldState from "../../hooks/useFieldState";
+import FieldShell from "./FieldShell";
+import {
+    FIELD_MIN_HEIGHT,
+    FIELD_SURFACE,
+    FIELD_TEXT,
+    PANEL_CLASSES,
+    OPTION_CLASSES,
+} from "./fieldStyles";
 
-// Type-to-filter is a desktop affordance. On touch it costs more than it
-// gives: focusing the search input raises the keyboard over the option list.
-const isDesktop = () =>
-    typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+// Rebuilt on Radix Select.
+//
+// The previous implementation was a <div role="button"> that claimed
+// `aria-haspopup="listbox"` and then portaled a plain <div> of <button>s —
+// there was no listbox, no role="option", no aria-selected, and no
+// aria-activedescendant. A screen reader announced "button", opened it, and
+// found an unlabelled pile of buttons with no indication of how many options
+// existed or which was current. Arrow keys only *opened* the panel; they never
+// moved between options. That is what this rewrite fixes, and it is a device-
+// independent fix — the same break affected NVDA on Windows, VoiceOver on
+// macOS and iOS, and anyone navigating by keyboard alone.
+//
+// Radix gives us, correctly and for free: real combobox/listbox/option
+// semantics, roving focus with type-ahead, Home/End, Escape-to-close, focus
+// return to the trigger on close, scroll locking that behaves on iOS, and
+// `aria-activedescendant` wiring. The visual design is unchanged — Radix ships
+// unstyled, so every Tailwind class here is the project's own.
+//
+// Type-to-filter is kept for long lists, but as a search box *inside* the
+// panel rather than replacing the trigger's text. The old approach swapped the
+// trigger into an <input> on open, which meant the field's visible label text
+// vanished the moment it was opened.
 
-const SelectInput = ({ label, value, options, fieldClasses, selectClasses, handleChange, required = true, placeholder }) => {
-    const [isOpen, setIsOpen] = useState(false);
+// Lists shorter than this are faster to eyeball than to search, and the search
+// box would just cost a row of panel height.
+const SEARCH_THRESHOLD = 8;
+
+const SelectInput = ({
+    label,
+    value,
+    options,
+    fieldClasses,
+    selectClasses,
+    handleChange,
+    required = true,
+    placeholder,
+}) => {
     const [searchTerm, setSearchTerm] = useState("");
-    const [touched, setTouched] = useState(false);
-    const dropdownRef = useRef(null);
-    const triggerRef = useRef(null);
-    const inputRef = useRef(null);
-    const triggerRect = useDropdownPosition(triggerRef, isOpen);
-    const handleFocus = useScrollIntoViewOnFocus();
+    const { formData, updateFormData } = useFormContext();
 
-    const { formData, updateFormData, fieldMissing } = useFormContext();
-
-    // Get current value from formData or prop
     const currentValue = value !== undefined ? value : (formData[label] || "");
 
-    // fieldMissing starts as an array (FormContext.jsx's initial useState)
-    // and becomes a comma-joined string after the first updateFormData call —
-    // normalize both shapes the same way Input.jsx does before matching this
-    // field's own label against it.
-    const missingList = Array.isArray(fieldMissing) ? fieldMissing : (fieldMissing || "").split(", ");
-    const fieldErrorMsg = missingList.find((msg) => msg && msg.startsWith(label));
-    const showError = touched && required && Boolean(fieldErrorMsg);
-    const isValid = touched && required && !fieldErrorMsg && Boolean(currentValue);
+    const { markTouched, errorMessage, showError, borderClass, errorId } = useFieldState({
+        label,
+        required,
+        hasValue: currentValue,
+    });
 
-    const getBorderClass = () => {
-        if (isOpen) return "ring-2 ring-primary border-transparent";
-        if (showError) return "border-red-400";
-        if (isValid) return "border-primary";
-        return "hover:border-fg-faint";
-    };
+    const fallbackPlaceholder =
+        placeholder || `Select ${label === "Study Program" ? "Program" : label}`;
 
-    // Close dropdown when clicking outside — the panel is portaled to
-    // document.body, so it's checked separately from dropdownRef (which only
-    // wraps the label + trigger, not the portaled panel).
-    const panelRef = useRef(null);
-    useEffect(() => {
-        if (!isOpen) return;
-        // `pointerdown`, not `mousedown`: touch devices fire *synthetic* mouse
-        // events ~300ms after the touch, and their ordering against React's
-        // synthetic click is not consistent across iOS Safari and Android
-        // Chrome. That let this handler close the panel that the trigger's
-        // onClick had just opened, so taps alternated open/closed and the
-        // dropdown appeared to need three taps. pointerdown fires once per
-        // interaction on both input types, always before click.
-        const handleClickOutside = (event) => {
-            const insideTrigger = dropdownRef.current && dropdownRef.current.contains(event.target);
-            const insidePanel = panelRef.current && panelRef.current.contains(event.target);
-            if (!insideTrigger && !insidePanel) {
-                setTouched(true);
-                setIsOpen(false);
-                setSearchTerm("");
-            }
-        };
-        document.addEventListener("pointerdown", handleClickOutside);
-        return () => document.removeEventListener("pointerdown", handleClickOutside);
-    }, [isOpen]);
+    const showSearch = options.length > SEARCH_THRESHOLD;
 
-    const filteredOptions = options.filter(opt =>
-        opt.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOptions = useMemo(() => {
+        if (!searchTerm) return options;
+        const term = searchTerm.toLowerCase();
+        return options.filter((opt) => opt.toLowerCase().includes(term));
+    }, [options, searchTerm]);
 
-    const handleSelect = (option) => {
-        if (handleChange) {
-            handleChange(option);
-        }
+    const handleValueChange = (option) => {
+        handleChange?.(option);
         updateFormData(label, option);
-        setIsOpen(false);
-        setSearchTerm("");
-        setTouched(true);
+        markTouched();
     };
 
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            if (filteredOptions.length > 0) {
-                handleSelect(filteredOptions[0]);
-            }
-        }
-        if (e.key === "Escape") {
-            setIsOpen(false);
-            setSearchTerm("");
-        }
-        if (e.key === "ArrowDown" && !isOpen) {
-            setIsOpen(true);
-        }
-    };
+    // Radix treats "" as "no value", and rejects an empty-string <Item value>.
+    // The placeholder covers the empty case, so only pass a real selection.
+    const selectValue = currentValue || undefined;
+
+    const triggerId = `${label}-trigger`;
 
     return (
-        <div className={`flex flex-col ${fieldClasses}`} ref={dropdownRef}>
-            <h2 className="text-xs md:text-sm mb-1">
-                {label}: {required && <RequiredAstrik required={true} />}
-            </h2>
-
-            {/* Input Container — role/tabIndex/keydown make it operable by
-                keyboard (Enter/Space/ArrowDown open it), not just mouse. */}
-            <div
-                ref={triggerRef}
-                role="button"
-                tabIndex={0}
-                onFocus={handleFocus}
-                aria-haspopup="listbox"
-                aria-expanded={isOpen}
-                aria-label={`${label}: ${currentValue || placeholder || `Select ${label === "Study Program" ? "Program" : label}`}`}
-                onKeyDown={(e) => {
-                    if (!isOpen && (e.key === "Enter" || e.key === " " || e.key === "ArrowDown")) {
-                        e.preventDefault();
-                        setIsOpen(true);
-                        if (isDesktop()) setTimeout(() => inputRef.current?.focus(), 0);
-                    } else if (isOpen && e.key === "Escape") {
-                        setIsOpen(false);
-                        setTouched(true);
+        <FieldShell
+            label={label}
+            htmlFor={triggerId}
+            required={required}
+            error={showError ? errorMessage : undefined}
+            errorId={errorId}
+            className={fieldClasses}
+        >
+            <Select.Root
+                value={selectValue}
+                onValueChange={handleValueChange}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSearchTerm("");
+                        markTouched();
                     }
                 }}
-                className={`relative w-full min-h-[44px] md:min-h-[36px] px-2 py-1 bg-white dark:bg-[#1a2438] border border-line-strong rounded-md cursor-pointer transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${getBorderClass()} ${selectClasses || ''}`}
-                onClick={() => {
-                    setIsOpen((wasOpen) => {
-                        if (wasOpen) {
-                            setSearchTerm("");
-                            setTouched(true);
-                            return false;
-                        }
-                        // Focusing the search box opens the on-screen keyboard,
-                        // which covers exactly where the panel is about to be
-                        // placed. Desktop keeps type-to-filter; mobile opens
-                        // straight to a tappable list.
-                        if (isDesktop()) setTimeout(() => inputRef.current?.focus(), 0);
-                        return true;
-                    });
-                }}
             >
-                <div className="flex items-center justify-between h-full">
-                    {/* Selected Value or Search Input */}
-                    {isOpen ? (
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder={currentValue || placeholder || `Search ${label === "Study Program" ? "Program" : label}...`}
-                            className="flex-1 outline-none text-xs md:text-sm bg-transparent"
-                            autoFocus={isDesktop()}
-                        />
-                    ) : (
-                        <span className={`flex-1 text-xs md:text-sm truncate ${!currentValue ? 'text-fg-faint' : 'text-fg'}`}>
-                            {currentValue || placeholder || `Select ${label === "Study Program" ? "Program" : label}`}
-                        </span>
-                    )}
-
-                    {/* Dropdown Arrow */}
-                    <div className="pointer-events-none ml-2 shrink-0">
-                        <ChevronDown className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-                    </div>
-                </div>
-            </div>
-
-            {/* Dropdown — portaled to document.body so it isn't clipped by the
-                step containers' overflow-hidden (needed for the step-slide
-                transition), positioned under the trigger via triggerRect. */}
-            {isOpen && triggerRect && createPortal(
-                <div
-                    ref={panelRef}
-                    className="overlay-pop fixed z-[1000] bg-white dark:bg-[#131b2c] border-line border rounded-md shadow-lg overflow-y-auto overscroll-contain"
-                    style={{
-                        top: triggerRect.top,
-                        bottom: triggerRect.bottom,
-                        left: triggerRect.left,
-                        width: triggerRect.width,
-                        maxHeight: triggerRect.maxHeight,
-                    }}
+                <Select.Trigger
+                    id={triggerId}
+                    aria-invalid={showError || undefined}
+                    aria-describedby={errorId}
+                    className={`relative flex items-center justify-between gap-2 ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 ${FIELD_TEXT} text-left cursor-pointer
+                        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
+                        data-[state=open]:ring-2 data-[state=open]:ring-primary data-[state=open]:border-transparent
+                        active:bg-surface-hover
+                        ${borderClass} ${selectClasses || ""}`}
                 >
-                    {filteredOptions.length > 0 ? (
-                        filteredOptions.map((option, idx) => (
-                            <button
-                                key={idx}
-                                type="button"
-                                onClick={() => handleSelect(option)}
-                                className={`w-full px-2 md:px-3 py-1.5 md:py-2 text-left text-xs md:text-sm transition-colors duration-150 first:rounded-t-md last:rounded-b-md ${
-                                    option === currentValue
-                                        ? 'bg-[#0E7F41]/10 text-[#0E7F41] font-medium'
-                                        : 'text-fg hover:bg-surface-hover'
-                                }`}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <span className="truncate">{option}</span>
-                                    {option === currentValue && (
-                                        <Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#0E7F41] shrink-0 ml-2" />
-                                    )}
+                    {/* Radix renders the selected item's text here, or the
+                        placeholder when there is no value. */}
+                    <Select.Value
+                        placeholder={
+                            <span className="text-fg-faint">{fallbackPlaceholder}</span>
+                        }
+                    />
+                    <Select.Icon asChild>
+                        <ChevronDown className="h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted shrink-0 transition-transform duration-200" />
+                    </Select.Icon>
+                </Select.Trigger>
+
+                <Select.Portal>
+                    {/* position="popper" anchors to the trigger and flips when
+                        there isn't room below — including against the *visual*
+                        viewport, so an open on-screen keyboard pushes the panel
+                        above the field instead of behind the keyboard. That
+                        replaces the hand-rolled useDropdownPosition hook (now
+                        deleted), which measured visualViewport manually to do
+                        the same job for three separate call sites. */}
+                    <Select.Content
+                        position="popper"
+                        sideOffset={4}
+                        collisionPadding={8}
+                        className={`overlay-pop z-[1000] ${PANEL_CLASSES}`}
+                        style={{
+                            width: "var(--radix-select-trigger-width)",
+                            maxHeight: "var(--radix-select-content-available-height)",
+                            WebkitOverflowScrolling: "touch",
+                        }}
+                        // Keep the trigger's own press from re-opening a panel
+                        // that this close is dismissing.
+                        onCloseAutoFocus={(e) => e.preventDefault()}
+                    >
+                        {showSearch && (
+                            <div className="sticky top-0 z-10 bg-white dark:bg-[#131b2c] border-b border-line p-1.5">
+                                <div className="flex items-center gap-1.5 px-1.5">
+                                    <Search className="h-3.5 w-3.5 text-fg-muted shrink-0" />
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        // Radix's type-ahead would otherwise
+                                        // swallow these keys to jump between
+                                        // options while the user is typing a
+                                        // filter.
+                                        onKeyDown={(e) => e.stopPropagation()}
+                                        placeholder={`Search ${label}...`}
+                                        aria-label={`Search ${label}`}
+                                        className={`flex-1 min-w-0 h-8 bg-transparent outline-none ${FIELD_TEXT}`}
+                                    />
                                 </div>
-                            </button>
-                        ))
-                    ) : (
-                        <div className="px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-fg-muted">
-                            No matching options found
-                        </div>
-                    )}
-                </div>,
-                document.body
-            )}
-            {showError && (
-                <p className="text-xs text-red-500 mt-0.5 ml-1">{fieldErrorMsg}</p>
-            )}
-        </div>
+                            </div>
+                        )}
+
+                        <Select.ScrollUpButton className="flex items-center justify-center h-6 text-fg-muted">
+                            <ChevronUp className="h-4 w-4" />
+                        </Select.ScrollUpButton>
+
+                        <Select.Viewport className="p-1">
+                            {filteredOptions.length > 0 ? (
+                                filteredOptions.map((option) => (
+                                    <Select.Item
+                                        key={option}
+                                        value={option}
+                                        className={`${OPTION_CLASSES} rounded-md flex items-center justify-between gap-2 outline-none cursor-pointer
+                                            data-[highlighted]:bg-surface-hover data-[highlighted]:text-fg
+                                            data-[state=checked]:bg-primary/10 data-[state=checked]:text-primary data-[state=checked]:font-medium`}
+                                    >
+                                        <Select.ItemText>{option}</Select.ItemText>
+                                        <Select.ItemIndicator asChild>
+                                            <Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary shrink-0" />
+                                        </Select.ItemIndicator>
+                                    </Select.Item>
+                                ))
+                            ) : (
+                                <div className={`px-2 md:px-3 py-2 ${FIELD_TEXT} text-fg-muted`}>
+                                    No matching options found
+                                </div>
+                            )}
+                        </Select.Viewport>
+
+                        <Select.ScrollDownButton className="flex items-center justify-center h-6 text-fg-muted">
+                            <ChevronDown className="h-4 w-4" />
+                        </Select.ScrollDownButton>
+                    </Select.Content>
+                </Select.Portal>
+            </Select.Root>
+        </FieldShell>
     );
 };
 
