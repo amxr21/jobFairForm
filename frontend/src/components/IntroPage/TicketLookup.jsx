@@ -59,7 +59,7 @@ const TicketLookup = ({ open, onClose }) => {
             <div className="absolute inset-0 backdrop-fade" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} onClick={onClose} />
 
             <div className="overlay-pop relative w-full max-w-xs sm:max-w-sm md:max-w-md bg-white dark:bg-[#131b2c] rounded-xl md:rounded-2xl shadow-2xl overflow-hidden">
-                <button onClick={onClose} className="absolute top-2 right-2 md:top-3 md:right-3 z-10 text-white/80 hover:text-white transition-colors">
+                <button onClick={onClose} className="absolute top-2 end-2 md:top-3 md:end-3 z-10 text-white/80 hover:text-white transition-colors">
                     <X className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
 

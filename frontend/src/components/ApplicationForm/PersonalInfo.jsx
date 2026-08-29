@@ -1,6 +1,8 @@
 import { Input, SelectInput, Languages } from "./index";
 import StepContainer from "./StepContainer";
 import { CountriesList } from "../../CountriesList";
+import { genderLabels, cityLabels } from "../../i18n/options";
+import { countryLabels } from "../../i18n/countries";
 
 
 const PersonalInfo = () => {
@@ -20,9 +22,9 @@ const PersonalInfo = () => {
                         label the user can't read. Gender keeps its half-row:
                         "Male"/"Female" fit comfortably. */}
                     <Input fieldClasses="col-span-6 md:col-span-3" label={"Date of Birth"} />
-                    <SelectInput fieldClasses="col-span-6 md:col-span-3" label={"Gender"} options={["Male", "Female"]} />
-                    <SelectInput fieldClasses="col-span-12 md:col-span-3" label={"City"} options={["Ajman", "Sharjah", "Dubai", "Abu Dhabi", "Fujairah", "Ras Al-Khaima", "Um Al-Quwain"]} />
-                    <SelectInput fieldClasses="col-span-12 md:col-span-3" label={"Nationality"} options={CountriesList} />
+                    <SelectInput fieldClasses="col-span-6 md:col-span-3" label={"Gender"} options={["Male", "Female"]} labelMap={genderLabels} />
+                    <SelectInput fieldClasses="col-span-12 md:col-span-3" label={"City"} options={["Ajman", "Sharjah", "Dubai", "Abu Dhabi", "Fujairah", "Ras Al-Khaima", "Um Al-Quwain"]} labelMap={cityLabels} />
+                    <SelectInput fieldClasses="col-span-12 md:col-span-3" label={"Nationality"} options={CountriesList} labelMap={countryLabels} />
 
                     {/* Row 3: Contact Info */}
                     <Input fieldClasses="col-span-12 md:col-span-4" label={"Email address"} />

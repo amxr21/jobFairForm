@@ -68,7 +68,7 @@ const FieldShell = ({
                 <p
                     id={errorId}
                     role="alert"
-                    className="text-xs text-red-500 mt-0.5 ml-1"
+                    className="text-xs text-red-500 mt-0.5 ms-1"
                 >
                     {error}
                 </p>

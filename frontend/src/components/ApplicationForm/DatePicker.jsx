@@ -233,7 +233,7 @@ const DatePicker = ({
                             }
                             isOpen ? setIsOpen(false) : open();
                         }}
-                        className={`${FIELD_HEIGHT} ${FIELD_SURFACE} py-1 px-2 ${FIELD_TEXT} flex items-center justify-between text-left
+                        className={`${FIELD_HEIGHT} ${FIELD_SURFACE} py-1 px-2 ${FIELD_TEXT} flex items-center justify-between text-start
                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-surface-hover
                             ${disabled ? "cursor-not-allowed" : "cursor-pointer"} ${triggerClassName}`}
                     >
@@ -282,7 +282,7 @@ const DatePicker = ({
                                         <button
                                             type="button"
                                             aria-label={`Month: ${MONTHS[viewMonth]}`}
-                                            className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
+                                            className="text-sm font-medium border-line border rounded-md ps-2 pe-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
                                         >
                                             {MONTHS[viewMonth]}
                                             <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
@@ -305,7 +305,7 @@ const DatePicker = ({
                                                     role="option"
                                                     aria-selected={i === viewMonth}
                                                     onClick={() => { setViewMonth(i); setMonthPickerOpen(false); }}
-                                                    className={`w-full text-left px-2.5 py-2 text-sm rounded flex items-center justify-between transition-colors focus:outline-none focus-visible:bg-surface-hover ${
+                                                    className={`w-full text-start px-2.5 py-2 text-sm rounded flex items-center justify-between transition-colors focus:outline-none focus-visible:bg-surface-hover ${
                                                         i === viewMonth ? "bg-primary/10 text-primary font-medium" : "text-fg hover:bg-surface-hover"
                                                     }`}
                                                 >
@@ -322,7 +322,7 @@ const DatePicker = ({
                                         <button
                                             type="button"
                                             aria-label={`Year: ${viewYear}`}
-                                            className="text-sm font-medium border-line border rounded-md pl-2 pr-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
+                                            className="text-sm font-medium border-line border rounded-md ps-2 pe-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
                                         >
                                             {viewYear}
                                             <ChevronDown className="h-3.5 w-3.5 text-fg-muted" />
@@ -345,7 +345,7 @@ const DatePicker = ({
                                                     role="option"
                                                     aria-selected={y === viewYear}
                                                     onClick={() => { setViewYear(y); setYearPickerOpen(false); }}
-                                                    className={`w-full text-left px-2.5 py-2 text-sm rounded flex items-center justify-between transition-colors focus:outline-none focus-visible:bg-surface-hover ${
+                                                    className={`w-full text-start px-2.5 py-2 text-sm rounded flex items-center justify-between transition-colors focus:outline-none focus-visible:bg-surface-hover ${
                                                         y === viewYear ? "bg-primary/10 text-primary font-medium" : "text-fg hover:bg-surface-hover"
                                                     }`}
                                                 >
@@ -440,7 +440,7 @@ const DatePicker = ({
             </Popover.Root>
 
             {showDisabledNote && disabledMessage && (
-                <p role="status" className="text-[11px] text-amber-600 mt-0.5 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                <p role="status" className="text-[11px] text-amber-600 mt-0.5 ms-1 animate-in fade-in slide-in-from-top-1 duration-200">
                     {disabledMessage}
                 </p>
             )}

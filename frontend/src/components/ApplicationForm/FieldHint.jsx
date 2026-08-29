@@ -40,7 +40,7 @@ const FieldHint = ({ text }) => {
     };
 
     return (
-        <span className="inline-flex items-center align-middle -my-1.5 ml-0.5">
+        <span className="inline-flex items-center align-middle -my-1.5 ms-0.5">
             <button
                 ref={iconRef}
                 type="button"

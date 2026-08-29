@@ -7,6 +7,8 @@ import useFormContext from "../../hooks/useFormContext";
 import { useToast } from "../Toast";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 import { LABEL_CLASSES, TEXTAREA_CLASSES, FIELD_TEXT } from "./fieldStyles";
+import { programLabels, collegeLabels, majorLabels } from "../../i18n/degreePrograms";
+import { technicalSkillLabels, nonTechnicalSkillLabels } from "../../i18n/skills";
 
 const ProfessionalInfo = () => {
     const toast = useToast();
@@ -180,6 +182,7 @@ const ProfessionalInfo = () => {
                             options={Object.keys(DegreePrograms)}
                             handleChange={setSelectedProgram}
                             fieldClasses="col-span-12 md:col-span-3"
+                            labelMap={programLabels}
                         />
                         <SelectInput
                             label={"College"}
@@ -187,6 +190,7 @@ const ProfessionalInfo = () => {
                             value={selectedCollege}
                             handleChange={handleCollegeChange}
                             fieldClasses="col-span-12 md:col-span-4"
+                            labelMap={collegeLabels}
                         />
                         <SelectInput
                             label={"Major"}
@@ -194,6 +198,7 @@ const ProfessionalInfo = () => {
                             value={selectedMajor}
                             handleChange={handleMajorChange}
                             fieldClasses="col-span-12 md:col-span-5"
+                            labelMap={majorLabels}
                         />
                     </div>
 
@@ -203,11 +208,13 @@ const ProfessionalInfo = () => {
                             label="Technical Skills"
                             fieldName="Technical Skills"
                             fieldClasses="col-span-12 md:col-span-6"
+                            labelMap={technicalSkillLabels}
                         />
                         <SkillsMultiSelect
                             label="Non-technical Skills"
                             fieldName="Non-technical skills"
                             fieldClasses="col-span-12 md:col-span-6"
+                            labelMap={nonTechnicalSkillLabels}
                         />
                     </div>
 

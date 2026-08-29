@@ -23,7 +23,7 @@ const MainBanner = () => {
 
     return (
         <div id="Hero" className="bg- md:w-full md:mx-0 my-4 md:my-12 py-8 md:py-12 h-fit overflow-hidden">
-            <div className="md:text-2xl md:text-left mb-4">
+            <div className="md:text-2xl md:text-start mb-4">
                 <h2 className="md:text-5xl leading-[1.2em] text-4xl font-bold mb-4 md:mb-2 uppercase">Welcome to your first Job Fair!</h2>
                 <p className="md:text-3xl text-md text-justify">Connect with top employers, discover exciting career opportunities, and take the next step in your professional journey</p>
             </div>

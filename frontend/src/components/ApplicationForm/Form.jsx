@@ -402,7 +402,7 @@ const Form = () => {
                         off the bottom of the screen. Bounding the height here
                         lets the scroll region inside the step absorb the
                         overflow instead, keeping the nav row visible. */}
-                    <div className="information-part border-line border h-full min-h-0 px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
+                    <div className="information-part border-line border h-full min-h-0 px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-s-3xl md:rounded-e-[4em] overflow-hidden">
                         {/* Step swap: exit accelerates away (ease-in), enter
                             decelerates in (ease-out) — mirrored curves rather
                             than a flat ease-in-out. Only transform + opacity move,

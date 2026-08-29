@@ -21,12 +21,12 @@ const ProgressSection = ({ currentStep }) => {
     const { Icon, title } = STEPS[currentStep - 1] || STEPS[0];
 
     return (
-        <div className="relative flex flex-row md:flex-col items-center md:items-stretch gap-3 md:gap-8 w-full border py-2.5 px-4 md:py-10 md:px-12 min-h-0 md:min-h-[28rem] h-fit md:h-full bg-[#0E7F41] rounded-2xl md:rounded-l-[4em] md:rounded-r-3xl overflow-hidden">
+        <div className="relative flex flex-row md:flex-col items-center md:items-stretch gap-3 md:gap-8 w-full border py-2.5 px-4 md:py-10 md:px-12 min-h-0 md:min-h-[28rem] h-fit md:h-full bg-[#0E7F41] rounded-2xl md:rounded-s-[4em] md:rounded-e-3xl overflow-hidden">
 
             {/* Decorative only — it costs real layout space on a small screen,
                 so it is dropped below md rather than scaled down. */}
             <div className="hidden md:block">
-                <GridLeft mark={false} otherClasses={'left-14 -top-20 left-[0%] md:left-0 md:top-14 h-full min-h-96 md:h-fit md:w-fit opacity-60 rotate-90 md:rotate-0'} />
+                <GridLeft mark={false} otherClasses={'start-14 -top-20 start-[0%] md:start-0 md:top-14 h-full min-h-96 md:h-fit md:w-fit opacity-60 rotate-90 md:rotate-0'} />
             </div>
 
             <div className="flex flex-row md:flex-col items-center md:items-stretch gap-3 md:gap-0 flex-1 min-w-0">

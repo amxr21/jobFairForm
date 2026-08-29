@@ -4,6 +4,8 @@ import * as Select from "@radix-ui/react-select";
 import { ChevronDown, ChevronUp, Check, Search } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import { labelFor } from "../../i18n/options";
 import FieldShell from "./FieldShell";
 import {
     FIELD_MIN_HEIGHT,
@@ -49,9 +51,18 @@ const SelectInput = ({
     handleChange,
     required = true,
     placeholder,
+    // Optional { "English value": "Arabic label" } map from i18n/options.js.
+    // When absent (or a key is missing/empty), the English string itself is
+    // shown — see labelFor(). formData/handleChange always receive the
+    // English `option` value; this only changes what is rendered.
+    labelMap,
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const { formData, updateFormData } = useFormContext();
+    const { locale } = useLocaleContext();
+    // What the user actually SEES for a given English option value — the
+    // Arabic label when one exists, else the English value itself.
+    const displayLabel = (option) => (locale === "ar" ? labelFor(labelMap, option) : option);
 
     const currentValue = value !== undefined ? value : (formData[label] || "");
 
@@ -69,8 +80,12 @@ const SelectInput = ({
     const filteredOptions = useMemo(() => {
         if (!searchTerm) return options;
         const term = searchTerm.toLowerCase();
-        return options.filter((opt) => opt.toLowerCase().includes(term));
-    }, [options, searchTerm]);
+        // Match against whatever text is actually on screen (the Arabic
+        // label when one is shown), not just the English value — typing "ال"
+        // to find "السعودية" must work, not only typing "Saudi".
+        return options.filter((opt) => displayLabel(opt).toLowerCase().includes(term));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options, searchTerm, locale]);
 
     const handleValueChange = (option) => {
         handleChange?.(option);
@@ -107,7 +122,7 @@ const SelectInput = ({
                     id={triggerId}
                     aria-invalid={showError || undefined}
                     aria-describedby={errorId}
-                    className={`relative flex items-center justify-between gap-2 ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 ${FIELD_TEXT} text-left cursor-pointer
+                    className={`relative flex items-center justify-between gap-2 ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 ${FIELD_TEXT} text-start cursor-pointer
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                         data-[state=open]:ring-2 data-[state=open]:ring-primary data-[state=open]:border-transparent
                         active:bg-surface-hover
@@ -182,7 +197,13 @@ const SelectInput = ({
                                             data-[highlighted]:bg-surface-hover data-[highlighted]:text-fg
                                             data-[state=checked]:bg-primary/10 data-[state=checked]:text-primary data-[state=checked]:font-medium`}
                                     >
-                                        <Select.ItemText>{option}</Select.ItemText>
+                                        {/* Radix's closed-state <Select.Value>
+                                            mirrors whatever text the matching
+                                            ItemText rendered — there is no
+                                            separate place to localize the
+                                            trigger's display, fixing this one
+                                            spot covers both. */}
+                                        <Select.ItemText>{displayLabel(option)}</Select.ItemText>
                                         <Select.ItemIndicator asChild>
                                             <Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary shrink-0" />
                                         </Select.ItemIndicator>
@@ -214,6 +235,7 @@ SelectInput.propTypes = {
     handleChange: PropTypes.func,
     required: PropTypes.bool,
     placeholder: PropTypes.string,
+    labelMap: PropTypes.objectOf(PropTypes.string),
 };
 
 export default SelectInput;

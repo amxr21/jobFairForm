@@ -382,6 +382,13 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             : `${INPUT_CLASSES} ${borderClass}`,
     };
 
+    // Email/phone content is always LTR regardless of UI direction (e.g.
+    // "+971 50 123 4567" or "name@example.com") — force it explicitly so it
+    // doesn't visually reorder when the form is in Arabic/RTL.
+    if (config.type === 'email' || config.type === 'tel') {
+        inputProps.dir = 'ltr';
+    }
+
     // Add optional attributes
     if (config.inputMode) inputProps.inputMode = config.inputMode;
     if (config.autoComplete) inputProps.autoComplete = config.autoComplete;
@@ -401,7 +408,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                         value would just be noise. */}
                     <span
                         aria-hidden="true"
-                        className={`px-2 ${FIELD_TEXT} font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md`}
+                        className={`px-2 ${FIELD_TEXT} font-medium text-fg-muted bg-surface-hover h-full flex items-center border-e border-line-strong rounded-s-md`}
                     >
                         {config.hasPrefix}
                     </span>

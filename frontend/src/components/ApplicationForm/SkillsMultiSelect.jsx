@@ -4,6 +4,8 @@ import * as Popover from "@radix-ui/react-popover";
 import useUniqueId from "../../hooks/useUniqueId";
 import { X, ChevronDown } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import { labelFor } from "../../i18n/options";
 import FieldShell from "./FieldShell";
 import {
     FIELD_MIN_HEIGHT,
@@ -66,8 +68,14 @@ const SkillsMultiSelect = ({
     // Wording for the count line and the empty-panel hint. Defaults suit
     // skills; Preferences passes "field" for its industry list.
     noun = "skill",
+    // Optional { "English value": "Arabic label" } map (skills.js /
+    // industries.js). formData always stores the English value; this only
+    // changes what is rendered for chips and option rows.
+    labelMap,
 }) => {
     const { formData, setFormData } = useFormContext();
+    const { locale } = useLocaleContext();
+    const displayLabel = (val) => (locale === "ar" ? labelFor(labelMap, val) : val);
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -94,10 +102,14 @@ const SkillsMultiSelect = ({
 
     const filteredSkills = useMemo(() => {
         const term = searchTerm.toLowerCase();
+        // Match against the displayed text (Arabic label when one is shown),
+        // not only the English value — otherwise typing Arabic to search
+        // finds nothing even though every row is showing Arabic.
         return skills.filter(
-            (skill) => skill.toLowerCase().includes(term) && !selectedSkills.includes(skill)
+            (skill) => displayLabel(skill).toLowerCase().includes(term) && !selectedSkills.includes(skill)
         );
-    }, [skills, searchTerm, selectedSkills]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [skills, searchTerm, selectedSkills, locale]);
 
     const visibleSkills = filteredSkills.slice(0, MAX_VISIBLE);
 
@@ -186,7 +198,7 @@ const SkillsMultiSelect = ({
                 <Popover.Anchor asChild>
                     <div
                         ref={fieldRef}
-                        className={`relative ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 pr-8 cursor-text flex flex-wrap gap-1 items-center border-line-strong
+                        className={`relative ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 pe-8 cursor-text flex flex-wrap gap-1 items-center border-line-strong
                             focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent`}
                         onClick={() => {
                             setIsOpen(true);
@@ -196,9 +208,9 @@ const SkillsMultiSelect = ({
                         {selectedSkills.map((skill) => (
                             <span
                                 key={skill}
-                                className="inline-flex items-center gap-0.5 pl-1.5 pr-0.5 py-0.5 bg-primary/10 text-primary text-[10px] md:text-xs rounded-md"
+                                className="inline-flex items-center gap-0.5 ps-1.5 pe-0.5 py-0.5 bg-primary/10 text-primary text-[10px] md:text-xs rounded-md"
                             >
-                                {skill}
+                                {displayLabel(skill)}
                                 <button
                                     type="button"
                                     // Without this the button is announced as
@@ -246,7 +258,7 @@ const SkillsMultiSelect = ({
                             className={`flex-1 min-w-[80px] outline-none ${FIELD_TEXT} py-0.5 bg-transparent`}
                         />
 
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <div className="absolute end-2 top-1/2 -translate-y-1/2 pointer-events-none">
                             <ChevronDown
                                 className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                             />
@@ -315,7 +327,13 @@ const SkillsMultiSelect = ({
                                             i === activeIndex ? "bg-surface-hover" : ""
                                         } ${row.type === "custom" ? "text-primary" : "text-fg"}`}
                                     >
-                                        {row.type === "custom" ? `+ Add "${row.value}"` : row.value}
+                                        {/* A "custom" row is exactly what the
+                                            user typed — free text, not one of
+                                            our known options — so it is never
+                                            run through displayLabel. Only a
+                                            recognized "skill" row has an
+                                            Arabic translation to show. */}
+                                        {row.type === "custom" ? `+ Add "${row.value}"` : displayLabel(row.value)}
                                     </li>
                                 ))
                             ) : (
@@ -362,6 +380,7 @@ SkillsMultiSelect.propTypes = {
     placeholder: PropTypes.string,
     allowCustom: PropTypes.bool,
     noun: PropTypes.string,
+    labelMap: PropTypes.objectOf(PropTypes.string),
 };
 
 export default SkillsMultiSelect;

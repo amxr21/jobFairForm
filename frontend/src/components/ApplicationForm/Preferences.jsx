@@ -3,6 +3,14 @@ import useFormContext from "../../hooks/useFormContext";
 import { Input, SelectInput, SkillsMultiSelect } from "./index";
 import StepContainer from "./StepContainer";
 import { LABEL_CLASSES } from "./fieldStyles";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import {
+    labelFor,
+    preferredCityLabels,
+    opportunityTypeLabels,
+    availabilityLabels,
+} from "../../i18n/options";
+import { industryLabels } from "../../i18n/industries";
 
 // Industry Fields for job interests
 const INDUSTRY_FIELDS = [
@@ -47,6 +55,8 @@ const availabilityOptions = ["Immediately", "Within 1 month", "Within 3 months",
 const Preferences = () => {
     const { formData, updateFormData } = useFormContext();
     const [opportunityTypes, setOpportunityTypes] = useState(formData["Opportunity Type"] || []);
+    const { locale } = useLocaleContext();
+    const displayOpportunity = (val) => (locale === "ar" ? labelFor(opportunityTypeLabels, val) : val);
 
     // The Field Interest multi-select used to be ~110 lines inlined here: its
     // own portal, outside-click effect, chip list, search input and filter —
@@ -75,6 +85,7 @@ const Preferences = () => {
                     noun="field"
                     placeholder="Search industries..."
                     fieldClasses="col-span-12 md:col-span-6"
+                    labelMap={industryLabels}
                 />
 
                 <SelectInput
@@ -84,6 +95,7 @@ const Preferences = () => {
                     placeholder="Select preferred location"
                     required={false}
                     fieldClasses="col-span-12 md:col-span-6"
+                    labelMap={preferredCityLabels}
                 />
 
                 {/* Row 2: Opportunity Type — a multi-choice toggle group.
@@ -115,7 +127,7 @@ const Preferences = () => {
                                             : "bg-surface-card text-fg border-line-strong hover:border-primary hover:text-primary"
                                     }`}
                                 >
-                                    {type}
+                                    {displayOpportunity(type)}
                                 </button>
                             );
                         })}
@@ -134,6 +146,7 @@ const Preferences = () => {
                     placeholder="Select availability"
                     required={false}
                     fieldClasses="col-span-12 md:col-span-6"
+                    labelMap={availabilityLabels}
                 />
             </div>
         </StepContainer>

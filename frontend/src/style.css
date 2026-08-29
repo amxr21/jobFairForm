@@ -227,7 +227,7 @@ body {
    width on mobile (horizontal bar) and to height on md+ (vertical bar),
    anchored to the bottom so it grows upward like a gauge. */
 .progress-fill {
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   width: var(--fill, 33%);
   height: 100%;

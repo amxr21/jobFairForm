@@ -23,8 +23,8 @@ const ConfirmMessageDiv = ({ confirmMessageRef, qrCodeSrc }) => {
         >
             <div className="relative bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] rounded-3xl overflow-hidden">
                 {/* Decorative circles */}
-                <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" />
-                <div className="absolute -bottom-20 -left-10 w-64 h-64 rounded-full bg-white/5" />
+                <div className="absolute -top-16 -end-16 w-56 h-56 rounded-full bg-white/5" />
+                <div className="absolute -bottom-20 -start-10 w-64 h-64 rounded-full bg-white/5" />
 
                 <div className="relative flex flex-col md:flex-row items-stretch gap-6 md:gap-10 px-6 md:px-12 py-8 md:py-10">
                     {/* Left: confirmation message */}
@@ -55,7 +55,7 @@ const ConfirmMessageDiv = ({ confirmMessageRef, qrCodeSrc }) => {
                     {/* Right: ticket card with QR */}
                     <div className="relative bg-white rounded-2xl p-6 md:p-7 flex flex-col items-center gap-4 md:w-1/2">
                         {/* Perforation notch for the ticket-stub feel */}
-                        <div className="hidden md:block absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0a5f31]" />
+                        <div className="hidden md:block absolute -start-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#0a5f31]" />
 
                         <div className="ticket-qr bg-white rounded-xl border border-gray-100 p-3">
                             {qrCodeSrc

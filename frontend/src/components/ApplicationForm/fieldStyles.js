@@ -36,7 +36,7 @@ export const PANEL_CLASSES =
 // Option rows inside a panel. 44px tall on touch for the same reason as the
 // triggers; `overflow-y-auto` panels get momentum scrolling so they track the
 // finger the way every native list on the device does.
-export const OPTION_CLASSES = `w-full px-2 md:px-3 py-2.5 md:py-2 text-left ${FIELD_TEXT} transition-colors duration-150`;
+export const OPTION_CLASSES = `w-full px-2 md:px-3 py-2.5 md:py-2 text-start ${FIELD_TEXT} transition-colors duration-150`;
 
 export const OPTION_SELECTED = "bg-primary/10 text-primary font-medium";
 export const OPTION_IDLE = "text-fg hover:bg-surface-hover focus:bg-surface-hover";
