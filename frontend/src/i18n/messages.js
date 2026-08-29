@@ -90,6 +90,12 @@ export const messages = {
             qrCaption: "Screenshot this QR code for entry and to share your profile with 70+ companies.",
             downloadQr: "Download QR",
         },
+        languagesField: {
+            other: "Other",
+            selectOrType: "Select additional languages or type your own:",
+            typePlaceholder: "Type a language...",
+            add: "Add",
+        },
     },
     // Empty strings fall back to English via t(). Fill these in progressively
     // — nothing here needs to be complete before the switch ships, since
@@ -175,6 +181,12 @@ export const messages = {
             generatingQr: "جاري إنشاء رمز QR…",
             qrCaption: "التقط لقطة شاشة لرمز QR هذا للدخول ولمشاركة ملفك الشخصي مع أكثر من 70 جهة توظيف.",
             downloadQr: "تحميل رمز QR",
+        },
+        languagesField: {
+            other: "أخرى",
+            selectOrType: "اختر لغات إضافية أو اكتب لغتك الخاصة:",
+            typePlaceholder: "اكتب لغة...",
+            add: "إضافة",
         },
     },
 };

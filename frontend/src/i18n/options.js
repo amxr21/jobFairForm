@@ -57,6 +57,15 @@ export const languageLabels = {
     "Spanish": "الإسبانية",
     "German": "الألمانية",
     "Chinese": "الصينية",
+    "Hindi": "الهندية",
+    "Urdu": "الأردية",
+    "Turkish": "التركية",
+    "Persian": "الفارسية",
+    "Korean": "الكورية",
+    "Japanese": "اليابانية",
+    "Russian": "الروسية",
+    "Portuguese": "البرتغالية",
+    "Italian": "الإيطالية",
     "Other": "أخرى",
 };
 
