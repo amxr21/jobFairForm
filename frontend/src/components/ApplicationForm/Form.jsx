@@ -374,16 +374,29 @@ const Form = () => {
                 className={`relative bg-surface-card border-line rounded-xl border h-[86dvh] xl:h-[90dvh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
             >
 
-                <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full">
+                {/* min-h-0 on both the column and its flex children: a flex
+                    item's default min-height is auto, so it refuses to shrink
+                    below its content and the nested scroll region never
+                    engages. This is what lets the step's own overflow-y-auto
+                    do the scrolling on mobile. */}
+                <div className="flex md:flex-row flex-col w-full gap-y-3 md:gap-x-4 xl:gap-x-6 h-full min-h-0">
                     <div className="md:w-3/12 md:min-w-[240px] shrink-0">
                         <ProgressSection currentStep={currentStep} />
                     </div>
-                    <div className="information-part border-line border h-fit md:h-full px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
+                    {/* min-h-0 + h-full (not h-fit) on mobile: the child
+                        .step-pane is h-full, and h-full inside an h-fit parent
+                        is circular — the pane grew to its content height,
+                        overflowed the form's h-[86dvh], and this element's
+                        overflow-hidden then clipped the Continue/Submit row
+                        off the bottom of the screen. Bounding the height here
+                        lets the scroll region inside the step absorb the
+                        overflow instead, keeping the nav row visible. */}
+                    <div className="information-part border-line border h-full min-h-0 px-4 py-4 md:px-6 md:py-6 xl:px-8 xl:py-8 flex-1 rounded-xl md:rounded-l-3xl md:rounded-r-[4em] overflow-hidden">
                         {/* Step swap: exit accelerates away (ease-in), enter
                             decelerates in (ease-out) — mirrored curves rather
                             than a flat ease-in-out. Only transform + opacity move,
                             so it stays on the compositor. */}
-                        <div className={`step-pane h-full flex flex-col justify-between will-change-transform ${
+                        <div className={`step-pane h-full min-h-0 flex flex-col will-change-transform ${
                             slideDirection === 'slide-left' ? 'step-exit opacity-0 -translate-x-6' :
                             slideDirection === 'slide-right' ? 'step-exit opacity-0 translate-x-6' :
                             slideDirection === 'slide-in-left' ? 'step-enter opacity-100 translate-x-0' :
