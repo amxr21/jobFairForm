@@ -1,7 +1,9 @@
 import PropTypes from "prop-types";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import useUniqueId from "../../hooks/useUniqueId";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar as CalendarIcon, Check } from "lucide-react";
 import {
     FIELD_HEIGHT,
@@ -32,27 +34,44 @@ import {
 // The month/year dropdowns are Radix Popovers too, so they dismiss and manage
 // focus correctly instead of relying on the parent's outside-click handler.
 
-const MONTHS = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-];
-const WEEKDAYS = [
-    { short: "Su", long: "Sunday" },
-    { short: "Mo", long: "Monday" },
-    { short: "Tu", long: "Tuesday" },
-    { short: "We", long: "Wednesday" },
-    { short: "Th", long: "Thursday" },
-    { short: "Fr", long: "Friday" },
-    { short: "Sa", long: "Saturday" },
-];
+// Month/weekday names and date formatting are all generated via
+// Intl.DateTimeFormat rather than hand-maintained EN/AR string arrays — the
+// bilingual skill's rule ("use Intl.NumberFormat/Intl.DateTimeFormat, never
+// hand-concatenate") applies just as much to a component's internal
+// constants as it does to user-facing copy, and it means there's no second
+// set of 12+7 translated strings to keep in sync with reality.
+//
+// The locale passed in is this app's "en"/"ar", mapped to a real BCP-47 tag;
+// "ar" alone already renders Western digits for a Gregorian date in the UAE
+// region (verified: Intl.DateTimeFormat('ar', ...) on 22 Apr 2026 gives "22
+// أبريل 2026", not Eastern Arabic-Indic digits), matching this file's
+// existing UAE-numerals convention without needing the -u-nu-latn extension.
+const intlTag = (locale) => (locale === "ar" ? "ar" : "en-US");
+
+const getMonths = (locale) => {
+    const fmt = new Intl.DateTimeFormat(intlTag(locale), { month: "long" });
+    return Array.from({ length: 12 }, (_, m) => fmt.format(new Date(2000, m, 1)));
+};
+
+// { short, long } per weekday, Sunday-first to match this calendar's existing
+// week layout (buildMonthGrid starts each row on getDay() === 0).
+const getWeekdays = (locale) => {
+    const shortFmt = new Intl.DateTimeFormat(intlTag(locale), { weekday: "narrow" });
+    const longFmt = new Intl.DateTimeFormat(intlTag(locale), { weekday: "long" });
+    // 2000-01-02 was a Sunday — an arbitrary known Sunday to walk forward from.
+    return Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(2000, 0, 2 + i);
+        return { short: shortFmt.format(d), long: longFmt.format(d) };
+    });
+};
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-const formatDisplay = (date) =>
-    date ? date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
+const formatDisplay = (date, locale) =>
+    date ? date.toLocaleDateString(intlTag(locale), { year: "numeric", month: "long", day: "numeric" }) : "";
 
-const formatFull = (date) =>
-    date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+const formatFull = (date, locale) =>
+    date.toLocaleDateString(intlTag(locale), { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
 const sameDay = (a, b) => a && b && a.getTime() === b.getTime();
 
@@ -71,13 +90,24 @@ const DatePicker = ({
     maxDate,
     disabled = false,
     disabledMessage,
-    placeholder = "Select a date",
+    placeholder,
     triggerClassName = "",
     onBlur,
     id,
     ariaInvalid,
     ariaDescribedBy,
 }) => {
+    const { locale } = useLocaleContext();
+    const t = useTranslation();
+    // Memoized per locale rather than recomputed every render — building 12
+    // Intl.DateTimeFormat calls on every keystroke of an unrelated field
+    // would be wasteful, and these only ever need to change when locale
+    // does.
+    const MONTHS = useMemo(() => getMonths(locale), [locale]);
+    const WEEKDAYS = useMemo(() => getWeekdays(locale), [locale]);
+    const effectivePlaceholder = placeholder || t("placeholders.selectDate");
+    const effectiveDisabledMessage = disabledMessage || t("datePicker.setGraduationDateHint");
+
     const [isOpen, setIsOpen] = useState(false);
     const [showDisabledNote, setShowDisabledNote] = useState(false);
     const [monthPickerOpen, setMonthPickerOpen] = useState(false);
@@ -225,7 +255,7 @@ const DatePicker = ({
                             // Kept clickable while disabled so we can explain
                             // *why* rather than silently doing nothing.
                             if (disabled) {
-                                if (disabledMessage) {
+                                if (effectiveDisabledMessage) {
                                     setShowDisabledNote(true);
                                     setTimeout(() => setShowDisabledNote(false), 3000);
                                 }
@@ -238,7 +268,7 @@ const DatePicker = ({
                             ${disabled ? "cursor-not-allowed" : "cursor-pointer"} ${triggerClassName}`}
                     >
                         <span className={value ? "text-fg" : "text-fg-faint"}>
-                            {value ? formatDisplay(value) : placeholder}
+                            {value ? formatDisplay(value, locale) : effectivePlaceholder}
                         </span>
                         <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted shrink-0" />
                     </button>
@@ -251,7 +281,7 @@ const DatePicker = ({
                         sideOffset={4}
                         collisionPadding={8}
                         role="dialog"
-                        aria-label="Choose a date"
+                        aria-label={t("datePicker.chooseDate")}
                         className={`overlay-pop z-[1000] ${PANEL_CLASSES} p-3`}
                         style={{
                             width: "min(280px, calc(100vw - 16px))",
@@ -271,7 +301,7 @@ const DatePicker = ({
                                 type="button"
                                 onClick={goToPrevMonth}
                                 className="h-8 w-8 md:h-7 md:w-7 rounded-md border-line border text-fg-muted hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center shrink-0"
-                                aria-label="Previous month"
+                                aria-label={t("datePicker.previousMonth")}
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
@@ -281,7 +311,7 @@ const DatePicker = ({
                                     <Popover.Trigger asChild>
                                         <button
                                             type="button"
-                                            aria-label={`Month: ${MONTHS[viewMonth]}`}
+                                            aria-label={t("datePicker.monthLabel", { month: MONTHS[viewMonth] })}
                                             className="text-sm font-medium border-line border rounded-md ps-2 pe-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
                                         >
                                             {MONTHS[viewMonth]}
@@ -296,7 +326,7 @@ const DatePicker = ({
                                             collisionPadding={8}
                                             className={`${dropdownPanel} max-h-48 w-32`}
                                             role="listbox"
-                                            aria-label="Select month"
+                                            aria-label={t("datePicker.selectMonth")}
                                         >
                                             {MONTHS.map((m, i) => (
                                                 <button
@@ -321,7 +351,7 @@ const DatePicker = ({
                                     <Popover.Trigger asChild>
                                         <button
                                             type="button"
-                                            aria-label={`Year: ${viewYear}`}
+                                            aria-label={t("datePicker.yearLabel", { year: viewYear })}
                                             className="text-sm font-medium border-line border rounded-md ps-2 pe-1 py-1 bg-white dark:bg-[#131b2c] text-fg cursor-pointer hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-200 inline-flex items-center gap-0.5"
                                         >
                                             {viewYear}
@@ -336,7 +366,7 @@ const DatePicker = ({
                                             collisionPadding={8}
                                             className={`${dropdownPanel} max-h-48 w-24`}
                                             role="listbox"
-                                            aria-label="Select year"
+                                            aria-label={t("datePicker.selectYear")}
                                         >
                                             {yearOptions.map((y) => (
                                                 <button
@@ -362,7 +392,7 @@ const DatePicker = ({
                                 type="button"
                                 onClick={goToNextMonth}
                                 className="h-8 w-8 md:h-7 md:w-7 rounded-md border-line border text-fg-muted hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors inline-flex items-center justify-center shrink-0"
-                                aria-label="Next month"
+                                aria-label={t("datePicker.nextMonth")}
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </button>
@@ -410,7 +440,7 @@ const DatePicker = ({
                                                         // arrows. 42 tab stops would be a maze.
                                                         tabIndex={isFocused ? 0 : -1}
                                                         disabled={dayDisabled}
-                                                        aria-label={formatFull(day)}
+                                                        aria-label={formatFull(day, locale)}
                                                         aria-selected={isSelected}
                                                         aria-current={isToday ? "date" : undefined}
                                                         onClick={() => handlePick(d)}
@@ -439,9 +469,9 @@ const DatePicker = ({
                 </Popover.Portal>
             </Popover.Root>
 
-            {showDisabledNote && disabledMessage && (
+            {showDisabledNote && effectiveDisabledMessage && (
                 <p role="status" className="text-[11px] text-amber-600 mt-0.5 ms-1 animate-in fade-in slide-in-from-top-1 duration-200">
-                    {disabledMessage}
+                    {effectiveDisabledMessage}
                 </p>
             )}
         </>

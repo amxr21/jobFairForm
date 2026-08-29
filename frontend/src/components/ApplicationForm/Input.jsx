@@ -400,7 +400,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     onSelect={handleDateSelect}
                     onBlur={handleBlur}
                     disabled={!isFocused}
-                    disabledMessage='Check "Are you a current student?" below to set your expected graduation date.'
+                    // No disabledMessage passed: DatePicker's own
+                    // datePicker.setGraduationDateHint translated default is
+                    // this exact copy, and letting it fall through to that
+                    // default means this string translates instead of always
+                    // showing English regardless of locale.
                     triggerClassName={!isFocused ? 'border-line text-fg-faint bg-surface-hover' : borderClass}
                     ariaInvalid={showError}
                     ariaDescribedBy={errorId}
