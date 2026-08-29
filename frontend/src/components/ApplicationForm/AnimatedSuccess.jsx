@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { GraduationCap } from "lucide-react";
+import useTranslation from "../../hooks/useTranslation";
 
 // Full-screen submit overlay with a scripted sequence, driven by `phase`:
 //   "loading" → three bouncing dots ("submitting…")
@@ -9,6 +10,7 @@ import { GraduationCap } from "lucide-react";
 // flight, then success once it resolves, then fade after a short beat.
 // Pure CSS keyframes — no framer-motion, so it's safe on this app's React 17.
 const AnimatedSuccess = ({ phase }) => {
+  const t = useTranslation();
   if (!phase || phase === "idle" || phase === "done") return null;
 
   const showDots = phase === "loading";
@@ -60,12 +62,12 @@ const AnimatedSuccess = ({ phase }) => {
         <div className="text-center h-10">
           {showDots && (
             <p className="text-lg font-semibold text-fg" style={{ animation: "sd-fade 0.3s ease both" }}>
-              Submitting your application…
+              {t("confirmation.submittingOverlay")}
             </p>
           )}
           {showCap && (
             <p className="text-lg font-semibold text-[#0E7F41]" style={{ animation: "sd-fade 0.4s ease 0.15s both" }}>
-              You&apos;re all set!
+              {t("confirmation.heading")}
             </p>
           )}
         </div>

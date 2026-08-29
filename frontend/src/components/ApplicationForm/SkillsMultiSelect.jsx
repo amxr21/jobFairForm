@@ -72,6 +72,8 @@ const SkillsMultiSelect = ({
     // industries.js). formData always stores the English value; this only
     // changes what is rendered for chips and option rows.
     labelMap,
+    // Lucide icon component, forwarded to FieldShell.
+    icon,
 }) => {
     const { formData, setFormData } = useFormContext();
     const { locale } = useLocaleContext();
@@ -193,6 +195,7 @@ const SkillsMultiSelect = ({
             htmlFor={inputId}
             required={required}
             className={fieldClasses}
+            icon={icon}
         >
             <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
                 <Popover.Anchor asChild>
@@ -381,6 +384,7 @@ SkillsMultiSelect.propTypes = {
     allowCustom: PropTypes.bool,
     noun: PropTypes.string,
     labelMap: PropTypes.objectOf(PropTypes.string),
+    icon: PropTypes.elementType,
 };
 
 export default SkillsMultiSelect;

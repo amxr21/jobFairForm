@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Upload, X, Loader2, FileText } from "lucide-react";
+import { Upload, X, Loader2, FileText, GraduationCap, Landmark, BookOpenText, Code2, HeartHandshake } from "lucide-react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
 import StepContainer from "./StepContainer";
@@ -183,6 +183,7 @@ const ProfessionalInfo = () => {
                             handleChange={setSelectedProgram}
                             fieldClasses="col-span-12 md:col-span-3"
                             labelMap={programLabels}
+                            icon={GraduationCap}
                         />
                         <SelectInput
                             label={"College"}
@@ -191,6 +192,7 @@ const ProfessionalInfo = () => {
                             handleChange={handleCollegeChange}
                             fieldClasses="col-span-12 md:col-span-4"
                             labelMap={collegeLabels}
+                            icon={Landmark}
                         />
                         <SelectInput
                             label={"Major"}
@@ -199,6 +201,7 @@ const ProfessionalInfo = () => {
                             handleChange={handleMajorChange}
                             fieldClasses="col-span-12 md:col-span-5"
                             labelMap={majorLabels}
+                            icon={BookOpenText}
                         />
                     </div>
 
@@ -209,12 +212,14 @@ const ProfessionalInfo = () => {
                             fieldName="Technical Skills"
                             fieldClasses="col-span-12 md:col-span-6"
                             labelMap={technicalSkillLabels}
+                            icon={Code2}
                         />
                         <SkillsMultiSelect
                             label="Non-technical Skills"
                             fieldName="Non-technical skills"
                             fieldClasses="col-span-12 md:col-span-6"
                             labelMap={nonTechnicalSkillLabels}
+                            icon={HeartHandshake}
                         />
                     </div>
 

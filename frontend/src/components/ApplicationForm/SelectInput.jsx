@@ -57,6 +57,9 @@ const SelectInput = ({
     // shown — see labelFor(). formData/handleChange always receive the
     // English `option` value; this only changes what is rendered.
     labelMap,
+    // Lucide icon component, forwarded to FieldShell — see FieldShell's own
+    // icon prop for why it's a component, not an element.
+    icon,
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const { formData, updateFormData } = useFormContext();
@@ -117,6 +120,7 @@ const SelectInput = ({
             error={showError ? errorMessage : undefined}
             errorId={errorId}
             className={fieldClasses}
+            icon={icon}
         >
             <Select.Root
                 value={selectValue}
@@ -246,6 +250,7 @@ SelectInput.propTypes = {
     required: PropTypes.bool,
     placeholder: PropTypes.string,
     labelMap: PropTypes.objectOf(PropTypes.string),
+    icon: PropTypes.elementType,
 };
 
 export default SelectInput;

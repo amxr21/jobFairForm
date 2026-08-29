@@ -37,6 +37,12 @@ const FieldShell = ({
     errorId,
     className = "",
     labelAs = "label",
+    // A Lucide icon COMPONENT (not an element) — FieldShell owns its size and
+    // colour so every field's icon looks consistent rather than each call
+    // site picking its own w-/h-/text- classes. aria-hidden because the
+    // label text already names the field; the icon is decoration, not a
+    // second accessible name.
+    icon: Icon,
     children,
 }) => {
     const LabelTag = labelAs;
@@ -62,9 +68,12 @@ const FieldShell = ({
             <LabelTag
                 {...labelProps}
                 id={`${label}-label`}
-                className={`${LABEL_CLASSES} ${labelAs === "label" ? "cursor-pointer" : ""}`}
+                className={`${LABEL_CLASSES} ${labelAs === "label" ? "cursor-pointer" : ""} inline-flex items-center gap-1`}
             >
-                {displayLabel}:{required && <RequiredAstrik required={true} />}
+                {Icon && <Icon aria-hidden="true" className="w-3.5 h-3.5 text-fg-muted shrink-0" strokeWidth={2} />}
+                <span>
+                    {displayLabel}:{required && <RequiredAstrik required={true} />}
+                </span>
                 {hint && <FieldHint text={hint} />}
             </LabelTag>
 
@@ -95,6 +104,7 @@ FieldShell.propTypes = {
     errorId: PropTypes.string,
     className: PropTypes.string,
     labelAs: PropTypes.oneOf(["label", "span"]),
+    icon: PropTypes.elementType,
     children: PropTypes.node,
 };
 

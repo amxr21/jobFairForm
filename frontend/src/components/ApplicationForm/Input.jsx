@@ -1,5 +1,18 @@
 import PropTypes from "prop-types";
 import { useRef, useState, useEffect } from "react";
+import {
+    User,
+    Hash,
+    Cake,
+    Mail,
+    Phone,
+    Link2,
+    Gauge,
+    Code2,
+    HeartHandshake,
+    Briefcase,
+    Sparkles,
+} from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
 import DatePicker from "./DatePicker";
@@ -12,23 +25,53 @@ import {
     FIELD_TEXT,
 } from "./fieldStyles";
 
+// Live-formats a UAE mobile number as the user types, for the two shapes
+// this field accepts:
+//   local:         05XXXXXXXX        -> 05X XXX XXXX
+//   international: +971XXXXXXXXX     -> +971 XX XXX XXXX
+// Takes the already-digit-stripped value (with an optional leading "+")
+// that the caller has produced, and returns display text with spaces
+// inserted at fixed positions — never touches which characters are valid,
+// only where the breaks land. The stored/submitted value stays the plain
+// digit string; only what's shown in the box gains formatting (see
+// stripPhoneFormatting below, used before updateFormData).
+const formatPhoneDisplay = (digits) => {
+    if (digits.startsWith('+')) {
+        // +971 50 123 4567 — country code, then 2, then 3, then 4.
+        const d = digits.slice(1);
+        const parts = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 8), d.slice(8, 12)].filter(Boolean);
+        return '+' + parts.join(' ');
+    }
+    // 050 123 4567 — leading zero + 2, then 3, then 4.
+    const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 10)].filter(Boolean);
+    return parts.join(' ');
+};
+
+// The inverse: what actually gets written to formData and submitted. Spaces
+// are purely a typing aid; the backend and every downstream consumer
+// (search, tel: links, deduplication) should see the plain digits.
+const stripPhoneFormatting = (display) => display.replace(/\s+/g, '');
+
 // Field configurations
 const FIELD_CONFIG = {
-    'First Name': { type: 'text', required: true, placeholder: 'First Name', autoComplete: 'given-name' },
-    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', autoComplete: 'family-name' },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).' },
-    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.' },
-    'Email address': { type: 'email', required: true, placeholder: 'Email address', inputMode: 'email', autoComplete: 'email' },
-    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', autoComplete: 'tel', maxLength: 15 },
-    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.' },
-    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', inputMode: 'url', autoComplete: 'url' },
-    'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings' },
-    'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities' },
-    'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy' },
-    'Expected to Graduate': { type: 'date', required: true, hasCheckbox: true },
+    'First Name': { type: 'text', required: true, placeholder: 'First Name', autoComplete: 'given-name', icon: User },
+    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', autoComplete: 'family-name', icon: User },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', forceLtr: true, icon: Hash },
+    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', icon: Cake },
+    'Email address': { type: 'email', required: true, placeholder: 'Email address', inputMode: 'email', autoComplete: 'email', icon: Mail },
+    // maxLength raised from the underlying 10/13-digit cap to fit the spaces
+    // formatPhoneDisplay() inserts — "+971 50 123 4567" is 16 characters,
+    // longer than the 15 raw digits it represents.
+    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', forceLtr: true, icon: Gauge },
+    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
+    'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', icon: Code2 },
+    'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', icon: Briefcase },
+    'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy', icon: HeartHandshake },
+    'Expected to Graduate': { type: 'date', required: true, hasCheckbox: true, icon: Cake },
     'Others, if any': { type: 'text', required: false, placeholder: 'Others, if any' },
-    'Field Interest': { type: 'text', required: false, placeholder: 'e.g., Software Development, Marketing, Finance' },
-    'Career Goals': { type: 'textarea', required: false, placeholder: 'Briefly describe your career goals...' },
+    'Field Interest': { type: 'text', required: false, placeholder: 'e.g., Software Development, Marketing, Finance', icon: Sparkles },
+    'Career Goals': { type: 'textarea', required: false, placeholder: 'Briefly describe your career goals...', icon: Sparkles },
 };
 
 const Input = ({ label, type, name, fieldClasses = '' }) => {
@@ -74,7 +117,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         if (storedValue === undefined || storedValue === null || storedValue === "" || storedValue === 0) return;
         // Only populate an empty input: never fight the user mid-typing.
         if (refLabel.current.value) return;
-        refLabel.current.value = storedValue;
+        // Mobile number is stored as plain digits; redisplay it formatted so
+        // navigating back to a filled step doesn't show the unformatted
+        // string until the user edits it.
+        refLabel.current.value =
+            label === "Mobile number" ? formatPhoneDisplay(String(storedValue)) : storedValue;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -121,18 +168,42 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             }
 
             case 'Mobile number': {
-                let phoneValue = refLabel.current.value;
+                const el = refLabel.current;
+                // Count digits before the caret in the OLD (already-formatted)
+                // value, so the caret can be restored to the same logical
+                // position after reformatting rather than jumping to the end
+                // on every keystroke — the usual failure mode of a live mask.
+                const caretPos = el.selectionStart ?? el.value.length;
+                const digitsBeforeCaret = stripPhoneFormatting(el.value.slice(0, caretPos)).length;
+
+                let digits = el.value;
                 // Allow + at the start for country code, then only digits
-                if (phoneValue.startsWith('+')) {
-                    phoneValue = '+' + phoneValue.slice(1).replace(/\D/g, '').slice(0, 14);
+                if (digits.startsWith('+')) {
+                    digits = '+' + digits.slice(1).replace(/\D/g, '').slice(0, 12);
                 } else {
-                    phoneValue = phoneValue.replace(/\D/g, '').slice(0, 10);
+                    digits = digits.replace(/\D/g, '').slice(0, 10);
                 }
-                refLabel.current.value = phoneValue;
-                // Validate: either 10 digits (local) or + followed by 10-14 digits (international)
-                const isLocalValid = /^0\d{9}$/.test(phoneValue); // 05XXXXXXXX format
-                const isIntlValid = /^\+\d{10,14}$/.test(phoneValue); // +971XXXXXXXXX format
-                if (phoneValue.length > 0 && !isLocalValid && !isIntlValid) {
+
+                const formatted = formatPhoneDisplay(digits);
+                el.value = formatted;
+
+                // Walk forward through the new string until the same count of
+                // digits has been passed, landing the caret right after the
+                // digit the user just typed rather than after any space that
+                // happens to follow it.
+                let seen = 0, newCaret = formatted.length;
+                for (let i = 0; i < formatted.length; i++) {
+                    if (/\d/.test(formatted[i])) seen++;
+                    if (seen === digitsBeforeCaret) { newCaret = i + 1; break; }
+                }
+                if (digitsBeforeCaret === 0) newCaret = digits.startsWith('+') ? 1 : 0;
+                el.setSelectionRange(newCaret, newCaret);
+
+                // Validate against the plain digits, not the display string
+                // with spaces in it.
+                const isLocalValid = /^0\d{9}$/.test(digits); // 05XXXXXXXX format
+                const isIntlValid = /^\+\d{10,14}$/.test(digits); // +971XXXXXXXXX format
+                if (digits.length > 0 && !isLocalValid && !isIntlValid) {
                     setFieldMissing('Mobile number - Must be 10 digits or country code + 9-13 digits');
                 }
                 break;
@@ -244,6 +315,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     "Full Name": `${first} ${last}`.trim(),
                 };
             });
+        } else if (label === "Mobile number") {
+            // The DOM shows "050 123 4567" for typing comfort; formData and
+            // the backend get the plain digits, same as before this field had
+            // visual formatting at all.
+            updateFormData(label, stripPhoneFormatting(currentValue));
         } else {
             updateFormData(label, currentValue);
         }
@@ -289,6 +365,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         hint: config.hint,
         error: showError ? errorMessage : undefined,
         errorId,
+        icon: config.icon,
     };
 
     // Textarea fields
@@ -382,10 +459,13 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             : `${INPUT_CLASSES} ${borderClass}`,
     };
 
-    // Email/phone content is always LTR regardless of UI direction (e.g.
-    // "+971 50 123 4567" or "name@example.com") — force it explicitly so it
-    // doesn't visually reorder when the form is in Arabic/RTL.
-    if (config.type === 'email' || config.type === 'tel') {
+    // Latin-only / numeric content is always LTR regardless of UI direction
+    // — "+971 50 123 4567", "name@example.com", "linkedin.com/in/x",
+    // "U21012345", "3.75" — force it explicitly so none of these visually
+    // reorder when the form is in Arabic/RTL. Driven by an explicit
+    // forceLtr flag on FIELD_CONFIG rather than switching on `type`, since
+    // University ID and CGPA are both type: 'text' but still need this.
+    if (config.type === 'email' || config.type === 'tel' || config.forceLtr) {
         inputProps.dir = 'ltr';
     }
 

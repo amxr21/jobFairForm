@@ -13,6 +13,7 @@ import ProgressSection from "./ProgressSection";
 
 import AnimatedSuccess from "./AnimatedSuccess";
 import { useToast } from "../Toast";
+import useTranslation from "../../hooks/useTranslation";
 
 
 // The fields an application genuinely cannot be submitted without. Previously
@@ -92,6 +93,7 @@ const Form = () => {
 
     const { formData, setFieldMissing } = useFormContext()
     const toast = useToast();
+    const t = useTranslation();
 
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
@@ -151,7 +153,7 @@ const Form = () => {
             const summary = labels.length > 3
                 ? `${labels.slice(0, 3).join(", ")} and ${labels.length - 3} more`
                 : labels.join(", ");
-            toast(`Please complete: ${summary}`, { type: 'warning' });
+            toast(t("errors.completeFields", { fields: summary }), { type: 'warning' });
             // Push into the same channel Input/SelectInput already read, so
             // each offending field shows its own inline error rather than the
             // user having to map a toast back onto the form.
@@ -210,7 +212,7 @@ const Form = () => {
             const summaryText = summary.length > 3
                 ? `${summary.slice(0, 3).join(", ")} and ${summary.length - 3} more`
                 : summary.join(", ");
-            toast(summaryText ? `Please complete: ${summaryText}` : "Please complete the required fields", { type: 'warning' });
+            toast(summaryText ? t("errors.completeFields", { fields: summaryText }) : t("errors.completeRequired"), { type: 'warning' });
             return;
         }
 
@@ -282,23 +284,27 @@ const Form = () => {
             // Distinguish the failure modes so the user knows whether to retry
             // now, fix their input, or come back later — "something went wrong"
             // for an unreachable backend just reads as the form being broken.
-            let message = "Something went wrong submitting your application. Please try again.";
+            // serverMessage, when present, is whatever the backend sent —
+            // English regardless of the applicant's locale, since translating
+            // API error text is a backend concern this form doesn't own. Every
+            // OTHER branch here is this form's own copy and does translate.
+            let message = t("errors.submitGeneric");
             if (error?.code === "ECONNABORTED") {
-                message = "The server took too long to respond. Please try submitting again.";
+                message = t("errors.submitTimeout");
             } else if (error?.response) {
                 const status = error.response.status;
                 const serverMessage = error.response.data?.error || error.response.data?.message;
                 if (status === 413) {
-                    message = "Your CV is too large. Please upload a file under 4MB.";
+                    message = t("errors.submitFileTooLarge");
                 } else if (status === 400) {
-                    message = serverMessage || "Some of your details were rejected. Please review the form and try again.";
+                    message = serverMessage || t("errors.submitRejected");
                 } else if (status >= 500) {
-                    message = "The server had a problem saving your application. Please try again in a moment.";
+                    message = t("errors.submitServerError");
                 } else if (serverMessage) {
                     message = serverMessage;
                 }
             } else if (error?.request) {
-                message = "Couldn't reach the server. Check your connection and try again.";
+                message = t("errors.submitNoConnection");
             }
 
             toast(message, { type: 'error' });
@@ -438,8 +444,14 @@ const Form = () => {
                                         disabled={isSubmitting}
                                         className="group inline-flex items-center gap-1.5 border-line border rounded-lg h-11 md:h-10 px-4 md:px-4 text-sm md:text-base text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100"
                                     >
-                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-translate-x-0.5" />
-                                        Back
+                                        {/* Back points toward the reading-start
+                                            direction, not literally "left" — a
+                                            navigation-back chevron is exactly
+                                            the icon class the bilingual skill
+                                            says must flip in RTL. rtl:rotate-180
+                                            does that without a second SVG. */}
+                                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 transition-transform rtl:rotate-180 group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5" />
+                                        {t("actions.back")}
                                     </button>
                                 ) : <div />}
 
@@ -449,8 +461,8 @@ const Form = () => {
                                         onClick={goToNextStep}
                                         className="group inline-flex items-center gap-1.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white h-11 md:h-10 px-5 md:px-6 rounded-lg text-sm md:text-base font-medium shadow-sm hover:shadow transition-all active:scale-[0.97]"
                                     >
-                                        Continue
-                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-0.5" />
+                                        {t("actions.continue")}
+                                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5 transition-transform rtl:rotate-180 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                                     </button>
                                 ) : (
                                     <button
@@ -463,11 +475,11 @@ const Form = () => {
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
-                                                Submitting…
+                                                {t("actions.submitting")}
                                             </>
                                         ) : (
                                             <>
-                                                Submit application
+                                                {t("actions.submit")}
                                                 <Check className="w-4 h-4 md:w-5 md:h-5" />
                                             </>
                                         )}

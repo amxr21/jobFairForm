@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Sparkles, MapPinned, CalendarClock } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import { Input, SelectInput, SkillsMultiSelect } from "./index";
 import StepContainer from "./StepContainer";
@@ -86,6 +87,7 @@ const Preferences = () => {
                     placeholder="Search industries..."
                     fieldClasses="col-span-12 md:col-span-6"
                     labelMap={industryLabels}
+                    icon={Sparkles}
                 />
 
                 <SelectInput
@@ -96,6 +98,7 @@ const Preferences = () => {
                     required={false}
                     fieldClasses="col-span-12 md:col-span-6"
                     labelMap={preferredCityLabels}
+                    icon={MapPinned}
                 />
 
                 {/* Row 2: Opportunity Type — a multi-choice toggle group.
@@ -147,6 +150,7 @@ const Preferences = () => {
                     required={false}
                     fieldClasses="col-span-12 md:col-span-6"
                     labelMap={availabilityLabels}
+                    icon={CalendarClock}
                 />
             </div>
         </StepContainer>
