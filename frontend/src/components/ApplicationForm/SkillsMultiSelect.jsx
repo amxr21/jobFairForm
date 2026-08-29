@@ -73,6 +73,9 @@ const SkillsMultiSelect = ({
     const [activeIndex, setActiveIndex] = useState(0);
     const [announcement, setAnnouncement] = useState("");
     const inputRef = useRef(null);
+    // The whole field wrapper (chips + input), used to tell Radix that a
+    // click or focus landing back on our own combobox is not "outside".
+    const fieldRef = useRef(null);
 
     const reactId = useUniqueId("multiselect");
     const listboxId = `${reactId}-listbox`;
@@ -182,6 +185,7 @@ const SkillsMultiSelect = ({
             <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
                 <Popover.Anchor asChild>
                     <div
+                        ref={fieldRef}
                         className={`relative ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 pr-8 cursor-text flex flex-wrap gap-1 items-center border-line-strong
                             focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent`}
                         onClick={() => {
@@ -267,6 +271,29 @@ const SkillsMultiSelect = ({
                         // rather than real focus.
                         onOpenAutoFocus={(e) => e.preventDefault()}
                         onCloseAutoFocus={(e) => e.preventDefault()}
+                        // Picking an option must NOT close the panel — being
+                        // able to choose several things without reopening is
+                        // the entire point of a multi-select.
+                        //
+                        // The panel was closing on every pick because the
+                        // combobox input lives in the Popover *anchor*, not in
+                        // the portaled content: addSkill() refocuses it, Radix
+                        // sees focus leave the panel, and dismisses. Same for
+                        // the pointer event on a chip's remove button.
+                        //
+                        // So: treat interactions inside this field's own
+                        // wrapper as inside. A click genuinely elsewhere on the
+                        // page still dismisses normally.
+                        onInteractOutside={(e) => {
+                            if (fieldRef.current?.contains(e.target)) {
+                                e.preventDefault();
+                            }
+                        }}
+                        onFocusOutside={(e) => {
+                            if (fieldRef.current?.contains(e.target)) {
+                                e.preventDefault();
+                            }
+                        }}
                     >
                         <ul
                             id={listboxId}

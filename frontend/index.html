@@ -5,6 +5,24 @@
     <link rel="icon" type="image/svg+xml" href="/tabIcon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
     <title>Internship & Career Fair 2025</title>
+    <!-- Applies the theme BEFORE first paint. Without this, a dark-mode user
+         gets a flash of the white page while the JS bundle loads and React
+         mounts — the classic FOUC, and the more jarring the darker their
+         setting. Kept inline and tiny on purpose: it must run before any
+         render, so it cannot be an imported module.
+
+         Mirrors getInitialTheme() in src/context/ThemeContext.jsx: a stored
+         choice wins, otherwise follow the device. -->
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var dark = saved === "dark" || (saved !== "light" &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) { /* private mode / storage blocked: fall through to light */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

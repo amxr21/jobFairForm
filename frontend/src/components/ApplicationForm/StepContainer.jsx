@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import useReveal from "../../hooks/useReveal";
 
 // The wrapper all three steps had copy-pasted. Beyond removing the
 // duplication, having one definition is what makes the overflow behaviour
@@ -25,16 +26,28 @@ import PropTypes from "prop-types";
 // Continue button was simply not on screen on mobile. flex-1 makes it take
 // the space that is *left over* after the nav row, and min-h-0 lets it
 // shrink below its content so the scroll region below actually engages.
-const StepContainer = ({ id, children }) => (
-    <div id={id} className="flex-1 min-h-0 flex flex-col w-full">
-        <div
-            className="flex-1 min-h-0 overflow-y-auto overflow-x-clip p-1 -m-1"
-            style={{ WebkitOverflowScrolling: "touch" }}
-        >
-            {children}
+// Each step mounts fresh when the user navigates (Form.jsx renders exactly one
+// of the three), so the reveal runs once per arrival. Scoped to this container
+// and keyed on `id`, so moving between steps replays it rather than animating
+// once for the life of the form.
+//
+// The direct children of the grid are the reveal targets: animating each field
+// individually would be 20 tweens where 8 rows read better, and the eye can't
+// follow that many things anyway.
+const StepContainer = ({ id, children }) => {
+    const scope = useReveal("[data-reveal]", [id]);
+
+    return (
+        <div id={id} ref={scope} className="flex-1 min-h-0 flex flex-col w-full">
+            <div
+                className="flex-1 min-h-0 overflow-y-auto overflow-x-clip p-1 -m-1"
+                style={{ WebkitOverflowScrolling: "touch" }}
+            >
+                {children}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 StepContainer.propTypes = {
     id: PropTypes.string.isRequired,

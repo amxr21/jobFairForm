@@ -3,7 +3,7 @@ import CastoLogo from "../../assets/images/OfficeLogoSvg.svg";
 
 const Logos = () => {
     return (
-        <div className="logos flex gap-x-8 md:gap-x-16">
+        <div data-intro="logos" className="logos flex gap-x-8 md:gap-x-16">
             <div className="university-logo flex gap-x-4 items-center h-[4.5rem] justify-center">
                 <img src={UniversityLogo} alt="" className="h-full" />
             </div>
