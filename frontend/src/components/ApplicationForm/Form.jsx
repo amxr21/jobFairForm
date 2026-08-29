@@ -318,11 +318,17 @@ const Form = () => {
     const confirmRegistration = () => {
         // form.current.style.opacity = "0";
         form.current.classList.replace("opacity-100", "opacity-0");
-        form.current.classList.replace("h-[86dvh]", "h-0");
-        form.current.classList.replace("xl:h-[90dvh]", "h-0");
-        form.current.classList.replace("p-5", "p-0");
-        form.current.classList.replace("md:p-6", "p-0");
-        form.current.classList.replace("xl:p-8", "p-0");
+        // The form is h-full now (its wrapper owns the 100dvh), so collapsing
+        // it means replacing that single class rather than the old
+        // h-[86dvh] / xl:h-[90dvh] pair.
+        form.current.classList.replace("h-full", "h-0");
+        // These three targeted p-5 / md:p-6 / xl:p-8, which this element has
+        // never carried — its padding is p-3 / md:p-4 / xl:p-6, so all three
+        // calls were silent no-ops and the form kept its padding while
+        // collapsing. Matching the real classes.
+        form.current.classList.replace("p-3", "p-0");
+        form.current.classList.replace("md:p-4", "md:p-0");
+        form.current.classList.replace("xl:p-6", "xl:p-0");
         // form.current.classList.replace("h-[100%]", "h-0");
         form.current.classList.replace("border", "border-none");
         // form.current.style.height = "fit-content";
@@ -336,11 +342,16 @@ const Form = () => {
         // document.getElementById("Form").classList.replace("h-0", "h-fit");
 
         // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
-        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
-        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-[86dvh]");
-        document.querySelector(".confirmMessageRef").classList.add("md:h-fit");
-        document.querySelector(".confirmMessageRef").classList.replace("md:p-0", "md:p-8");
-        document.querySelector(".confirmMessageRef").classList.replace("p-0", "p-5");
+        const confirmEl = document.querySelector(".confirmMessageRef");
+        confirmEl.classList.replace("opacity-0", "opacity-100");
+        // Matches the form's own full-height treatment now that the wrapper
+        // owns the 100dvh.
+        confirmEl.classList.replace("h-0", "h-full");
+        confirmEl.classList.add("md:h-fit");
+        // ConfirmMessage.jsx renders `p-0` but no `md:p-0`, so the md:
+        // replace below never matched anything; add the class instead.
+        confirmEl.classList.add("md:p-8");
+        confirmEl.classList.replace("p-0", "p-5");
 
 
         // const confirmationResponse = await axios.post("http://localhost:2000/applicants/qr", formDataReq);
@@ -371,7 +382,7 @@ const Form = () => {
                     if (currentStep < 3) goToNextStep(e);
                     else handleSubmit(e);
                 }}
-                className={`relative bg-surface-card border-line rounded-xl border h-[86dvh] xl:h-[90dvh] p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
+                className={`relative bg-surface-card border-line rounded-xl border h-full p-3 md:p-4 xl:p-6 opacity-100 overflow-hidden`}
             >
 
                 {/* min-h-0 on both the column and its flex children: a flex
@@ -386,7 +397,7 @@ const Form = () => {
                     {/* min-h-0 + h-full (not h-fit) on mobile: the child
                         .step-pane is h-full, and h-full inside an h-fit parent
                         is circular — the pane grew to its content height,
-                        overflowed the form's h-[86dvh], and this element's
+                        overflowed the form’s height, and this element’s
                         overflow-hidden then clipped the Continue/Submit row
                         off the bottom of the screen. Bounding the height here
                         lets the scroll region inside the step absorb the
