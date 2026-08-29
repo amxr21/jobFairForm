@@ -18,8 +18,15 @@ import PropTypes from "prop-types";
 //   - `-webkit-overflow-scrolling: touch` gives the region the momentum
 //     scrolling every native list on a phone has.
 
+// `flex-1 min-h-0`, NOT `h-full`: this sits in Form.jsx's .step-pane flex
+// column alongside the Back/Continue row. h-full means 100% of the pane, so
+// the step claimed the entire height on its own and pushed the nav row past
+// the bottom edge, where the parent's overflow-hidden clipped it — the
+// Continue button was simply not on screen on mobile. flex-1 makes it take
+// the space that is *left over* after the nav row, and min-h-0 lets it
+// shrink below its content so the scroll region below actually engages.
 const StepContainer = ({ id, children }) => (
-    <div id={id} className="h-full flex flex-col w-full">
+    <div id={id} className="flex-1 min-h-0 flex flex-col w-full">
         <div
             className="flex-1 min-h-0 overflow-y-auto overflow-x-clip p-1 -m-1"
             style={{ WebkitOverflowScrolling: "touch" }}

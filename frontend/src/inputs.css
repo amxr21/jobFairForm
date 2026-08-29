@@ -33,9 +33,5 @@
    without dvh support (pre-iOS 16.4 / Chrome 108) fall back to the old
    behaviour rather than collapsing to zero height. */
 @supports not (height: 100dvh) {
-  .h-\[86dvh\] { height: 86vh; }
   .h-\[100dvh\] { height: 100vh; }
-  @media (min-width: 1280px) {
-    .xl\:h-\[90dvh\] { height: 90vh; }
-  }
 }
