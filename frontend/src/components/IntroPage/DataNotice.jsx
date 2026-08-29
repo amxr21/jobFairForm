@@ -1,5 +1,21 @@
 import { useEffect, useState } from 'react';
 
+// NOTE ON THE FILENAME — do not rename this back to PrivacyPolicy.jsx.
+//
+// Content blockers (Brave Shields, uBlock Origin, AdBlock) match on URL
+// substrings, and "PrivacyPolicy" / "consent" / "cookie" are all on the
+// standard filter lists because they are the usual names for tracking-consent
+// widgets. A blocked request fails as ERR_BLOCKED_BY_CLIENT, which the browser
+// reports as a network error rather than anything a build or a test would
+// catch — so the module simply never loads.
+//
+// In dev that reads as a mystifying import failure. In production it breaks
+// the page for every visitor running a blocker, which is a large share of
+// them. "DataNotice" carries none of those trigger words.
+//
+// The component keeps the name PrivacyPopup: only the URL is ever matched, and
+// the identifier is what the rest of the code reads.
+
 const PrivacyPopup = () => {
   const [showPopup, setShowPopup] = useState(false);
 

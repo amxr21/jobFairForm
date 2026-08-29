@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
-import { useState, useRef, useEffect, useId } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as Popover from "@radix-ui/react-popover";
+import useUniqueId from "../../hooks/useUniqueId";
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar as CalendarIcon, Check } from "lucide-react";
 import {
     FIELD_HEIGHT,
@@ -92,7 +93,7 @@ const DatePicker = ({
     // so opening the panel doesn't rip focus off the trigger unexpectedly.
     const shouldFocusRef = useRef(false);
     const gridRef = useRef(null);
-    const reactId = useId();
+    const reactId = useUniqueId("datepicker");
     const gridId = `${reactId}-grid`;
 
     const isDisabledDay = (d) => {

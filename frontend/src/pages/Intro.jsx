@@ -3,7 +3,7 @@ import UpperPart from "../components/IntroPage/UpperPart";
 
 import GridLeft from "../components/IntroPage/GridLeft"
 import SloganImage from "../components/IntroPage/SloganImage";
-import PrivacyPopup from "../components/IntroPage/PrivacyPolicy";
+import PrivacyPopup from "../components/IntroPage/DataNotice";
 
 
 
