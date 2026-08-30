@@ -68,6 +68,10 @@ export const messages = {
             noOptionsFound: "No matching options found",
             selectPreferredLocation: "Select preferred location",
             selectAvailability: "Select availability",
+            experienceExample: "E.g., Internship at ABC Company, Part-time job, Volunteer work, University projects...",
+            removeCv: "Remove {file}",
+            readingCv: "Reading…",
+            checkingCv: "Checking the file…",
         },
         datePicker: {
             chooseDate: "Choose a date",
@@ -174,6 +178,16 @@ export const messages = {
             showAtEntrance: "Show this QR code at the entrance to check in",
             lookupDifferentId: "Look up a different ID",
         },
+        privacyNotice: {
+            title: "Privacy Notice",
+            body: "This form collects your full name, email, phone number, and University ID solely for job fair participation purposes. Your data will be securely stored and not shared with third parties.",
+            gotIt: "Got it",
+        },
+        themeTour: {
+            heading: "Try dark mode",
+            body: "Tap this button anytime to switch between light and dark.",
+            gotIt: "Got it",
+        },
     },
     // Empty strings fall back to English via t(). Fill these in progressively
     // — nothing here needs to be complete before the switch ships, since
@@ -236,6 +250,10 @@ export const messages = {
             noOptionsFound: "لا توجد خيارات مطابقة",
             selectPreferredLocation: "اختر الموقع المفضل",
             selectAvailability: "اختر التوفر",
+            experienceExample: "مثال: تدريب في شركة، عمل بدوام جزئي، عمل تطوعي، مشاريع جامعية...",
+            removeCv: "إزالة {file}",
+            readingCv: "جاري القراءة…",
+            checkingCv: "جاري التحقق من الملف…",
         },
         datePicker: {
             chooseDate: "اختر تاريخا",
@@ -327,6 +345,16 @@ export const messages = {
             checkedIn: "تم تسجيل حضورك — نراك هناك!",
             showAtEntrance: "أظهر رمز QR هذا عند الدخول لتسجيل الحضور",
             lookupDifferentId: "البحث عن رقم جامعي آخر",
+        },
+        privacyNotice: {
+            title: "إشعار الخصوصية",
+            body: "يجمع هذا النموذج اسمك الكامل وبريدك الإلكتروني ورقم هاتفك ورقمك الجامعي لأغراض المشاركة في معرض التوظيف فقط. سيتم تخزين بياناتك بشكل آمن ولن تتم مشاركتها مع أطراف ثالثة.",
+            gotIt: "حسنًا",
+        },
+        themeTour: {
+            heading: "جرب الوضع الداكن",
+            body: "اضغط على هذا الزر في أي وقت للتبديل بين الوضع الفاتح والداكن.",
+            gotIt: "حسنًا",
         },
     },
 };

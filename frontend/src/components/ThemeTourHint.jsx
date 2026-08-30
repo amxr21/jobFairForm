@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import useTranslation from "../hooks/useTranslation";
 
 // One-shot spotlight pointing at the dark-mode toggle, shown once per browser
 // (localStorage-gated) so first-time visitors notice the new control without
@@ -6,6 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 const SEEN_KEY = "theme_toggle_tour_seen_v1";
 
 export default function ThemeTourHint() {
+    const t = useTranslation();
     const [show, setShow] = useState(() => {
         try { return localStorage.getItem(SEEN_KEY) !== "1"; } catch { return false; }
     });
@@ -89,10 +91,10 @@ export default function ThemeTourHint() {
             >
                 <div className="px-4 pt-3 pb-2">
                     <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100 mb-1 leading-snug">
-                        Try dark mode
+                        {t("themeTour.heading")}
                     </p>
                     <p className="text-[12px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                        Tap this button anytime to switch between light and dark.
+                        {t("themeTour.body")}
                     </p>
                 </div>
                 <div className="flex items-center justify-end px-4 py-2.5 border-t border-gray-100 dark:border-gray-700">
@@ -100,7 +102,7 @@ export default function ThemeTourHint() {
                         onClick={dismiss}
                         className="text-[12px] px-4 py-1.5 rounded-lg bg-[#2959A6] hover:bg-[#1f4685] text-white transition-colors font-semibold"
                     >
-                        Got it
+                        {t("themeTour.gotIt")}
                     </button>
                 </div>
             </div>
