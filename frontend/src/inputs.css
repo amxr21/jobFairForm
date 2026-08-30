@@ -20,7 +20,16 @@
     input:not([type="checkbox"]):not([type="radio"]),
     select,
     textarea,
-    [role="button"][aria-haspopup="listbox"] {
+    /* The custom triggers that stand in for a native select/date field.
+       This used to read `[role="button"][aria-haspopup="listbox"]`, written
+       when SelectInput was a <div role="button">. It is now a real Radix
+       <button> (no role attribute), and DatePicker's trigger is
+       aria-haspopup="dialog" - so the old selector matched NEITHER, and both
+       triggers sat at 12px while every native field beside them was 16px.
+       Matching on aria-haspopup alone covers both and survives the next
+       rewrite. */
+    button[aria-haspopup="listbox"],
+    button[aria-haspopup="dialog"] {
       font-size: 16px;
     }
   }

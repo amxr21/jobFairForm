@@ -12,7 +12,7 @@ const FairText = () => {
             data-intro="heading"
             dir={isArabic ? "rtl" : "ltr"}
             lang={isArabic ? "ar" : "en"}
-            className={`text text-justify md:text-start text-[.9rem] md:text-[1.5rem]`}
+            className={`text text-center md:text-start text-[.9rem] md:text-[1.5rem]`}
         >
             <p>
                 {isArabic

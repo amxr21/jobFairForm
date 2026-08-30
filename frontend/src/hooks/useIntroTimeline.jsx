@@ -133,12 +133,26 @@ export default function useIntroTimeline() {
 
                     gsap.set(all, { clearProps: "transform" });
 
-                    // Force a reflow so the transition:none is applied before
-                    // it is removed again; without this the browser can batch
-                    // both changes and the suppression never takes effect.
-                    void all[0].offsetHeight;
+                    // Force a style flush so `transition: none` is in effect
+                    // for the clearProps above rather than being coalesced
+                    // with it. Read from an element we KNOW carries a
+                    // transform transition (the CTA), not all[0] — that is
+                    // whichever group matched first, usually a logo, which
+                    // has no transition to suppress.
+                    const probe = cta?.[0] || all[0];
+                    void probe.offsetHeight;
 
-                    all.forEach((el, i) => { el.style.transition = previous[i] || ""; });
+                    // Restore on the next frame, not synchronously. Putting
+                    // both writes in one frame lets the browser collapse them
+                    // and never apply the suppression at all — which is the
+                    // bug this block was written to prevent: the button
+                    // arrived, then visibly sank and faded as CSS transitioned
+                    // from the tween's final transform back to the resting
+                    // one. One frame of `transition: none` is imperceptible;
+                    // the sink was not.
+                    requestAnimationFrame(() => {
+                        all.forEach((el, i) => { el.style.transition = previous[i] || ""; });
+                    });
                 });
             } catch (err) {
                 console.error("Intro animation failed; showing the page unanimated.", err);
