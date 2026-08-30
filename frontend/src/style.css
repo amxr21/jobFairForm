@@ -9,15 +9,15 @@
   font-family: "29LT Bukra";
   src: url("./assets/fonts/BUKRA-BOLD-ITALIC.TTF");
   font-weight: 700; /* Bold */
-  /* The file IS italic — this was previously undeclared, which defaults to
-     `normal`. That mismatch (a bold+italic file registered as bold+normal)
-     is why an Arabic placeholder, which only requests italic, could resolve
-     to this heavy face: with no italic-only face registered for "29LT
-     Bukra", browsers vary in how they pick a substitute when style-matching
-     has no exact candidate, and this was the only "italic" file in the
-     family. Declaring it correctly here means it is only ever selected for
-     bold+italic requests, never a plain italic one. */
-  font-style: italic;
+  /* font-style deliberately left undeclared (defaults to `normal`), even
+     though the file itself is visually bold+italic. A prior "fix" declared
+     this accurately as italic — that made it a valid match for a plain
+     `font-style: italic` request (e.g. every placeholder in the app), and
+     the browser started serving this heavy bold-italic file for text that
+     never asked for bold, instead of synthesizing a light faux-italic from
+     the Regular face the way it did before. There is no true Regular-weight
+     italic file in this family, so leaving the metadata "wrong" is what
+     keeps this face out of the running for an unweighted italic request. */
 }
 
 @font-face {
@@ -257,25 +257,9 @@ body {
 /* Placeholders read as guidance text, not decoration — the old
    rgba(0,0,0,.15) was well below WCAG contrast and invisible in dark mode.
    --fg-faint carries a legible light + dark tier. */
-/* font-size was .9rem (14.4px) — LARGER than this form's own field text
-   (text-xs/text-sm = 12px/14px, see FIELD_TEXT in fieldStyles.js), so on
-   mobile the placeholder was literally bigger than real typed content
-   would be — backwards, and it made the placeholder read as MORE prominent,
-   not less. 0.95em scales relative to whatever size the field itself uses,
-   so the placeholder is consistently a notch smaller than a real value
-   regardless of breakpoint, instead of a fixed size that happens to be
-   smaller on desktop and larger on mobile.
-   font-weight: 400 also matters specifically for Arabic: "29LT Bukra" only
-   ships a Regular (400) and a Bold (700) face — no weight in between — so
-   without pinning this explicitly, the placeholder could inherit a bolder
-   weight from an ancestor and read as visually equal to real text, which
-   compounds with dir="auto" resolving to the page's RTL direction on an
-   empty field (no typed value to read a script from) and right-aligning
-   the placeholder in the exact position filled text would occupy. */
 ::placeholder{
   font-style: italic;
-  font-size: 0.95em;
-  font-weight: 400;
+  font-size: .9rem;
   color: var(--fg-faint) !important;
   opacity: 1; /* Firefox dims placeholders by default; token already handles tone */
 }
