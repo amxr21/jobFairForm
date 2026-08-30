@@ -314,8 +314,9 @@ body {
 
 
 
-@media (max-height: 700px) {
-  .register-button{
-    width: 10rem;
-  }
-}
+/* The `width: 10rem` override that used to live here is gone. On a short
+   viewport (any phone in landscape, plenty of small laptops) it pinned
+   Register to 160px while "Check my ticket" beside it stayed full width, so
+   the pair looked mismatched — and because it was plain CSS it silently beat
+   the `w-full md:w-72` utility on the element. Both buttons now take their
+   width from the same Tailwind classes at every size. */

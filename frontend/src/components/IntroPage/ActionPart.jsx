@@ -62,7 +62,7 @@ const ActionPart = () => {
                 <button
                     onClick={hideCover}
                     data-intro="cta"
-                    className="register-button group inline-flex items-center justify-center gap-2 w-full md:w-72 rounded-xl border-2 border-white bg-white text-[#0E7F41] font-semibold p-2.5 md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200"
+                    className="register-button group inline-flex items-center justify-center gap-2 w-full md:w-auto md:px-8 rounded-xl border-2 border-white bg-white text-[#0E7F41] font-semibold p-2.5 md:text-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-[box-shadow,transform] duration-200"
                 >
                     {t("nav.registerNow")}
                     {/* Forward-motion navigation icon — flips under RTL per
