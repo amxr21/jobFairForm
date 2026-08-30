@@ -148,7 +148,7 @@ const SelectInput = ({
                         placeholder when there is no value. */}
                     <Select.Value
                         placeholder={
-                            <span className="text-fg-faint">{fallbackPlaceholder}</span>
+                            <span className="placeholder-text">{fallbackPlaceholder}</span>
                         }
                     />
                     <Select.Icon asChild>

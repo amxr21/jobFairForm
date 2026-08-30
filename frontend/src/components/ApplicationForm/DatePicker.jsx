@@ -267,7 +267,7 @@ const DatePicker = ({
                             focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:bg-surface-hover
                             ${disabled ? "cursor-not-allowed" : "cursor-pointer"} ${triggerClassName}`}
                     >
-                        <span className={value ? "text-fg" : "text-fg-faint"}>
+                        <span className={value ? "text-fg" : "placeholder-text"}>
                             {value ? formatDisplay(value, locale) : effectivePlaceholder}
                         </span>
                         <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted shrink-0" />
