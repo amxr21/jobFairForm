@@ -259,7 +259,15 @@ body {
    --fg-faint carries a legible light + dark tier. */
 ::placeholder{
   font-style: italic;
-  font-size: .9rem;
+  /* Was a fixed .9rem (14.4px) — LARGER than this form's own field text
+     (FIELD_TEXT = text-xs/text-sm = 12px/14px), so on every breakpoint the
+     placeholder was bigger than a real typed value would be. That's why it
+     kept reading as prominent rather than faint no matter what the color
+     was — size, not color, was carrying the wrong signal. 0.85em is
+     relative to the field's own current size, so the placeholder is
+     consistently a step below it at every breakpoint instead of a fixed
+     value that happened to be larger on mobile and smaller on desktop. */
+  font-size: .85em;
   color: var(--fg-faint) !important;
   opacity: 1; /* Firefox dims placeholders by default; token already handles tone */
 }
