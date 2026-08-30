@@ -17,6 +17,7 @@ import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
 import DatePicker from "./DatePicker";
 import FieldShell from "./FieldShell";
+import Checkbox from "./Checkbox";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 import useLocaleContext from "../../hooks/useLocaleContext";
 import useTranslation from "../../hooks/useTranslation";
@@ -472,16 +473,15 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     ariaInvalid={showError}
                     ariaDescribedBy={errorId}
                 />
-                <div className="flex items-center gap-x-2 mt-2">
-                    <input
-                        type="checkbox"
-                        checked={isFocused}
-                        onChange={(e) => setIsFocused(e.target.checked)}
-                        id="currentStudent"
-                        className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
-                    />
-                    <label htmlFor="currentStudent" className="text-sm cursor-pointer">{t("fields.currentStudent")}</label>
-                </div>
+                <Checkbox
+                    id="currentStudent"
+                    checked={isFocused}
+                    onChange={(e) => setIsFocused(e.target.checked)}
+                    label={t("fields.currentStudent")}
+                    touchTarget={false}
+                    className="mt-2"
+                    labelClassName="text-sm"
+                />
             </FieldShell>
         );
     }

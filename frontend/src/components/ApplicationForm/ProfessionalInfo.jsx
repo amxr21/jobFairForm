@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Upload, X, Loader2, FileText, GraduationCap, Landmark, BookOpenText, Code2, HeartHandshake } from "lucide-react";
 import { DegreePrograms } from "../../CountriesList";
-import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
+import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect, Checkbox } from "./index";
 import StepContainer from "./StepContainer";
 import useFormContext from "../../hooks/useFormContext";
 import { useToast } from "../Toast";
@@ -244,18 +244,17 @@ const ProfessionalInfo = () => {
                                     <label htmlFor="Experience" className={`${LABEL_CLASSES} mb-0 cursor-pointer`}>
                                         {t("fields.experience")}: <RequiredAstrik required={true} />
                                     </label>
-                                    <div className="flex items-center gap-1.5">
-                                        <input
-                                            type="checkbox"
-                                            id="noExperience"
-                                            checked={noExperience}
-                                            onChange={handleNoExperienceChange}
-                                            className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
-                                        />
-                                        <label htmlFor="noExperience" className={`${FIELD_TEXT} text-fg-muted cursor-pointer`}>
-                                            {t("fields.noExperience")}
-                                        </label>
-                                    </div>
+                                    <Checkbox
+                                        id="noExperience"
+                                        checked={noExperience}
+                                        onChange={handleNoExperienceChange}
+                                        label={t("fields.noExperience")}
+                                        // Sits inline beside the Experience
+                                        // label, where a 44px block would
+                                        // break the row's alignment.
+                                        touchTarget={false}
+                                        labelClassName={`${FIELD_TEXT} text-fg-muted`}
+                                    />
                                 </div>
                                 <textarea
                                     id="Experience"
