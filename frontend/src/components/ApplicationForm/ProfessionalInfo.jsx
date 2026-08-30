@@ -229,7 +229,7 @@ const ProfessionalInfo = () => {
 
                     {/* Row 3: CGPA, Expected to Graduate, Experience */}
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 items-start">
-                        <Input fieldClasses="col-span-5 md:col-span-2" label="CGPA" />
+                        <Input fieldClasses="col-span-5 md:col-span-3" label="CGPA" />
                         <Input fieldClasses="col-span-7 md:col-span-3" label="Expected to Graduate" />
                         {/* Experience keeps its own markup rather than using
                             <Input label="Experience" />: it is a controlled
@@ -238,7 +238,7 @@ const ProfessionalInfo = () => {
                             fight that. It does share the styling constants and
                             now carries a real <label htmlFor>, which the bare
                             <h2> never gave it. */}
-                        <div className="col-span-12 md:col-span-7">
+                        <div className="col-span-12 md:col-span-6">
                             <div className="flex flex-col h-full">
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 mb-1">
                                     <label htmlFor="Experience" className={`${LABEL_CLASSES} mb-0 cursor-pointer`}>
