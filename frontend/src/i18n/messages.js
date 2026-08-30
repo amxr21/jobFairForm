@@ -73,6 +73,27 @@ export const messages = {
             readingCv: "Reading…",
             checkingCv: "Checking the file…",
         },
+        // FIELD_CONFIG in Input.jsx pairs each field with a placeholder
+        // shown inside the empty box (e.g. "First Name", "8 digits") —
+        // distinct from `fields.*` (the LABEL above the box) and from
+        // `placeholders.*` above (generic UI copy like "Select a date").
+        // Keyed the same way as fields.* so the two stay easy to keep in
+        // sync by eye.
+        inputPlaceholders: {
+            firstName: "First Name",
+            lastName: "Last Name",
+            universityId: "8 digits",
+            email: "Email address",
+            mobile: "05XXXXXXXX or +971XXXXXXXXX",
+            cgpa: "CGPA",
+            linkedin: "linkedin.com/in/profile name",
+            technicalSkills: "Include skills such as C++, Python - no need for explanations or ratings",
+            experience: "Start with the latest to the oldest. You may include part-time and internship opportunities",
+            nonTechnicalSkills: "Include skills such as Attentive to details, Adaptability, Empathy",
+            othersIfAny: "Others, if any",
+            fieldInterest: "e.g., Software Development, Marketing, Finance",
+            careerGoals: "Briefly describe your career goals...",
+        },
         datePicker: {
             chooseDate: "Choose a date",
             previousMonth: "Previous month",
@@ -254,6 +275,30 @@ export const messages = {
             removeCv: "إزالة {file}",
             readingCv: "جاري القراءة…",
             checkingCv: "جاري التحقق من الملف…",
+        },
+        // universityId / mobile / linkedin are deliberately NOT translated:
+        // these three fields carry forceLtr in Input.jsx, because the value
+        // itself (a digit string, a phone-number shape, a URL) is Latin
+        // content regardless of UI language. The placeholder is a literal
+        // FORMAT EXAMPLE the user copies the shape of ("05XXXXXXXX",
+        // "linkedin.com/in/x") — translating the words around it into Arabic
+        // would not make the pattern any clearer and would fight the box's
+        // own LTR direction. Same reasoning as leaving a code sample
+        // untranslated.
+        inputPlaceholders: {
+            firstName: "الاسم الأول",
+            lastName: "الاسم الأخير",
+            universityId: "8 digits",
+            email: "عنوان البريد الإلكتروني",
+            mobile: "05XXXXXXXX or +971XXXXXXXXX",
+            cgpa: "المعدل التراكمي",
+            linkedin: "linkedin.com/in/profile name",
+            technicalSkills: "اذكر مهارات مثل ++C وPython - دون الحاجة لشرح أو تقييم",
+            experience: "ابدأ بالأحدث إلى الأقدم. يمكنك تضمين وظائف بدوام جزئي وفرص تدريب",
+            nonTechnicalSkills: "اذكر مهارات مثل الاهتمام بالتفاصيل، والتكيف، والتعاطف",
+            othersIfAny: "أخرى، إن وجدت",
+            fieldInterest: "مثال: تطوير البرمجيات، التسويق، التمويل",
+            careerGoals: "صف أهدافك المهنية باختصار...",
         },
         datePicker: {
             chooseDate: "اختر تاريخا",

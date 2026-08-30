@@ -86,7 +86,12 @@ export default function ThemeTourHint() {
             <div
                 ref={boxRef}
                 onClick={(e) => e.stopPropagation()}
-                className="fixed z-[999999] w-[260px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700"
+                // Above ControlRail's z-[1000000] (the button this callout
+                // points at now lives there, moved above Intro's cover so
+                // it's reachable on the first screen) — the callout has to
+                // sit higher still or the card could render behind the very
+                // button it's spotlighting.
+                className="fixed z-[1000001] w-[260px] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-700"
                 style={{ top: boxTop, left: boxLeft }}
             >
                 <div className="px-4 pt-3 pb-2">

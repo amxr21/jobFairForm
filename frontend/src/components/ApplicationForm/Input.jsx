@@ -18,6 +18,8 @@ import useFieldState from "../../hooks/useFieldState";
 import DatePicker from "./DatePicker";
 import FieldShell from "./FieldShell";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
 import {
     INPUT_CLASSES,
     TEXTAREA_CLASSES,
@@ -53,25 +55,35 @@ const formatPhoneDisplay = (digits) => {
 const stripPhoneFormatting = (display) => display.replace(/\s+/g, '');
 
 // Field configurations
+// `placeholder` stays the literal English fallback (also what non-Arabic
+// locales render); `placeholderKey` is the i18n/messages.js
+// inputPlaceholders.* key this component resolves through t() when
+// locale === "ar". FIELD_CONFIG is a module-level const and can't call the
+// t() hook itself, so the actual translation happens in the component body.
 const FIELD_CONFIG = {
-    'First Name': { type: 'text', required: true, placeholder: 'First Name', autoComplete: 'given-name', icon: User },
-    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', autoComplete: 'family-name', icon: User },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', forceLtr: true, icon: Hash },
+    // dirAuto (not forceLtr): a name can genuinely be typed in either
+    // script, unlike University ID or a URL. dir="auto" reads the first
+    // strong character so an Arabic name renders right-to-left and a Latin
+    // one left-to-right, rather than a fixed direction fighting whichever
+    // script the applicant actually uses.
+    'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User, dirAuto: true },
+    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User, dirAuto: true },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', forceLtr: true, icon: Hash },
     'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', icon: Cake },
-    'Email address': { type: 'email', required: true, placeholder: 'Email address', inputMode: 'email', autoComplete: 'email', icon: Mail },
+    'Email address': { type: 'email', required: true, placeholder: 'Email address', placeholderKey: 'email', inputMode: 'email', autoComplete: 'email', icon: Mail },
     // maxLength raised from the underlying 10/13-digit cap to fit the spaces
     // formatPhoneDisplay() inserts — "+971 50 123 4567" is 16 characters,
     // longer than the 15 raw digits it represents.
-    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
-    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', forceLtr: true, icon: Gauge },
-    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
-    'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', icon: Code2 },
-    'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', icon: Briefcase },
-    'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy', icon: HeartHandshake },
+    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', placeholderKey: 'mobile', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', forceLtr: true, icon: Gauge },
+    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
+    'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', placeholderKey: 'technicalSkills', icon: Code2 },
+    'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', placeholderKey: 'experience', icon: Briefcase },
+    'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy', placeholderKey: 'nonTechnicalSkills', icon: HeartHandshake },
     'Expected to Graduate': { type: 'date', required: true, hasCheckbox: true, icon: Cake },
-    'Others, if any': { type: 'text', required: false, placeholder: 'Others, if any' },
-    'Field Interest': { type: 'text', required: false, placeholder: 'e.g., Software Development, Marketing, Finance', icon: Sparkles },
-    'Career Goals': { type: 'textarea', required: false, placeholder: 'Briefly describe your career goals...', icon: Sparkles },
+    'Others, if any': { type: 'text', required: false, placeholder: 'Others, if any', placeholderKey: 'othersIfAny' },
+    'Field Interest': { type: 'text', required: false, placeholder: 'e.g., Software Development, Marketing, Finance', placeholderKey: 'fieldInterest', icon: Sparkles },
+    'Career Goals': { type: 'textarea', required: false, placeholder: 'Briefly describe your career goals...', placeholderKey: 'careerGoals', icon: Sparkles },
 };
 
 const Input = ({ label, type, name, fieldClasses = '' }) => {
@@ -85,8 +97,20 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         () => label === "Expected to Graduate" && Boolean(formData[label])
     );
     const handleFocus = useScrollIntoViewOnFocus();
+    const { locale } = useLocaleContext();
+    const t = useTranslation();
 
     const config = FIELD_CONFIG[label] || { type: type || 'text', required: true, placeholder: label };
+    // University ID / Mobile number / LinkedIn URL's inputPlaceholders.*
+    // entries are deliberately left as the same English format example in
+    // BOTH locales (see the comment on inputPlaceholders in messages.js) —
+    // still routed through t() like every other field, just resolving to
+    // unchanged text, since the box itself stays LTR regardless of locale
+    // and the placeholder is a literal shape to copy, not prose to read.
+    const resolvedPlaceholder =
+        locale === "ar" && config.placeholderKey
+            ? t(`inputPlaceholders.${config.placeholderKey}`)
+            : config.placeholder;
 
     // Restore the value from context when the field mounts.
     //
@@ -154,7 +178,14 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         switch (label) {
             case 'First Name':
             case 'Last Name': {
-                const nameValue = refLabel.current.value.replace(/[^a-zA-Z\s-]/g, '');
+                // ؀-ۿ is the core Arabic Unicode block (letters,
+                // combining marks, Arabic-Indic digits). This previously
+                // only allowed a-zA-Z, so a name typed in Arabic script was
+                // stripped character-by-character as it was typed — not
+                // rejected with an error, silently deleted. A UAE university
+                // applicant is at least as likely to write their name in
+                // Arabic as in Latin script.
+                const nameValue = refLabel.current.value.replace(/[^a-zA-Z؀-ۿ\s-]/g, '');
                 refLabel.current.value = nameValue;
                 break;
             }
@@ -379,7 +410,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     name={name || label}
-                    placeholder={config.placeholder}
+                    placeholder={resolvedPlaceholder}
                     aria-invalid={showError || undefined}
                     aria-describedby={errorId}
                     className={`flex-1 ${TEXTAREA_CLASSES} ${borderClass}`}
@@ -455,7 +486,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         onFocus: handleFocus,
         type: config.type,
         name: name || label,
-        placeholder: config.placeholder,
+        placeholder: resolvedPlaceholder,
         "aria-invalid": showError || undefined,
         "aria-describedby": errorId,
         className: config.hasPrefix
@@ -471,6 +502,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     // University ID and CGPA are both type: 'text' but still need this.
     if (config.type === 'email' || config.type === 'tel' || config.forceLtr) {
         inputProps.dir = 'ltr';
+    } else if (config.dirAuto) {
+        // First/Last Name: content could be either script, so read the
+        // first strong character rather than force a direction that fights
+        // whichever one the applicant actually types.
+        inputProps.dir = 'auto';
     }
 
     // Add optional attributes

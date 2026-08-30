@@ -20,7 +20,13 @@ const ControlRail = () => {
 
     return (
         <div
-            className="fixed top-4 start-4 z-[999998] flex flex-col gap-1 p-1 rounded-2xl border border-gray-200 bg-white shadow-md dark:bg-gray-900 dark:border-gray-700"
+            // z-[1000000], one above Intro's full-screen cover (z-999999):
+            // this rail is meant to be reachable from the very first screen
+            // — someone landing on the site in the wrong theme or language
+            // needs to fix that before they even get to Register — but it
+            // previously sat BELOW the intro overlay and was invisible until
+            // the user dismissed the intro first.
+            className="fixed top-4 start-4 z-[1000000] flex flex-col gap-1 p-1 rounded-2xl border border-gray-200 bg-white shadow-md dark:bg-gray-900 dark:border-gray-700"
         >
             <button
                 data-tour="theme-toggle"
