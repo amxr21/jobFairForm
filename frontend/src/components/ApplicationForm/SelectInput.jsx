@@ -64,7 +64,7 @@ const SelectInput = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const { formData, updateFormData } = useFormContext();
-    const { locale } = useLocaleContext();
+    const { locale, isRTL } = useLocaleContext();
     const t = useTranslation();
     // What the user actually SEES for a given English option value — the
     // Arabic label when one exists, else the English value itself.
@@ -184,6 +184,7 @@ const SelectInput = ({
                                     <Search className="h-3.5 w-3.5 text-fg-muted shrink-0" />
                                     <input
                                         type="text"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         // Radix's type-ahead would otherwise

@@ -73,22 +73,17 @@ const stripPhoneFormatting = (display) => display.replace(/\s+/g, '');
 // locale === "ar". FIELD_CONFIG is a module-level const and can't call the
 // t() hook itself, so the actual translation happens in the component body.
 const FIELD_CONFIG = {
-    // dirAuto (not forceLtr): a name can genuinely be typed in either
-    // script, unlike University ID or a URL. dir="auto" reads the first
-    // strong character so an Arabic name renders right-to-left and a Latin
-    // one left-to-right, rather than a fixed direction fighting whichever
-    // script the applicant actually uses.
-    'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User, dirAuto: true },
-    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User, dirAuto: true },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', forceLtr: true, icon: Hash },
+    'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User },
+    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', icon: Hash },
     'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', hintKey: 'dateOfBirth', icon: Cake },
     'Email address': { type: 'email', required: true, placeholder: 'Email address', placeholderKey: 'email', inputMode: 'email', autoComplete: 'email', icon: Mail },
     // maxLength raised from the underlying 10/13-digit cap to fit the spaces
     // formatPhoneDisplay() inserts — "+971 50 123 4567" is 16 characters,
     // longer than the 15 raw digits it represents.
     'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', placeholderKey: 'mobile', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
-    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', hintKey: 'cgpa', forceLtr: true, icon: Gauge },
-    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', hintKey: 'cgpa', icon: Gauge },
+    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', icon: Link2 },
     'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', placeholderKey: 'technicalSkills', icon: Code2 },
     'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', placeholderKey: 'experience', icon: Briefcase },
     'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy', placeholderKey: 'nonTechnicalSkills', icon: HeartHandshake },
@@ -109,7 +104,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         () => label === "Expected to Graduate" && Boolean(formData[label])
     );
     const handleFocus = useScrollIntoViewOnFocus();
-    const { locale } = useLocaleContext();
+    const { locale, isRTL } = useLocaleContext();
     const t = useTranslation();
 
     const config = FIELD_CONFIG[label] || { type: type || 'text', required: true, placeholder: label };
@@ -117,8 +112,9 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     // entries are deliberately left as the same English format example in
     // BOTH locales (see the comment on inputPlaceholders in messages.js) —
     // still routed through t() like every other field, just resolving to
-    // unchanged text, since the box itself stays LTR regardless of locale
-    // and the placeholder is a literal shape to copy, not prose to read.
+    // unchanged text, since it's a literal shape to copy ("05XXXXXXXX") and
+    // not prose to translate. dir on the box itself still flips to RTL with
+    // the rest of the form; only this specific placeholder string doesn't.
     const resolvedPlaceholder =
         locale === "ar" && config.placeholderKey
             ? t(`inputPlaceholders.${config.placeholderKey}`)
@@ -432,15 +428,10 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     if (config.type === 'textarea') {
         return (
             <FieldShell {...shellProps} className={`h-full ${fieldClasses}`}>
-                {/* dir="auto": these are free text (skills, experience,
-                    career goals) that could genuinely be written in either
-                    script — same reasoning as First/Last Name. This branch
-                    never received a dir attribute at all before, unlike the
-                    standard <input> branch below. */}
                 <textarea
                     ref={refLabel}
                     id={fieldId}
-                    dir="auto"
+                    dir={isRTL ? 'rtl' : 'ltr'}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
@@ -529,20 +520,14 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             : `${INPUT_CLASSES} ${borderClass}`,
     };
 
-    // Latin-only / numeric content is always LTR regardless of UI direction
-    // — "+971 50 123 4567", "name@example.com", "linkedin.com/in/x",
-    // "U21012345", "3.75" — force it explicitly so none of these visually
-    // reorder when the form is in Arabic/RTL. Driven by an explicit
-    // forceLtr flag on FIELD_CONFIG rather than switching on `type`, since
-    // University ID and CGPA are both type: 'text' but still need this.
-    if (config.type === 'email' || config.type === 'tel' || config.forceLtr) {
-        inputProps.dir = 'ltr';
-    } else if (config.dirAuto) {
-        // First/Last Name: content could be either script, so read the
-        // first strong character rather than force a direction that fights
-        // whichever one the applicant actually types.
-        inputProps.dir = 'auto';
-    }
+    // Every field defaults to LTR and only becomes RTL when the app locale
+    // actually is Arabic — tied directly to locale, not per-field content
+    // sniffing. This replaces an earlier per-field forceLtr/dirAuto split:
+    // dir="auto" was the wrong tool for an EMPTY field specifically, since
+    // with no typed value there is nothing to read a script from, so it
+    // fell back to the page's own direction anyway — no different from
+    // just reading locale directly, but harder to reason about.
+    inputProps.dir = isRTL ? 'rtl' : 'ltr';
 
     // Add optional attributes
     if (config.inputMode) inputProps.inputMode = config.inputMode;

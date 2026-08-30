@@ -141,17 +141,10 @@ const Languages = ({ classes }) => {
                         ))}
                     </div>
 
-                    {/* Custom language input. dir="auto" rather than
-                        inheriting the form's fixed direction: the user could
-                        type a language name in either script here, and
-                        dir="auto" reads the first strong character to pick
-                        the right direction for THIS box specifically, per
-                        the bilingual skill's guidance for free-typed content
-                        that could be either script. */}
                     <div className="flex gap-2">
                         <input
                             type="text"
-                            dir="auto"
+                            dir={locale === "ar" ? "rtl" : "ltr"}
                             value={otherLanguage}
                             onChange={(e) => setOtherLanguage(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddOtherLanguage())}

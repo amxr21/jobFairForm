@@ -10,10 +10,12 @@ import { LABEL_CLASSES, TEXTAREA_CLASSES, FIELD_TEXT } from "./fieldStyles";
 import { programLabels, collegeLabels, majorLabels } from "../../i18n/degreePrograms";
 import { technicalSkillLabels, nonTechnicalSkillLabels } from "../../i18n/skills";
 import useTranslation from "../../hooks/useTranslation";
+import useLocaleContext from "../../hooks/useLocaleContext";
 
 const ProfessionalInfo = () => {
     const toast = useToast();
     const t = useTranslation();
+    const { isRTL } = useLocaleContext();
     const handleFocus = useScrollIntoViewOnFocus();
 
     const { updateFormData, formData } = useFormContext();
@@ -258,6 +260,7 @@ const ProfessionalInfo = () => {
                                 <textarea
                                     id="Experience"
                                     name="Experience"
+                                    dir={isRTL ? 'rtl' : 'ltr'}
                                     disabled={noExperience}
                                     value={noExperience ? "No prior work experience" : (formData.Experience === "No prior work experience" ? "" : formData.Experience)}
                                     onChange={(e) => updateFormData("Experience", e.target.value)}
