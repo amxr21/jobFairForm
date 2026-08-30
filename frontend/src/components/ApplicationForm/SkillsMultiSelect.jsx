@@ -210,9 +210,29 @@ const SkillsMultiSelect = ({
         >
             <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
                 <Popover.Anchor asChild>
+                    {/* dir="auto" on the whole chip row: without it the flex
+                        row and the search input inside both defaulted to LTR
+                        regardless of locale, so Arabic-labelled chips wrapped
+                        in the wrong reading order and typed search text sat
+                        left-anchored even in Arabic mode. Reading the first
+                        strong character (a chip's Arabic label, once any
+                        exist) picks the right direction; with no chips yet it
+                        falls back to inheriting <html dir>. */}
+                    {/* max-h + overflow-y-auto: this field previously grew
+                        without limit as chips wrapped to more lines, so
+                        picking many skills pushed every field below it
+                        further down the page each time — the rest of the
+                        form's layout kept shifting under the user's cursor.
+                        Capped at roughly 3 chip rows; beyond that the chip
+                        area scrolls internally instead of the field growing,
+                        so the page around it stays put. items-start (not
+                        items-center) so chips align to the top once
+                        scrolling kicks in, rather than centering within a
+                        now-fixed height. */}
                     <div
                         ref={fieldRef}
-                        className={`relative ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 pe-8 cursor-text flex flex-wrap gap-1 items-center border-line-strong
+                        dir="auto"
+                        className={`relative ${FIELD_MIN_HEIGHT} max-h-28 md:max-h-24 overflow-y-auto ${FIELD_SURFACE} px-2 py-1 pe-8 cursor-text flex flex-wrap gap-1 items-start content-start border-line-strong
                             focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent`}
                         onClick={() => {
                             setIsOpen(true);

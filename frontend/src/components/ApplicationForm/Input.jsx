@@ -462,7 +462,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                         id="currentStudent"
                         className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                     />
-                    <label htmlFor="currentStudent" className="text-sm cursor-pointer">Are you a current student?</label>
+                    <label htmlFor="currentStudent" className="text-sm cursor-pointer">{t("fields.currentStudent")}</label>
                 </div>
             </FieldShell>
         );
