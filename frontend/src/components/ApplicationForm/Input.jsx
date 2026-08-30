@@ -82,7 +82,7 @@ const stripPhoneFormatting = (display) => display.replace(/\s+/g, '');
 const FIELD_CONFIG = {
     'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User },
     'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', forceLtr: true, icon: Hash },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', maxLength: 8, hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', forceLtr: true, icon: Hash },
     'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', hintKey: 'dateOfBirth', icon: Cake },
     'Email address': { type: 'email', required: true, placeholder: 'Email address', placeholderKey: 'email', inputMode: 'email', autoComplete: 'email', icon: Mail },
     // maxLength raised from the underlying 10/13-digit cap to fit the spaces
@@ -273,9 +273,29 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             }
 
             case 'University ID': {
-                let idValue = refLabel.current.value.replace(/\D/g, '');
+                const el = refLabel.current;
+                // Where the caret sits, counted in DIGITS rather than raw
+                // characters, so it survives any non-digits being stripped
+                // out from before it (pasting "U21-01-2345", say).
+                const caretPos = el.selectionStart ?? el.value.length;
+                const digitsBeforeCaret = el.value.slice(0, caretPos).replace(/\D/g, '').length;
+
+                let idValue = el.value.replace(/\D/g, '');
                 idValue = idValue.slice(0, 8);
-                refLabel.current.value = idValue;
+
+                // Only touch .value when it actually changed. Reassigning it
+                // on every keystroke sends the caret to the end, which made
+                // editing mid-string impossible: with 8 digits already in,
+                // putting the caret after "21" and typing dropped the LAST
+                // digit (not the one being replaced) and then bounced the
+                // caret to the end. maxLength: 8 stops most of that at the
+                // browser, but a paste that strips down to >8 digits still
+                // lands here.
+                if (el.value !== idValue) {
+                    el.value = idValue;
+                    const newCaret = Math.min(digitsBeforeCaret, idValue.length);
+                    el.setSelectionRange(newCaret, newCaret);
+                }
                 // Validate: must be 8 digits and first 2 digits >= 14 (year 2014+)
                 if (idValue.length === 8) {
                     const firstTwoDigits = parseInt(idValue.substring(0, 2));
