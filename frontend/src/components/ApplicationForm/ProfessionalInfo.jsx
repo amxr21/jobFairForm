@@ -229,8 +229,8 @@ const ProfessionalInfo = () => {
 
                     {/* Row 3: CGPA, Expected to Graduate, Experience */}
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 items-start">
-                        <Input fieldClasses="col-span-5 md:col-span-3" label="CGPA" />
-                        <Input fieldClasses="col-span-7 md:col-span-3" label="Expected to Graduate" />
+                        <Input fieldClasses="col-span-6 md:col-span-3" label="CGPA" />
+                        <Input fieldClasses="col-span-6 md:col-span-3" label="Expected to Graduate" />
                         {/* Experience keeps its own markup rather than using
                             <Input label="Experience" />: it is a controlled
                             field driven by the "No prior experience" checkbox,

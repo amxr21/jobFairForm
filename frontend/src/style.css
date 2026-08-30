@@ -274,6 +274,13 @@ body {
      consistently a step below it at every breakpoint instead of a fixed
      value that happened to be larger on mobile and smaller on desktop. */
   --placeholder-size: .85em;
+  /* Note for anyone touching this: on mobile inputs.css forces the INPUT to
+     16px to stop iOS auto-zooming on focus, so .85em resolves to 13.6px
+     there (11.9px on desktop, off 14px). That is safe — iOS measures the
+     focused input's own computed font-size, not its ::placeholder — so
+     shrinking the placeholder does not re-trigger the zoom. Do not "fix"
+     this by raising the placeholder to 16px; it would make the hint the same
+     size as real typed text again, which is the exact bug d8a6b37 fixed. */
   /* Stated as an explicit alpha rather than the opaque --fg-faint tier it
      replaces. Those greys already composited to ~42% against the field
      background in both themes, so this is the same tone made literal and
