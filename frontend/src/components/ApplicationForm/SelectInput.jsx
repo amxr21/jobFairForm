@@ -4,6 +4,10 @@ import * as Select from "@radix-ui/react-select";
 import { ChevronDown, ChevronUp, Check, Search } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
+import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 import FieldShell from "./FieldShell";
 import {
     FIELD_MIN_HEIGHT,
@@ -49,9 +53,28 @@ const SelectInput = ({
     handleChange,
     required = true,
     placeholder,
+    // Optional { "English value": "Arabic label" } map from i18n/options.js.
+    // When absent (or a key is missing/empty), the English string itself is
+    // shown — see labelFor(). formData/handleChange always receive the
+    // English `option` value; this only changes what is rendered.
+    labelMap,
+    // Lucide icon component, forwarded to FieldShell — see FieldShell's own
+    // icon prop for why it's a component, not an element.
+    icon,
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const { formData, updateFormData } = useFormContext();
+    const { locale, isRTL } = useLocaleContext();
+    const t = useTranslation();
+    // What the user actually SEES for a given English option value — the
+    // Arabic label when one exists, else the English value itself.
+    const displayLabel = (option) => (locale === "ar" ? labelFor(labelMap, option) : option);
+    // The FIELD's own name (e.g. "Nationality"), for the placeholder/search
+    // text — distinct from displayLabel above, which translates the OPTIONS
+    // inside the field. FieldShell already translates the visible <label>
+    // itself; this covers this component's own two extra mentions of the
+    // field name (the closed-state placeholder and the search box).
+    const displayFieldName = locale === "ar" ? labelFor(fieldLabelMap, label) : label;
 
     const currentValue = value !== undefined ? value : (formData[label] || "");
 
@@ -62,15 +85,22 @@ const SelectInput = ({
     });
 
     const fallbackPlaceholder =
-        placeholder || `Select ${label === "Study Program" ? "Program" : label}`;
+        placeholder ||
+        (locale === "ar"
+            ? displayFieldName
+            : `Select ${label === "Study Program" ? "Program" : label}`);
 
     const showSearch = options.length > SEARCH_THRESHOLD;
 
     const filteredOptions = useMemo(() => {
         if (!searchTerm) return options;
         const term = searchTerm.toLowerCase();
-        return options.filter((opt) => opt.toLowerCase().includes(term));
-    }, [options, searchTerm]);
+        // Match against whatever text is actually on screen (the Arabic
+        // label when one is shown), not just the English value — typing "ال"
+        // to find "السعودية" must work, not only typing "Saudi".
+        return options.filter((opt) => displayLabel(opt).toLowerCase().includes(term));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [options, searchTerm, locale]);
 
     const handleValueChange = (option) => {
         handleChange?.(option);
@@ -92,8 +122,20 @@ const SelectInput = ({
             error={showError ? errorMessage : undefined}
             errorId={errorId}
             className={fieldClasses}
+            icon={icon}
         >
+            {/* dir is passed explicitly rather than left to inherit.
+                Radix resolves direction from its own React context, NOT from
+                the DOM: useDirection() is literally
+                `localDir || globalDir || "ltr"`, so with no dir prop and no
+                DirectionProvider it hardcodes LTR no matter what <html dir>
+                says. That is why earlier passes that set dir on the DOM
+                never fixed the dropdowns — and it matters most for the
+                panel, which is portaled to document.body and so sits outside
+                the RTL form subtree entirely. Setting it on Root covers the
+                trigger, the panel and the option rows in one place. */}
             <Select.Root
+                dir={isRTL ? 'rtl' : 'ltr'}
                 value={selectValue}
                 onValueChange={handleValueChange}
                 onOpenChange={(open) => {
@@ -107,7 +149,7 @@ const SelectInput = ({
                     id={triggerId}
                     aria-invalid={showError || undefined}
                     aria-describedby={errorId}
-                    className={`relative flex items-center justify-between gap-2 ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 ${FIELD_TEXT} text-left cursor-pointer
+                    className={`relative flex items-center justify-between gap-2 ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 ${FIELD_TEXT} text-start cursor-pointer
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
                         data-[state=open]:ring-2 data-[state=open]:ring-primary data-[state=open]:border-transparent
                         active:bg-surface-hover
@@ -117,7 +159,7 @@ const SelectInput = ({
                         placeholder when there is no value. */}
                     <Select.Value
                         placeholder={
-                            <span className="text-fg-faint">{fallbackPlaceholder}</span>
+                            <span className="placeholder-text">{fallbackPlaceholder}</span>
                         }
                     />
                     <Select.Icon asChild>
@@ -153,6 +195,7 @@ const SelectInput = ({
                                     <Search className="h-3.5 w-3.5 text-fg-muted shrink-0" />
                                     <input
                                         type="text"
+                                        dir={isRTL ? 'rtl' : 'ltr'}
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         // Radix's type-ahead would otherwise
@@ -160,8 +203,8 @@ const SelectInput = ({
                                         // options while the user is typing a
                                         // filter.
                                         onKeyDown={(e) => e.stopPropagation()}
-                                        placeholder={`Search ${label}...`}
-                                        aria-label={`Search ${label}`}
+                                        placeholder={locale === "ar" ? displayFieldName : `Search ${label}...`}
+                                        aria-label={locale === "ar" ? displayFieldName : `Search ${label}`}
                                         className={`flex-1 min-w-0 h-8 bg-transparent outline-none ${FIELD_TEXT}`}
                                     />
                                 </div>
@@ -182,7 +225,13 @@ const SelectInput = ({
                                             data-[highlighted]:bg-surface-hover data-[highlighted]:text-fg
                                             data-[state=checked]:bg-primary/10 data-[state=checked]:text-primary data-[state=checked]:font-medium`}
                                     >
-                                        <Select.ItemText>{option}</Select.ItemText>
+                                        {/* Radix's closed-state <Select.Value>
+                                            mirrors whatever text the matching
+                                            ItemText rendered — there is no
+                                            separate place to localize the
+                                            trigger's display, fixing this one
+                                            spot covers both. */}
+                                        <Select.ItemText>{displayLabel(option)}</Select.ItemText>
                                         <Select.ItemIndicator asChild>
                                             <Check className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary shrink-0" />
                                         </Select.ItemIndicator>
@@ -190,7 +239,7 @@ const SelectInput = ({
                                 ))
                             ) : (
                                 <div className={`px-2 md:px-3 py-2 ${FIELD_TEXT} text-fg-muted`}>
-                                    No matching options found
+                                    {t("placeholders.noOptionsFound")}
                                 </div>
                             )}
                         </Select.Viewport>
@@ -214,6 +263,8 @@ SelectInput.propTypes = {
     handleChange: PropTypes.func,
     required: PropTypes.bool,
     placeholder: PropTypes.string,
+    labelMap: PropTypes.objectOf(PropTypes.string),
+    icon: PropTypes.elementType,
 };
 
 export default SelectInput;

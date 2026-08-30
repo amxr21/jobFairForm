@@ -2,6 +2,9 @@ import PropTypes from "prop-types";
 import { RequiredAstrik } from "./index";
 import FieldHint from "./FieldHint";
 import useShake from "../../hooks/useShake";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 import { LABEL_CLASSES, WRAPPER_CLASSES } from "./fieldStyles";
 
 // Label + control + error, wired together properly.
@@ -34,10 +37,22 @@ const FieldShell = ({
     errorId,
     className = "",
     labelAs = "label",
+    // A Lucide icon COMPONENT (not an element) — FieldShell owns its size and
+    // colour so every field's icon looks consistent rather than each call
+    // site picking its own w-/h-/text- classes. aria-hidden because the
+    // label text already names the field; the icon is decoration, not a
+    // second accessible name.
+    icon: Icon,
     children,
 }) => {
     const LabelTag = labelAs;
     const labelProps = labelAs === "label" ? { htmlFor } : {};
+    const { locale } = useLocaleContext();
+    // Only the VISIBLE text translates. `id`/`htmlFor` above stay the raw
+    // English `label` — they're DOM identity (aria wiring, formData lookups
+    // upstream), not content, and translating them would silently break the
+    // label/control association and every id-based lookup in the form.
+    const displayLabel = locale === "ar" ? labelFor(fieldLabelMap, label) : label;
 
     // Shakes once on the transition into an error state — the moment a field
     // is rejected. Every field routes its error through this component, so
@@ -53,9 +68,12 @@ const FieldShell = ({
             <LabelTag
                 {...labelProps}
                 id={`${label}-label`}
-                className={`${LABEL_CLASSES} ${labelAs === "label" ? "cursor-pointer" : ""}`}
+                className={`${LABEL_CLASSES} ${labelAs === "label" ? "cursor-pointer" : ""} inline-flex items-center gap-1`}
             >
-                {label}:{required && <RequiredAstrik required={true} />}
+                {Icon && <Icon aria-hidden="true" className="w-3.5 h-3.5 text-fg-muted shrink-0" strokeWidth={2} />}
+                <span>
+                    {displayLabel}:{required && <RequiredAstrik required={true} />}
+                </span>
                 {hint && <FieldHint text={hint} />}
             </LabelTag>
 
@@ -68,7 +86,7 @@ const FieldShell = ({
                 <p
                     id={errorId}
                     role="alert"
-                    className="text-xs text-red-500 mt-0.5 ml-1"
+                    className="text-xs text-red-500 mt-0.5 ms-1"
                 >
                     {error}
                 </p>
@@ -86,6 +104,7 @@ FieldShell.propTypes = {
     errorId: PropTypes.string,
     className: PropTypes.string,
     labelAs: PropTypes.oneOf(["label", "span"]),
+    icon: PropTypes.elementType,
     children: PropTypes.node,
 };
 

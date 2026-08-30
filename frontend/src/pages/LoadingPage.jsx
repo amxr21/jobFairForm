@@ -7,8 +7,8 @@ const LoadingPage = () => {
             <div className="relative w-full max-w-sm bg-surface-card rounded-3xl shadow-2xl border-line border overflow-hidden">
                 {/* Green header band */}
                 <div className="relative bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] px-8 pt-10 pb-14 flex flex-col items-center overflow-hidden">
-                    <div className="absolute -top-10 -right-8 w-40 h-40 rounded-full bg-white/5" />
-                    <div className="absolute -bottom-16 -left-10 w-48 h-48 rounded-full bg-white/5" />
+                    <div className="absolute -top-10 -end-8 w-40 h-40 rounded-full bg-white/5" />
+                    <div className="absolute -bottom-16 -start-10 w-48 h-48 rounded-full bg-white/5" />
 
                     {/* Spinner ring with a paper-plane in the middle */}
                     <div className="relative w-20 h-20 flex items-center justify-center">

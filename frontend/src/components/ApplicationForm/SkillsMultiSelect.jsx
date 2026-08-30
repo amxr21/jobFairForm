@@ -4,6 +4,10 @@ import * as Popover from "@radix-ui/react-popover";
 import useUniqueId from "../../hooks/useUniqueId";
 import { X, ChevronDown } from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
+import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 import FieldShell from "./FieldShell";
 import {
     FIELD_MIN_HEIGHT,
@@ -66,8 +70,25 @@ const SkillsMultiSelect = ({
     // Wording for the count line and the empty-panel hint. Defaults suit
     // skills; Preferences passes "field" for its industry list.
     noun = "skill",
+    // Optional { "English value": "Arabic label" } map (skills.js /
+    // industries.js). formData always stores the English value; this only
+    // changes what is rendered for chips and option rows.
+    labelMap,
+    // Lucide icon component, forwarded to FieldShell.
+    icon,
 }) => {
     const { formData, setFormData } = useFormContext();
+    const { locale, isRTL } = useLocaleContext();
+    const t = useTranslation();
+    const displayLabel = (val) => (locale === "ar" ? labelFor(labelMap, val) : val);
+    // noun is always "skill" or "field" (see the callers in
+    // ProfessionalInfo.jsx / Preferences.jsx) — messages.js keys its
+    // multiSelect copy the same way, as two full noun-specific phrase sets
+    // rather than one template, since "مهارة" (skill) and "مجال" (field) take
+    // different grammatical agreement in Arabic and a single template can't
+    // correctly serve both.
+    const nounKey = noun === "field" ? "field" : "skill";
+    const tn = (key, vars) => t(`multiSelect.${nounKey}.${key}`, vars);
     const [searchTerm, setSearchTerm] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -94,10 +115,14 @@ const SkillsMultiSelect = ({
 
     const filteredSkills = useMemo(() => {
         const term = searchTerm.toLowerCase();
+        // Match against the displayed text (Arabic label when one is shown),
+        // not only the English value — otherwise typing Arabic to search
+        // finds nothing even though every row is showing Arabic.
         return skills.filter(
-            (skill) => skill.toLowerCase().includes(term) && !selectedSkills.includes(skill)
+            (skill) => displayLabel(skill).toLowerCase().includes(term) && !selectedSkills.includes(skill)
         );
-    }, [skills, searchTerm, selectedSkills]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [skills, searchTerm, selectedSkills, locale]);
 
     const visibleSkills = filteredSkills.slice(0, MAX_VISIBLE);
 
@@ -181,12 +206,31 @@ const SkillsMultiSelect = ({
             htmlFor={inputId}
             required={required}
             className={fieldClasses}
+            icon={icon}
         >
             <Popover.Root open={isOpen} onOpenChange={setIsOpen}>
                 <Popover.Anchor asChild>
+                    {/* dir tied to locale (isRTL), matching every other
+                        field: without it the flex row and the search input
+                        inside both defaulted to LTR regardless of locale, so
+                        Arabic-labelled chips wrapped in the wrong reading
+                        order and typed search text sat left-anchored even in
+                        Arabic mode. */}
+                    {/* max-h + overflow-y-auto: this field previously grew
+                        without limit as chips wrapped to more lines, so
+                        picking many skills pushed every field below it
+                        further down the page each time — the rest of the
+                        form's layout kept shifting under the user's cursor.
+                        Capped at roughly 3 chip rows; beyond that the chip
+                        area scrolls internally instead of the field growing,
+                        so the page around it stays put. items-start (not
+                        items-center) so chips align to the top once
+                        scrolling kicks in, rather than centering within a
+                        now-fixed height. */}
                     <div
                         ref={fieldRef}
-                        className={`relative ${FIELD_MIN_HEIGHT} ${FIELD_SURFACE} px-2 py-1 pr-8 cursor-text flex flex-wrap gap-1 items-center border-line-strong
+                        dir={isRTL ? 'rtl' : 'ltr'}
+                        className={`relative ${FIELD_MIN_HEIGHT} max-h-28 md:max-h-24 overflow-y-auto ${FIELD_SURFACE} px-2 py-1 pe-8 cursor-text flex flex-wrap gap-1 items-start content-start border-line-strong
                             focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent`}
                         onClick={() => {
                             setIsOpen(true);
@@ -196,16 +240,16 @@ const SkillsMultiSelect = ({
                         {selectedSkills.map((skill) => (
                             <span
                                 key={skill}
-                                className="inline-flex items-center gap-0.5 pl-1.5 pr-0.5 py-0.5 bg-primary/10 text-primary text-[10px] md:text-xs rounded-md"
+                                className="inline-flex items-center gap-0.5 ps-1.5 pe-0.5 py-0.5 bg-primary/10 text-primary text-[10px] md:text-xs rounded-md"
                             >
-                                {skill}
+                                {displayLabel(skill)}
                                 <button
                                     type="button"
                                     // Without this the button is announced as
                                     // just "button" — one of many identical
                                     // ones — with no way to tell which chip it
                                     // belongs to.
-                                    aria-label={`Remove ${skill}`}
+                                    aria-label={t("multiSelect.remove", { value: displayLabel(skill) })}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         removeSkill(skill);
@@ -240,13 +284,13 @@ const SkillsMultiSelect = ({
                             onKeyDown={handleKeyDown}
                             placeholder={
                                 selectedSkills.length === 0
-                                    ? (placeholder || `Search ${label.toLowerCase()}...`)
+                                    ? (placeholder || tn("searchPlaceholder"))
                                     : ""
                             }
                             className={`flex-1 min-w-[80px] outline-none ${FIELD_TEXT} py-0.5 bg-transparent`}
                         />
 
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <div className="absolute end-2 top-1/2 -translate-y-1/2 pointer-events-none">
                             <ChevronDown
                                 className={`h-3.5 w-3.5 md:h-4 md:w-4 text-fg-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                             />
@@ -299,7 +343,7 @@ const SkillsMultiSelect = ({
                             id={listboxId}
                             role="listbox"
                             aria-multiselectable="true"
-                            aria-label={`${label} options`}
+                            aria-label={tn("optionsSuffix", { label: locale === "ar" ? labelFor(fieldLabelMap, label) : label })}
                             className="p-1 m-0 list-none"
                         >
                             {rows.length > 0 ? (
@@ -315,16 +359,22 @@ const SkillsMultiSelect = ({
                                             i === activeIndex ? "bg-surface-hover" : ""
                                         } ${row.type === "custom" ? "text-primary" : "text-fg"}`}
                                     >
-                                        {row.type === "custom" ? `+ Add "${row.value}"` : row.value}
+                                        {/* A "custom" row is exactly what the
+                                            user typed — free text, not one of
+                                            our known options — so it is never
+                                            run through displayLabel. Only a
+                                            recognized "skill" row has an
+                                            Arabic translation to show. */}
+                                        {row.type === "custom" ? tn("addCustom", { value: row.value }) : displayLabel(row.value)}
                                     </li>
                                 ))
                             ) : (
                                 <li className={`px-2 md:px-3 py-2 ${FIELD_TEXT} text-fg-muted`}>
                                     {searchTerm
-                                        ? `No matching ${noun}s`
+                                        ? tn("noMatching")
                                         : allowCustom
-                                            ? `Type to search or add custom ${noun}s...`
-                                            : `All ${noun}s selected`}
+                                            ? tn("typeToSearch")
+                                            : tn("allSelected")}
                                 </li>
                             )}
                         </ul>
@@ -346,8 +396,8 @@ const SkillsMultiSelect = ({
 
             <p id={`${reactId}-count`} className="text-[10px] md:text-xs text-fg-muted mt-0.5">
                 {selectedSkills.length > 0
-                    ? `${selectedSkills.length} ${noun}${selectedSkills.length !== 1 ? "s" : ""} selected`
-                    : `No ${noun}s selected yet`}
+                    ? (selectedSkills.length === 1 ? tn("countSelectedOne") : tn("countSelected", { count: selectedSkills.length }))
+                    : tn("noneSelectedYet")}
             </p>
         </FieldShell>
     );
@@ -362,6 +412,8 @@ SkillsMultiSelect.propTypes = {
     placeholder: PropTypes.string,
     allowCustom: PropTypes.bool,
     noun: PropTypes.string,
+    labelMap: PropTypes.objectOf(PropTypes.string),
+    icon: PropTypes.elementType,
 };
 
 export default SkillsMultiSelect;

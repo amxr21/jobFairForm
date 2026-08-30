@@ -26,7 +26,7 @@ const ModeBadge = () => {
             // the applicant's task. Screen reader users filling the form do not
             // need it announced ahead of the actual content.
             aria-hidden="true"
-            className={`fixed bottom-2 left-2 z-[2000] pointer-events-none select-none
+            className={`fixed bottom-2 start-2 z-[2000] pointer-events-none select-none
                 rounded-md px-2 py-1 text-[10px] font-semibold tracking-wide
                 text-white shadow-md opacity-80 ${label.classes}`}
         >

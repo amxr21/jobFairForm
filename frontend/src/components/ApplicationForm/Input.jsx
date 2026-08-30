@@ -1,10 +1,26 @@
 import PropTypes from "prop-types";
 import { useRef, useState, useEffect } from "react";
+import {
+    User,
+    Hash,
+    Cake,
+    Mail,
+    Phone,
+    Link2,
+    Gauge,
+    Code2,
+    HeartHandshake,
+    Briefcase,
+    Sparkles,
+} from "lucide-react";
 import useFormContext from "../../hooks/useFormContext";
 import useFieldState from "../../hooks/useFieldState";
 import DatePicker from "./DatePicker";
 import FieldShell from "./FieldShell";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import useTranslation from "../../hooks/useTranslation";
+import { isValidUaePhone } from "../../validation/phone";
 import {
     INPUT_CLASSES,
     TEXTAREA_CLASSES,
@@ -12,23 +28,75 @@ import {
     FIELD_TEXT,
 } from "./fieldStyles";
 
+// Live-formats a UAE mobile number as the user types, for the three shapes
+// this field accepts:
+//   local:                  05XXXXXXXX     -> 05X XXX XXXX
+//   international (+):      +971XXXXXXXXX  -> +971 XX XXX XXXX
+//   international (no +):   971XXXXXXXXX   -> 971 XX XXX XXXX
+// The third shape previously wasn't recognized at all — a "971" prefix with
+// no leading "+" fell into the local-number branch, which capped at 10
+// digits and silently truncated the number (971501234567, 12 digits,
+// became 9715012345). isInternational() below detects the 971 prefix
+// regardless of a leading "+", so the digit cap and formatting both apply
+// correctly whichever way the user types it.
+//
+// Takes the already-digit-stripped value (with an optional leading "+")
+// that the caller has produced, and returns display text with spaces
+// inserted at fixed positions — never touches which characters are valid,
+// only where the breaks land. The stored/submitted value stays the plain
+// digit string; only what's shown in the box gains formatting (see
+// stripPhoneFormatting below, used before updateFormData).
+const isInternational = (digits) => digits.startsWith('+971') || digits.startsWith('971');
+
+const formatPhoneDisplay = (digits) => {
+    if (isInternational(digits)) {
+        const hasPlus = digits.startsWith('+');
+        const d = hasPlus ? digits.slice(1) : digits;
+        // 971 50 123 4567 — country code, then 2, then 3, then 4.
+        const parts = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 8), d.slice(8, 12)].filter(Boolean);
+        return (hasPlus ? '+' : '') + parts.join(' ');
+    }
+    // 050 123 4567 — leading zero + 2, then 3, then 4.
+    const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 10)].filter(Boolean);
+    return parts.join(' ');
+};
+
+// The inverse: what actually gets written to formData and submitted. Spaces
+// are purely a typing aid; the backend and every downstream consumer
+// (search, tel: links, deduplication) should see the plain digits.
+const stripPhoneFormatting = (display) => display.replace(/\s+/g, '');
+
 // Field configurations
+// `placeholder` stays the literal English fallback (also what non-Arabic
+// locales render); `placeholderKey` is the i18n/messages.js
+// inputPlaceholders.* key this component resolves through t() when
+// locale === "ar". FIELD_CONFIG is a module-level const and can't call the
+// t() hook itself, so the actual translation happens in the component body.
+// forceLtr marks a field whose VALUE has a fixed Latin/numeric shape — an
+// ID, a decimal, a URL — so its character order must not flip with the UI
+// language, the same way email and tel are handled by type. It does not
+// mean "left-aligned": in Arabic these fields are still aligned to the
+// right to match the column, just laid out LTR internally. See the
+// direction/alignment split further down.
 const FIELD_CONFIG = {
-    'First Name': { type: 'text', required: true, placeholder: 'First Name', autoComplete: 'given-name' },
-    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', autoComplete: 'family-name' },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).' },
-    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.' },
-    'Email address': { type: 'email', required: true, placeholder: 'Email address', inputMode: 'email', autoComplete: 'email' },
-    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', inputMode: 'tel', autoComplete: 'tel', maxLength: 15 },
-    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.' },
-    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', inputMode: 'url', autoComplete: 'url' },
-    'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings' },
-    'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities' },
-    'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy' },
-    'Expected to Graduate': { type: 'date', required: true, hasCheckbox: true },
-    'Others, if any': { type: 'text', required: false, placeholder: 'Others, if any' },
-    'Field Interest': { type: 'text', required: false, placeholder: 'e.g., Software Development, Marketing, Finance' },
-    'Career Goals': { type: 'textarea', required: false, placeholder: 'Briefly describe your career goals...' },
+    'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User },
+    'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', forceLtr: true, icon: Hash },
+    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', hintKey: 'dateOfBirth', icon: Cake },
+    'Email address': { type: 'email', required: true, placeholder: 'Email address', placeholderKey: 'email', inputMode: 'email', autoComplete: 'email', icon: Mail },
+    // maxLength raised from the underlying 10/13-digit cap to fit the spaces
+    // formatPhoneDisplay() inserts — "+971 50 123 4567" is 16 characters,
+    // longer than the 15 raw digits it represents.
+    'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', placeholderKey: 'mobile', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', hintKey: 'cgpa', forceLtr: true, icon: Gauge },
+    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
+    'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', placeholderKey: 'technicalSkills', icon: Code2 },
+    'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', placeholderKey: 'experience', icon: Briefcase },
+    'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy', placeholderKey: 'nonTechnicalSkills', icon: HeartHandshake },
+    'Expected to Graduate': { type: 'date', required: true, hasCheckbox: true, icon: Cake },
+    'Others, if any': { type: 'text', required: false, placeholder: 'Others, if any', placeholderKey: 'othersIfAny' },
+    'Field Interest': { type: 'text', required: false, placeholder: 'e.g., Software Development, Marketing, Finance', placeholderKey: 'fieldInterest', icon: Sparkles },
+    'Career Goals': { type: 'textarea', required: false, placeholder: 'Briefly describe your career goals...', placeholderKey: 'careerGoals', icon: Sparkles },
 };
 
 const Input = ({ label, type, name, fieldClasses = '' }) => {
@@ -42,8 +110,29 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         () => label === "Expected to Graduate" && Boolean(formData[label])
     );
     const handleFocus = useScrollIntoViewOnFocus();
+    const { locale, isRTL } = useLocaleContext();
+    const t = useTranslation();
 
     const config = FIELD_CONFIG[label] || { type: type || 'text', required: true, placeholder: label };
+    // University ID / Mobile number / LinkedIn URL's inputPlaceholders.*
+    // entries are deliberately left as the same English format example in
+    // BOTH locales (see the comment on inputPlaceholders in messages.js) —
+    // still routed through t() like every other field, just resolving to
+    // unchanged text, since it's a literal shape to copy ("05XXXXXXXX") and
+    // not prose to translate. dir on the box itself still flips to RTL with
+    // the rest of the form; only this specific placeholder string doesn't.
+    const resolvedPlaceholder =
+        locale === "ar" && config.placeholderKey
+            ? t(`inputPlaceholders.${config.placeholderKey}`)
+            : config.placeholder;
+    // The (i) tooltip beside the label (FieldHint) — this was the one piece
+    // of Input.jsx that never got a translation path at all, unlike the
+    // placeholder above: "You must be at least 20 years old to apply" stayed
+    // English regardless of locale.
+    const resolvedHint =
+        locale === "ar" && config.hintKey
+            ? t(`inputHints.${config.hintKey}`)
+            : config.hint;
 
     // Restore the value from context when the field mounts.
     //
@@ -74,7 +163,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         if (storedValue === undefined || storedValue === null || storedValue === "" || storedValue === 0) return;
         // Only populate an empty input: never fight the user mid-typing.
         if (refLabel.current.value) return;
-        refLabel.current.value = storedValue;
+        // Mobile number is stored as plain digits; redisplay it formatted so
+        // navigating back to a filled step doesn't show the unformatted
+        // string until the user edits it.
+        refLabel.current.value =
+            label === "Mobile number" ? formatPhoneDisplay(String(storedValue)) : storedValue;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -107,7 +200,14 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         switch (label) {
             case 'First Name':
             case 'Last Name': {
-                const nameValue = refLabel.current.value.replace(/[^a-zA-Z\s-]/g, '');
+                // ؀-ۿ is the core Arabic Unicode block (letters,
+                // combining marks, Arabic-Indic digits). This previously
+                // only allowed a-zA-Z, so a name typed in Arabic script was
+                // stripped character-by-character as it was typed — not
+                // rejected with an error, silently deleted. A UAE university
+                // applicant is at least as likely to write their name in
+                // Arabic as in Latin script.
+                const nameValue = refLabel.current.value.replace(/[^a-zA-Z؀-ۿ\s-]/g, '');
                 refLabel.current.value = nameValue;
                 break;
             }
@@ -121,18 +221,51 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             }
 
             case 'Mobile number': {
-                let phoneValue = refLabel.current.value;
-                // Allow + at the start for country code, then only digits
-                if (phoneValue.startsWith('+')) {
-                    phoneValue = '+' + phoneValue.slice(1).replace(/\D/g, '').slice(0, 14);
+                const el = refLabel.current;
+                // Count digits before the caret in the OLD (already-formatted)
+                // value, so the caret can be restored to the same logical
+                // position after reformatting rather than jumping to the end
+                // on every keystroke — the usual failure mode of a live mask.
+                const caretPos = el.selectionStart ?? el.value.length;
+                const digitsBeforeCaret = stripPhoneFormatting(el.value.slice(0, caretPos)).length;
+
+                let digits = el.value;
+                // A leading "+" is kept as-is; a bare "971" prefix (no "+")
+                // is now ALSO recognized as international rather than
+                // falling into the local-number branch, which previously
+                // capped at 10 digits and silently truncated it
+                // (971501234567 -> 9715012345). Both international shapes
+                // cap at 12 digits after any "+" (971 + 9-digit subscriber
+                // number); the local shape still caps at 10.
+                const hasPlus = digits.startsWith('+');
+                const strippedForCheck = digits.replace(/\D/g, '');
+                if (hasPlus || strippedForCheck.startsWith('971')) {
+                    digits = (hasPlus ? '+' : '') + strippedForCheck.slice(0, 12);
                 } else {
-                    phoneValue = phoneValue.replace(/\D/g, '').slice(0, 10);
+                    digits = strippedForCheck.slice(0, 10);
                 }
-                refLabel.current.value = phoneValue;
-                // Validate: either 10 digits (local) or + followed by 10-14 digits (international)
-                const isLocalValid = /^0\d{9}$/.test(phoneValue); // 05XXXXXXXX format
-                const isIntlValid = /^\+\d{10,14}$/.test(phoneValue); // +971XXXXXXXXX format
-                if (phoneValue.length > 0 && !isLocalValid && !isIntlValid) {
+
+                const formatted = formatPhoneDisplay(digits);
+                el.value = formatted;
+
+                // Walk forward through the new string until the same count of
+                // digits has been passed, landing the caret right after the
+                // digit the user just typed rather than after any space that
+                // happens to follow it.
+                let seen = 0, newCaret = formatted.length;
+                for (let i = 0; i < formatted.length; i++) {
+                    if (/\d/.test(formatted[i])) seen++;
+                    if (seen === digitsBeforeCaret) { newCaret = i + 1; break; }
+                }
+                if (digitsBeforeCaret === 0) newCaret = digits.startsWith('+') ? 1 : 0;
+                el.setSelectionRange(newCaret, newCaret);
+
+                // Validate against the plain digits, not the display string
+                // with spaces in it. Three accepted shapes: local
+                // (05XXXXXXXX), international with + (+971XXXXXXXXX,
+                // 9-14 digits after the +), and international without +
+                // (971XXXXXXXXX, 971 followed by 9 digits).
+                if (digits.length > 0 && !isValidUaePhone(digits)) {
                     setFieldMissing('Mobile number - Must be 10 digits or country code + 9-13 digits');
                 }
                 break;
@@ -244,6 +377,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     "Full Name": `${first} ${last}`.trim(),
                 };
             });
+        } else if (label === "Mobile number") {
+            // The DOM shows "050 123 4567" for typing comfort; formData and
+            // the backend get the plain digits, same as before this field had
+            // visual formatting at all.
+            updateFormData(label, stripPhoneFormatting(currentValue));
         } else {
             updateFormData(label, currentValue);
         }
@@ -286,9 +424,10 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         label,
         htmlFor: fieldId,
         required: config.required,
-        hint: config.hint,
+        hint: resolvedHint,
         error: showError ? errorMessage : undefined,
         errorId,
+        icon: config.icon,
     };
 
     // Textarea fields
@@ -298,11 +437,12 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                 <textarea
                     ref={refLabel}
                     id={fieldId}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}
                     name={name || label}
-                    placeholder={config.placeholder}
+                    placeholder={resolvedPlaceholder}
                     aria-invalid={showError || undefined}
                     aria-describedby={errorId}
                     className={`flex-1 ${TEXTAREA_CLASSES} ${borderClass}`}
@@ -323,7 +463,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                     onSelect={handleDateSelect}
                     onBlur={handleBlur}
                     disabled={!isFocused}
-                    disabledMessage='Check "Are you a current student?" below to set your expected graduation date.'
+                    // No disabledMessage passed: DatePicker's own
+                    // datePicker.setGraduationDateHint translated default is
+                    // this exact copy, and letting it fall through to that
+                    // default means this string translates instead of always
+                    // showing English regardless of locale.
                     triggerClassName={!isFocused ? 'border-line text-fg-faint bg-surface-hover' : borderClass}
                     ariaInvalid={showError}
                     ariaDescribedBy={errorId}
@@ -336,7 +480,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                         id="currentStudent"
                         className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                     />
-                    <label htmlFor="currentStudent" className="text-sm cursor-pointer">Are you a current student?</label>
+                    <label htmlFor="currentStudent" className="text-sm cursor-pointer">{t("fields.currentStudent")}</label>
                 </div>
             </FieldShell>
         );
@@ -374,13 +518,45 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         onFocus: handleFocus,
         type: config.type,
         name: name || label,
-        placeholder: config.placeholder,
+        placeholder: resolvedPlaceholder,
         "aria-invalid": showError || undefined,
         "aria-describedby": errorId,
         className: config.hasPrefix
             ? `${FIELD_HEIGHT} w-full bg-transparent border-0 outline-none py-1 px-1 ${FIELD_TEXT}`
             : `${INPUT_CLASSES} ${borderClass}`,
     };
+
+    // Direction and alignment are two separate decisions here.
+    //
+    // dir controls the ORDER characters are laid out in. For a phone number,
+    // an email, a URL or an ID, that order is part of the value itself:
+    // "+971 50 123 4567" under dir="rtl" renders its groups reversed, which
+    // is simply wrong regardless of the UI language. So those fields stay
+    // dir="ltr" in both locales.
+    //
+    // Alignment is a layout choice, and it should follow the form. In Arabic
+    // every other field sits against the right edge, so an LTR-ordered field
+    // left-anchored in the middle of an RTL column looks misplaced. text-end
+    // under dir="ltr" pushes the box's content to the right while leaving the
+    // character order untouched — the number reads correctly AND lines up
+    // with its neighbours.
+    //
+    // Everything else (names, free text) takes the locale's direction
+    // outright, since its content is prose in whichever language the form is
+    // being filled in.
+    const isLatinFormat =
+        config.type === 'email' || config.type === 'tel' || config.forceLtr;
+
+    if (isLatinFormat) {
+        inputProps.dir = 'ltr';
+        // Not for a prefixed field: its wrapper is a flex row that already
+        // flips as a unit under RTL, so the "U" chip lands on the right and
+        // the digits sit directly against it. text-end here would shove the
+        // digits to the far edge, away from the prefix they belong to.
+        if (isRTL && !config.hasPrefix) inputProps.className += ' text-end';
+    } else {
+        inputProps.dir = isRTL ? 'rtl' : 'ltr';
+    }
 
     // Add optional attributes
     if (config.inputMode) inputProps.inputMode = config.inputMode;
@@ -401,7 +577,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                         value would just be noise. */}
                     <span
                         aria-hidden="true"
-                        className={`px-2 ${FIELD_TEXT} font-medium text-fg-muted bg-surface-hover h-full flex items-center border-r border-line-strong rounded-l-md`}
+                        className={`px-2 ${FIELD_TEXT} font-medium text-fg-muted bg-surface-hover h-full flex items-center border-e border-line-strong rounded-s-md`}
                     >
                         {config.hasPrefix}
                     </span>

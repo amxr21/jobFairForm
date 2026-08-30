@@ -10,54 +10,63 @@
 // Arabic UI ships.
 
 export const genderLabels = {
-    "Male": "",
-    "Female": "",
+    "Male": "ذكر",
+    "Female": "أنثى",
 };
 
 export const cityLabels = {
-    "Ajman": "",
-    "Sharjah": "",
-    "Dubai": "",
-    "Abu Dhabi": "",
-    "Fujairah": "",
-    "Ras Al-Khaima": "",
-    "Um Al-Quwain": "",
+    "Ajman": "عجمان",
+    "Sharjah": "الشارقة",
+    "Dubai": "دبي",
+    "Abu Dhabi": "أبوظبي",
+    "Fujairah": "الفجيرة",
+    "Ras Al-Khaima": "رأس الخيمة",
+    "Um Al-Quwain": "أم القيوين",
 };
 
 export const preferredCityLabels = {
-    "Sharjah": "",
-    "Dubai": "",
-    "Abu Dhabi": "",
-    "Ajman": "",
-    "Al-Ain": "",
-    "Ras Al-Khaima": "",
-    "Remote": "",
-    "Any": "",
+    "Sharjah": "الشارقة",
+    "Dubai": "دبي",
+    "Abu Dhabi": "أبوظبي",
+    "Ajman": "عجمان",
+    "Al-Ain": "العين",
+    "Ras Al-Khaima": "رأس الخيمة",
+    "Remote": "عن بعد",
+    "Any": "أي مكان",
 };
 
 export const opportunityTypeLabels = {
-    "Full-time": "",
-    "Part-time": "",
-    "Internship": "",
-    "Co-op": "",
-    "Graduate Program": "",
+    "Full-time": "دوام كامل",
+    "Part-time": "دوام جزئي",
+    "Internship": "تدريب",
+    "Co-op": "برنامج التعاون الدراسي",
+    "Graduate Program": "برنامج الخريجين",
 };
 
 export const availabilityLabels = {
-    "Immediately": "",
-    "Within 1 month": "",
-    "Within 3 months": "",
-    "After graduation": "",
+    "Immediately": "فورا",
+    "Within 1 month": "خلال شهر",
+    "Within 3 months": "خلال 3 أشهر",
+    "After graduation": "بعد التخرج",
 };
 
 export const languageLabels = {
-    "Arabic": "",
-    "English": "",
-    "French": "",
-    "Spanish": "",
-    "German": "",
-    "Chinese": "",
-    "Other": "",
+    "Arabic": "العربية",
+    "English": "الإنجليزية",
+    "French": "الفرنسية",
+    "Spanish": "الإسبانية",
+    "German": "الألمانية",
+    "Chinese": "الصينية",
+    "Hindi": "الهندية",
+    "Urdu": "الأردية",
+    "Turkish": "التركية",
+    "Persian": "الفارسية",
+    "Korean": "الكورية",
+    "Japanese": "اليابانية",
+    "Russian": "الروسية",
+    "Portuguese": "البرتغالية",
+    "Italian": "الإيطالية",
+    "Other": "أخرى",
 };
 
 // Countries (195), study programs (4), colleges (14), majors (132),

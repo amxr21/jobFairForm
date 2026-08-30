@@ -9,6 +9,15 @@
   font-family: "29LT Bukra";
   src: url("./assets/fonts/BUKRA-BOLD-ITALIC.TTF");
   font-weight: 700; /* Bold */
+  /* font-style deliberately left undeclared (defaults to `normal`), even
+     though the file itself is visually bold+italic. A prior "fix" declared
+     this accurately as italic — that made it a valid match for a plain
+     `font-style: italic` request (e.g. every placeholder in the app), and
+     the browser started serving this heavy bold-italic file for text that
+     never asked for bold, instead of synthesizing a light faux-italic from
+     the Regular face the way it did before. There is no true Regular-weight
+     italic file in this family, so leaving the metadata "wrong" is what
+     keeps this face out of the running for an unweighted italic request. */
 }
 
 @font-face {
@@ -227,7 +236,7 @@ body {
    width on mobile (horizontal bar) and to height on md+ (vertical bar),
    anchored to the bottom so it grows upward like a gauge. */
 .progress-fill {
-  left: 0;
+  inset-inline-start: 0;
   top: 0;
   width: var(--fill, 33%);
   height: 100%;
@@ -247,13 +256,61 @@ body {
 
 /* Placeholders read as guidance text, not decoration — the old
    rgba(0,0,0,.15) was well below WCAG contrast and invisible in dark mode.
-   --fg-faint carries a legible light + dark tier. */
-::placeholder{
-  font-style: italic;
-  font-size: .9rem;
-  color: var(--fg-faint) !important;
-  opacity: 1; /* Firefox dims placeholders by default; token already handles tone */
+
+   Two rendering paths need to look identical here. Native controls get
+   ::placeholder for free; the custom triggers (SelectInput's Select.Value,
+   DatePicker's button label) are ordinary <span>s that no pseudo-element
+   can reach, so they were upright and full-size while every native field
+   beside them was italic and a step smaller. Both now read the same three
+   --placeholder-* values, so the look is defined once. */
+:root {
+  --placeholder-style: italic;
+  /* Was a fixed .9rem (14.4px) — LARGER than this form's own field text
+     (FIELD_TEXT = text-xs/text-sm = 12px/14px), so on every breakpoint the
+     placeholder was bigger than a real typed value would be. That's why it
+     kept reading as prominent rather than faint no matter what the color
+     was — size, not color, was carrying the wrong signal. 0.85em is
+     relative to the field's own current size, so the placeholder is
+     consistently a step below it at every breakpoint instead of a fixed
+     value that happened to be larger on mobile and smaller on desktop. */
+  --placeholder-size: .85em;
+  /* Stated as an explicit alpha rather than the opaque --fg-faint tier it
+     replaces. Those greys already composited to ~42% against the field
+     background in both themes, so this is the same tone made literal and
+     pinned under the 50% ceiling — and, being a real alpha, it stays at 40%
+     over any field background rather than only over the one it was mixed
+     for. currentColor keeps it tinted by the field's own text color, so it
+     inherits the light/dark --fg flip automatically. */
+  --placeholder-alpha: 0.4;
 }
+
+::placeholder{
+  font-style: var(--placeholder-style);
+  font-size: var(--placeholder-size);
+  color: currentColor !important;
+  opacity: var(--placeholder-alpha) !important; /* Firefox dims placeholders on its own; pin it */
+}
+
+/* The custom-trigger equivalent. Applied to the <span> that stands in for a
+   placeholder in SelectInput and DatePicker. */
+.placeholder-text {
+  font-style: var(--placeholder-style);
+  font-size: var(--placeholder-size);
+  color: currentColor;
+  opacity: var(--placeholder-alpha);
+}
+
+/* A disabled trigger already dims its whole label to --fg-faint (see the
+   disabled branch of Input.jsx's DatePicker triggerClassName). Letting the
+   placeholder alpha compound on top of that dims it twice — ~#d0d4da in
+   light mode, well past "faint" into "barely there". The field being
+   disabled is what the grey is communicating at that point, so the
+   placeholder drops its own extra fade and just inherits it. */
+:disabled .placeholder-text,
+[aria-disabled="true"] .placeholder-text {
+  opacity: 1;
+}
+
 
 
 

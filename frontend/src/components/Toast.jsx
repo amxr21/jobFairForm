@@ -33,7 +33,16 @@ export function ToastProvider({ children }) {
         <ToastContext.Provider value={toast}>
             {children}
             {createPortal(
-                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 items-center pointer-events-none">
+                // role="status" + aria-live="polite": toasts previously had no
+                // ARIA wiring at all, so a screen reader user never heard a
+                // validation warning or a submit failure — sighted users saw
+                // it, everyone else did not, in either language. "polite" so
+                // a toast doesn't interrupt whatever the user is mid-typing.
+                <div
+                    role="status"
+                    aria-live="polite"
+                    className="fixed top-4 left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 items-center pointer-events-none"
+                >
                     {toasts.map(t => (
                         <ToastItem key={t.id} {...t} onDismiss={() => dismiss(t.id)} />
                     ))}
@@ -97,7 +106,14 @@ function ToastItem({ message, type, leaving, entering, onDismiss }) {
             style={{ minWidth: 180, maxWidth: 340 }}
         >
             {ICONS[type] ?? ICONS.info}
-            <span>{message}</span>
+            {/* dir="auto": most messages come from t() in the active locale,
+                but a server error can still pass through as raw English
+                (Form.jsx keeps serverMessage untranslated on purpose — see
+                its comment). Reading the first strong character keeps each
+                toast's own text direction correct regardless of which case
+                produced it, rather than inheriting a fixed direction that's
+                wrong for the other case. */}
+            <span dir="auto">{message}</span>
         </div>
     );
 }

@@ -3,10 +3,10 @@ import "./style.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { ApplicationForm } from "./components/ApplicationForm";
 import Intro from "./pages/Intro"
-import ThemeToggle from "./components/ThemeToggle";
 import ThemeTourHint from "./components/ThemeTourHint";
 import ModeBadge from "./components/ModeBadge";
-import LanguageToggle from "./components/LanguageToggle";
+import ControlRail from "./components/ControlRail";
+import LocaleTransitionOverlay from "./components/LocaleTransitionOverlay";
 import { LocaleProvider } from "./context/LocaleContext";
 
 function App() {
@@ -14,8 +14,8 @@ function App() {
         <LocaleProvider>
         <div className="App relative">
             <ModeBadge />
-            <ThemeToggle />
-            <LanguageToggle />
+            <ControlRail />
+            <LocaleTransitionOverlay />
             <ThemeTourHint />
             <BrowserRouter>
                 <Intro />

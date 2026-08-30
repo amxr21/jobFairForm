@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Upload, X, Loader2, FileText } from "lucide-react";
+import { Upload, X, Loader2, FileText, GraduationCap, Landmark, BookOpenText, Code2, HeartHandshake } from "lucide-react";
 import { DegreePrograms } from "../../CountriesList";
 import { Input, SelectInput, RequiredAstrik, SkillsMultiSelect } from "./index";
 import StepContainer from "./StepContainer";
@@ -7,9 +7,15 @@ import useFormContext from "../../hooks/useFormContext";
 import { useToast } from "../Toast";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 import { LABEL_CLASSES, TEXTAREA_CLASSES, FIELD_TEXT } from "./fieldStyles";
+import { programLabels, collegeLabels, majorLabels } from "../../i18n/degreePrograms";
+import { technicalSkillLabels, nonTechnicalSkillLabels } from "../../i18n/skills";
+import useTranslation from "../../hooks/useTranslation";
+import useLocaleContext from "../../hooks/useLocaleContext";
 
 const ProfessionalInfo = () => {
     const toast = useToast();
+    const t = useTranslation();
+    const { isRTL } = useLocaleContext();
     const handleFocus = useScrollIntoViewOnFocus();
 
     const { updateFormData, formData } = useFormContext();
@@ -145,7 +151,7 @@ const ProfessionalInfo = () => {
         if (!file) return;
 
         if (file.size > MAX_CV_BYTES) {
-            toast("Your CV must be under 4MB.", { type: 'warning' });
+            toast(t("errors.cvTooLarge"), { type: 'warning' });
             e.target.value = '';
             return;
         }
@@ -162,7 +168,7 @@ const ProfessionalInfo = () => {
         };
         reader.onerror = () => {
             setIsReadingCV(false);
-            toast("That file could not be read. Please choose it again.", { type: 'error' });
+            toast(t("errors.cvUnreadable"), { type: 'error' });
             e.target.value = '';
         };
         // Reading a slice is enough to prove readability without pulling 4MB
@@ -180,6 +186,8 @@ const ProfessionalInfo = () => {
                             options={Object.keys(DegreePrograms)}
                             handleChange={setSelectedProgram}
                             fieldClasses="col-span-12 md:col-span-3"
+                            labelMap={programLabels}
+                            icon={GraduationCap}
                         />
                         <SelectInput
                             label={"College"}
@@ -187,6 +195,8 @@ const ProfessionalInfo = () => {
                             value={selectedCollege}
                             handleChange={handleCollegeChange}
                             fieldClasses="col-span-12 md:col-span-4"
+                            labelMap={collegeLabels}
+                            icon={Landmark}
                         />
                         <SelectInput
                             label={"Major"}
@@ -194,6 +204,8 @@ const ProfessionalInfo = () => {
                             value={selectedMajor}
                             handleChange={handleMajorChange}
                             fieldClasses="col-span-12 md:col-span-5"
+                            labelMap={majorLabels}
+                            icon={BookOpenText}
                         />
                     </div>
 
@@ -203,17 +215,21 @@ const ProfessionalInfo = () => {
                             label="Technical Skills"
                             fieldName="Technical Skills"
                             fieldClasses="col-span-12 md:col-span-6"
+                            labelMap={technicalSkillLabels}
+                            icon={Code2}
                         />
                         <SkillsMultiSelect
                             label="Non-technical Skills"
                             fieldName="Non-technical skills"
                             fieldClasses="col-span-12 md:col-span-6"
+                            labelMap={nonTechnicalSkillLabels}
+                            icon={HeartHandshake}
                         />
                     </div>
 
                     {/* Row 3: CGPA, Expected to Graduate, Experience */}
                     <div className="grid grid-cols-12 w-full gap-x-3 md:gap-x-4 gap-y-3 items-start">
-                        <Input fieldClasses="col-span-5 md:col-span-2" label="CGPA" />
+                        <Input fieldClasses="col-span-5 md:col-span-3" label="CGPA" />
                         <Input fieldClasses="col-span-7 md:col-span-3" label="Expected to Graduate" />
                         {/* Experience keeps its own markup rather than using
                             <Input label="Experience" />: it is a controlled
@@ -222,11 +238,11 @@ const ProfessionalInfo = () => {
                             fight that. It does share the styling constants and
                             now carries a real <label htmlFor>, which the bare
                             <h2> never gave it. */}
-                        <div className="col-span-12 md:col-span-7">
+                        <div className="col-span-12 md:col-span-6">
                             <div className="flex flex-col h-full">
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 mb-1">
                                     <label htmlFor="Experience" className={`${LABEL_CLASSES} mb-0 cursor-pointer`}>
-                                        Experience: <RequiredAstrik required={true} />
+                                        {t("fields.experience")}: <RequiredAstrik required={true} />
                                     </label>
                                     <div className="flex items-center gap-1.5">
                                         <input
@@ -237,18 +253,19 @@ const ProfessionalInfo = () => {
                                             className="w-5 h-5 md:w-4 md:h-4 accent-[#0E7F41]"
                                         />
                                         <label htmlFor="noExperience" className={`${FIELD_TEXT} text-fg-muted cursor-pointer`}>
-                                            No prior experience
+                                            {t("fields.noExperience")}
                                         </label>
                                     </div>
                                 </div>
                                 <textarea
                                     id="Experience"
                                     name="Experience"
+                                    dir={isRTL ? 'rtl' : 'ltr'}
                                     disabled={noExperience}
                                     value={noExperience ? "No prior work experience" : (formData.Experience === "No prior work experience" ? "" : formData.Experience)}
                                     onChange={(e) => updateFormData("Experience", e.target.value)}
                                     onFocus={handleFocus}
-                                    placeholder="E.g., Internship at ABC Company, Part-time job, Volunteer work, University projects..."
+                                    placeholder={t("placeholders.experienceExample")}
                                     className={`flex-1 ${TEXTAREA_CLASSES} min-h-16 md:min-h-20 ${noExperience ? 'bg-surface-hover text-fg-faint border-line' : 'border-line-strong'}`}
                                 />
                             </div>
@@ -260,7 +277,7 @@ const ProfessionalInfo = () => {
                         <div className="col-span-12 md:col-span-6 flex flex-col justify-start">
                             <div className="flex flex-col md:flex-row items-start md:items-center gap-1.5 md:gap-x-3">
                                 <label htmlFor="CV" className={`${LABEL_CLASSES} mb-0 cursor-pointer`}>
-                                    Attach your resume: <RequiredAstrik required={true} />
+                                    {t("fields.resume")}: <RequiredAstrik required={true} />
                                 </label>
                                 {/* The native file input renders an unstyleable
                                     OS button and overflows with a long filename,
@@ -296,19 +313,19 @@ const ProfessionalInfo = () => {
                                                 : "cursor-pointer hover:bg-surface-hover active:scale-[0.97]"}`}
                                     >
                                         <Upload className={`w-4 h-4 text-fg-muted ${isReadingCV ? "invisible" : ""}`} />
-                                        {cvFile ? "Change file" : "Choose file"}
+                                        {cvFile ? t("placeholders.changeFile") : t("placeholders.chooseFile")}
 
                                         {isReadingCV && (
                                             <span className="absolute inset-0 flex items-center justify-center gap-1.5 bg-surface-hover">
                                                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                                                <span className="text-xs md:text-sm text-fg-muted">Reading…</span>
+                                                <span className="text-xs md:text-sm text-fg-muted">{t("placeholders.readingCv")}</span>
                                             </span>
                                         )}
                                     </label>
 
                                     <div aria-live="polite" className="min-w-0">
                                         {isReadingCV ? (
-                                            <span className="text-xs text-fg-muted">Checking the file…</span>
+                                            <span className="text-xs text-fg-muted">{t("placeholders.checkingCv")}</span>
                                         ) : cvFile ? (
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <FileText className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -321,14 +338,14 @@ const ProfessionalInfo = () => {
                                                 <button
                                                     type="button"
                                                     onClick={clearCV}
-                                                    aria-label={`Remove ${cvFile.name}`}
+                                                    aria-label={t("placeholders.removeCv", { file: cvFile.name })}
                                                     className="shrink-0 w-8 h-8 md:w-6 md:h-6 inline-flex items-center justify-center rounded-md text-fg-muted hover:bg-surface-hover hover:text-fg transition-colors"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         ) : (
-                                            <span className="text-xs text-fg-muted">PDF or Word, under 4MB</span>
+                                            <span className="text-xs text-fg-muted">{t("placeholders.fileHint")}</span>
                                         )}
                                     </div>
                                 </div>
