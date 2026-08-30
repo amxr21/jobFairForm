@@ -124,7 +124,18 @@ const SelectInput = ({
             className={fieldClasses}
             icon={icon}
         >
+            {/* dir is passed explicitly rather than left to inherit.
+                Radix resolves direction from its own React context, NOT from
+                the DOM: useDirection() is literally
+                `localDir || globalDir || "ltr"`, so with no dir prop and no
+                DirectionProvider it hardcodes LTR no matter what <html dir>
+                says. That is why earlier passes that set dir on the DOM
+                never fixed the dropdowns — and it matters most for the
+                panel, which is portaled to document.body and so sits outside
+                the RTL form subtree entirely. Setting it on Root covers the
+                trigger, the panel and the option rows in one place. */}
             <Select.Root
+                dir={isRTL ? 'rtl' : 'ltr'}
                 value={selectValue}
                 onValueChange={handleValueChange}
                 onOpenChange={(open) => {

@@ -72,18 +72,24 @@ const stripPhoneFormatting = (display) => display.replace(/\s+/g, '');
 // inputPlaceholders.* key this component resolves through t() when
 // locale === "ar". FIELD_CONFIG is a module-level const and can't call the
 // t() hook itself, so the actual translation happens in the component body.
+// forceLtr marks a field whose VALUE has a fixed Latin/numeric shape — an
+// ID, a decimal, a URL — so its character order must not flip with the UI
+// language, the same way email and tel are handled by type. It does not
+// mean "left-aligned": in Arabic these fields are still aligned to the
+// right to match the column, just laid out LTR internally. See the
+// direction/alignment split further down.
 const FIELD_CONFIG = {
     'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User },
     'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', icon: Hash },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', forceLtr: true, icon: Hash },
     'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', hintKey: 'dateOfBirth', icon: Cake },
     'Email address': { type: 'email', required: true, placeholder: 'Email address', placeholderKey: 'email', inputMode: 'email', autoComplete: 'email', icon: Mail },
     // maxLength raised from the underlying 10/13-digit cap to fit the spaces
     // formatPhoneDisplay() inserts — "+971 50 123 4567" is 16 characters,
     // longer than the 15 raw digits it represents.
     'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', placeholderKey: 'mobile', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
-    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', hintKey: 'cgpa', icon: Gauge },
-    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', icon: Link2 },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', hintKey: 'cgpa', forceLtr: true, icon: Gauge },
+    'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
     'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', placeholderKey: 'technicalSkills', icon: Code2 },
     'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', placeholderKey: 'experience', icon: Briefcase },
     'Non-technical skills': { type: 'textarea', required: true, placeholder: 'Include skills such as Attentive to details, Adaptability, Empathy', placeholderKey: 'nonTechnicalSkills', icon: HeartHandshake },
@@ -520,14 +526,37 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
             : `${INPUT_CLASSES} ${borderClass}`,
     };
 
-    // Every field defaults to LTR and only becomes RTL when the app locale
-    // actually is Arabic — tied directly to locale, not per-field content
-    // sniffing. This replaces an earlier per-field forceLtr/dirAuto split:
-    // dir="auto" was the wrong tool for an EMPTY field specifically, since
-    // with no typed value there is nothing to read a script from, so it
-    // fell back to the page's own direction anyway — no different from
-    // just reading locale directly, but harder to reason about.
-    inputProps.dir = isRTL ? 'rtl' : 'ltr';
+    // Direction and alignment are two separate decisions here.
+    //
+    // dir controls the ORDER characters are laid out in. For a phone number,
+    // an email, a URL or an ID, that order is part of the value itself:
+    // "+971 50 123 4567" under dir="rtl" renders its groups reversed, which
+    // is simply wrong regardless of the UI language. So those fields stay
+    // dir="ltr" in both locales.
+    //
+    // Alignment is a layout choice, and it should follow the form. In Arabic
+    // every other field sits against the right edge, so an LTR-ordered field
+    // left-anchored in the middle of an RTL column looks misplaced. text-end
+    // under dir="ltr" pushes the box's content to the right while leaving the
+    // character order untouched — the number reads correctly AND lines up
+    // with its neighbours.
+    //
+    // Everything else (names, free text) takes the locale's direction
+    // outright, since its content is prose in whichever language the form is
+    // being filled in.
+    const isLatinFormat =
+        config.type === 'email' || config.type === 'tel' || config.forceLtr;
+
+    if (isLatinFormat) {
+        inputProps.dir = 'ltr';
+        // Not for a prefixed field: its wrapper is a flex row that already
+        // flips as a unit under RTL, so the "U" chip lands on the right and
+        // the digits sit directly against it. text-end here would shove the
+        // digits to the far edge, away from the prefix they belong to.
+        if (isRTL && !config.hasPrefix) inputProps.className += ' text-end';
+    } else {
+        inputProps.dir = isRTL ? 'rtl' : 'ltr';
+    }
 
     // Add optional attributes
     if (config.inputMode) inputProps.inputMode = config.inputMode;
