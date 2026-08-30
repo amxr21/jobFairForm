@@ -68,14 +68,14 @@ const FIELD_CONFIG = {
     // script the applicant actually uses.
     'First Name': { type: 'text', required: true, placeholder: 'First Name', placeholderKey: 'firstName', autoComplete: 'given-name', icon: User, dirAuto: true },
     'Last Name': { type: 'text', required: true, placeholder: 'Last Name', placeholderKey: 'lastName', autoComplete: 'family-name', icon: User, dirAuto: true },
-    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', forceLtr: true, icon: Hash },
-    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', icon: Cake },
+    'University ID': { type: 'text', required: true, placeholder: '8 digits', placeholderKey: 'universityId', hasPrefix: 'U', inputMode: 'numeric', autoComplete: 'off', hint: 'The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).', hintKey: 'universityId', forceLtr: true, icon: Hash },
+    'Date of Birth': { type: 'date', required: true, hint: 'You must be at least 20 years old to apply.', hintKey: 'dateOfBirth', icon: Cake },
     'Email address': { type: 'email', required: true, placeholder: 'Email address', placeholderKey: 'email', inputMode: 'email', autoComplete: 'email', icon: Mail },
     // maxLength raised from the underlying 10/13-digit cap to fit the spaces
     // formatPhoneDisplay() inserts — "+971 50 123 4567" is 16 characters,
     // longer than the 15 raw digits it represents.
     'Mobile number': { type: 'tel', required: true, placeholder: '05XXXXXXXX or +971XXXXXXXXX', placeholderKey: 'mobile', inputMode: 'tel', autoComplete: 'tel', maxLength: 19, icon: Phone },
-    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', forceLtr: true, icon: Gauge },
+    'CGPA': { type: 'text', required: false, placeholder: 'CGPA', placeholderKey: 'cgpa', inputMode: 'decimal', autoComplete: 'off', hint: 'Include only if it is more than 3.0.', hintKey: 'cgpa', forceLtr: true, icon: Gauge },
     'LinkedIn URL': { type: 'text', required: false, placeholder: 'linkedin.com/in/profile name', placeholderKey: 'linkedin', inputMode: 'url', autoComplete: 'url', forceLtr: true, icon: Link2 },
     'Technical Skills': { type: 'textarea', required: true, placeholder: 'Include skills such as C++, Python - no need for explanations or ratings', placeholderKey: 'technicalSkills', icon: Code2 },
     'Experience': { type: 'textarea', required: true, placeholder: 'Start with the latest to the oldest. You may include part-time and internship opportunities', placeholderKey: 'experience', icon: Briefcase },
@@ -111,6 +111,14 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         locale === "ar" && config.placeholderKey
             ? t(`inputPlaceholders.${config.placeholderKey}`)
             : config.placeholder;
+    // The (i) tooltip beside the label (FieldHint) — this was the one piece
+    // of Input.jsx that never got a translation path at all, unlike the
+    // placeholder above: "You must be at least 20 years old to apply" stayed
+    // English regardless of locale.
+    const resolvedHint =
+        locale === "ar" && config.hintKey
+            ? t(`inputHints.${config.hintKey}`)
+            : config.hint;
 
     // Restore the value from context when the field mounts.
     //
@@ -393,7 +401,7 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
         label,
         htmlFor: fieldId,
         required: config.required,
-        hint: config.hint,
+        hint: resolvedHint,
         error: showError ? errorMessage : undefined,
         errorId,
         icon: config.icon,
@@ -403,9 +411,15 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
     if (config.type === 'textarea') {
         return (
             <FieldShell {...shellProps} className={`h-full ${fieldClasses}`}>
+                {/* dir="auto": these are free text (skills, experience,
+                    career goals) that could genuinely be written in either
+                    script — same reasoning as First/Last Name. This branch
+                    never received a dir attribute at all before, unlike the
+                    standard <input> branch below. */}
                 <textarea
                     ref={refLabel}
                     id={fieldId}
+                    dir="auto"
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onFocus={handleFocus}

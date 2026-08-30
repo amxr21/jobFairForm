@@ -14,6 +14,9 @@ import ProgressSection from "./ProgressSection";
 import AnimatedSuccess from "./AnimatedSuccess";
 import { useToast } from "../Toast";
 import useTranslation from "../../hooks/useTranslation";
+import useLocaleContext from "../../hooks/useLocaleContext";
+import { labelFor } from "../../i18n/options";
+import { fieldLabelMap } from "../../i18n/messages";
 
 
 // The fields an application genuinely cannot be submitted without. Previously
@@ -94,6 +97,14 @@ const Form = () => {
     const { formData, setFieldMissing } = useFormContext()
     const toast = useToast();
     const t = useTranslation();
+    const { locale } = useLocaleContext();
+    // The validation-summary toasts below list which fields are missing.
+    // Those field names come from formData KEYS (English, used for matching
+    // — see useFieldState.jsx), so before they're shown to the user they run
+    // through the same fieldLabelMap FieldShell itself uses. Skipping this
+    // was what previously produced "University ID, Date of Birth, Gender and
+    // 5 more" — English field names sitting inside an otherwise-Arabic toast.
+    const displayFieldName = (name) => (locale === "ar" ? labelFor(fieldLabelMap, name) : name);
 
     const { user } = useAuthContext();
     const confirmationMessageRef = useRef("");
@@ -150,9 +161,13 @@ const Form = () => {
                     : key === "languages" ? ["Languages"]
                     : [key]
             );
-            const summary = labels.length > 3
-                ? `${labels.slice(0, 3).join(", ")} and ${labels.length - 3} more`
-                : labels.join(", ");
+            // labels itself stays English below (setFieldMissing, the scroll
+            // target selector) — only this DISPLAY copy translates the names
+            // shown in the toast.
+            const displayLabels = labels.map(displayFieldName);
+            const summary = displayLabels.length > 3
+                ? t("errors.andNMore", { first3: displayLabels.slice(0, 3).join(", "), count: displayLabels.length - 3 })
+                : displayLabels.join(", ");
             toast(t("errors.completeFields", { fields: summary }), { type: 'warning' });
             // Push into the same channel Input/SelectInput already read, so
             // each offending field shows its own inline error rather than the
@@ -203,14 +218,22 @@ const Form = () => {
         const isUniIdValid = /^\d{8}$/.test(uniId);
 
         if (missingRequired.length > 0 || !isUniIdValid) {
+            // missingRequired are plain field names (translate via
+            // displayFieldName); the invalid-University-ID case is a full
+            // sentence with its own key (fieldValidation.universityIdLength)
+            // rather than a field name — mixing the two kinds in one array
+            // and joining with ", " previously produced "University ID,
+            // Date of Birth, University ID must be exactly 8 digits", which
+            // reads oddly in English and translated only the field names,
+            // leaving the sentence in English regardless of locale.
             const summary = [
-                ...missingRequired,
+                ...missingRequired.map(displayFieldName),
                 ...(!isUniIdValid && isFieldFilled(formData["University ID"])
-                    ? ["University ID must be exactly 8 digits"]
+                    ? [t("fieldValidation.universityIdLength", { field: displayFieldName("University ID") })]
                     : []),
             ];
             const summaryText = summary.length > 3
-                ? `${summary.slice(0, 3).join(", ")} and ${summary.length - 3} more`
+                ? t("errors.andNMore", { first3: summary.slice(0, 3).join(", "), count: summary.length - 3 })
                 : summary.join(", ");
             toast(summaryText ? t("errors.completeFields", { fields: summaryText }) : t("errors.completeRequired"), { type: 'warning' });
             return;

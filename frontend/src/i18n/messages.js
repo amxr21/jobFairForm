@@ -94,6 +94,15 @@ export const messages = {
             fieldInterest: "e.g., Software Development, Marketing, Finance",
             careerGoals: "Briefly describe your career goals...",
         },
+        // The small (i) tooltip FieldHint renders beside a label — distinct
+        // from inputPlaceholders (text inside the empty box) and fields.*
+        // (the label itself). Keyed the same way as inputPlaceholders for
+        // the fields that have one.
+        inputHints: {
+            universityId: "The first two digits are your enrolment year (e.g. U21XXXXXX for 2021).",
+            dateOfBirth: "You must be at least 20 years old to apply.",
+            cgpa: "Include only if it is more than 3.0.",
+        },
         datePicker: {
             chooseDate: "Choose a date",
             previousMonth: "Previous month",
@@ -141,6 +150,12 @@ export const messages = {
         errors: {
             required: "This field is required",
             completeFields: "Please complete: {fields}",
+            // "{first3} and {count} more" — kept as two interpolated
+            // pieces rather than building the whole "and N more" phrase in
+            // JS and dropping it into {fields}, which is what previously
+            // produced an Arabic sentence wrapped around a hardcoded
+            // English "and 5 more".
+            andNMore: "{first3} and {count} more",
             completeRequired: "Please complete the required fields",
             submitGeneric: "Something went wrong submitting your application. Please try again.",
             submitTimeout: "The server took too long to respond. Please try submitting again.",
@@ -300,6 +315,11 @@ export const messages = {
             fieldInterest: "مثال: تطوير البرمجيات، التسويق، التمويل",
             careerGoals: "صف أهدافك المهنية باختصار...",
         },
+        inputHints: {
+            universityId: "أول رقمين هما سنة التحاقك بالجامعة (مثال: U21XXXXXX لسنة 2021).",
+            dateOfBirth: "يجب أن يكون عمرك 20 عامًا على الأقل للتقديم.",
+            cgpa: "أدخله فقط إذا كان أكثر من 3.0.",
+        },
         datePicker: {
             chooseDate: "اختر تاريخا",
             previousMonth: "الشهر السابق",
@@ -344,6 +364,7 @@ export const messages = {
         errors: {
             required: "هذا الحقل مطلوب",
             completeFields: "يرجى إكمال: {fields}",
+            andNMore: "{first3} و{count} أخرى",
             completeRequired: "يرجى إكمال الحقول المطلوبة",
             submitGeneric: "حدث خطأ أثناء إرسال طلبك. يرجى المحاولة مرة أخرى.",
             submitTimeout: "استغرق الخادم وقتًا طويلاً للاستجابة. يرجى إعادة المحاولة.",
