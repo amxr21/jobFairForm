@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, createContext } from "react";
+import { isValidUaePhone } from "../validation/phone";
 
 
 // eslint-disable-next-line react-refresh/only-export-components -- context is tightly coupled to FormProvider, kept in one file
@@ -88,10 +89,7 @@ export const FormProvider = ( {children} ) => {
           }
 
           if (key === "Mobile number") {
-            const phone = String(value).trim();
-            const isLocalValid = /^0\d{9}$/.test(phone);
-            const isIntlValid = /^\+\d{10,14}$/.test(phone);
-            return !value || (!isLocalValid && !isIntlValid);
+            return !isValidUaePhone(value);
           }
 
           if (key === "Email address") {
@@ -124,11 +122,8 @@ export const FormProvider = ( {children} ) => {
           }
 
           if (key === "Mobile number") {
-            const phone = String(value).trim();
-            const isLocalValid = /^0\d{9}$/.test(phone);
-            const isIntlValid = /^\+\d{10,14}$/.test(phone);
-            if (!value || (!isLocalValid && !isIntlValid)) {
-              return `${key} - Must be 10 digits (05XXXXXXXX) or country code format (+971XXXXXXXXX)`;
+            if (!isValidUaePhone(value)) {
+              return `${key} - Must be 10 digits (05XXXXXXXX) or country code format (+971XXXXXXXXX or 971XXXXXXXXX)`;
             }
           }
 

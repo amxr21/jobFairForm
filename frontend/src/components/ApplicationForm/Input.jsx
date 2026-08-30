@@ -20,6 +20,7 @@ import FieldShell from "./FieldShell";
 import useScrollIntoViewOnFocus from "../../hooks/useScrollIntoViewOnFocus";
 import useLocaleContext from "../../hooks/useLocaleContext";
 import useTranslation from "../../hooks/useTranslation";
+import { isValidUaePhone } from "../../validation/phone";
 import {
     INPUT_CLASSES,
     TEXTAREA_CLASSES,
@@ -27,22 +28,33 @@ import {
     FIELD_TEXT,
 } from "./fieldStyles";
 
-// Live-formats a UAE mobile number as the user types, for the two shapes
+// Live-formats a UAE mobile number as the user types, for the three shapes
 // this field accepts:
-//   local:         05XXXXXXXX        -> 05X XXX XXXX
-//   international: +971XXXXXXXXX     -> +971 XX XXX XXXX
+//   local:                  05XXXXXXXX     -> 05X XXX XXXX
+//   international (+):      +971XXXXXXXXX  -> +971 XX XXX XXXX
+//   international (no +):   971XXXXXXXXX   -> 971 XX XXX XXXX
+// The third shape previously wasn't recognized at all — a "971" prefix with
+// no leading "+" fell into the local-number branch, which capped at 10
+// digits and silently truncated the number (971501234567, 12 digits,
+// became 9715012345). isInternational() below detects the 971 prefix
+// regardless of a leading "+", so the digit cap and formatting both apply
+// correctly whichever way the user types it.
+//
 // Takes the already-digit-stripped value (with an optional leading "+")
 // that the caller has produced, and returns display text with spaces
 // inserted at fixed positions — never touches which characters are valid,
 // only where the breaks land. The stored/submitted value stays the plain
 // digit string; only what's shown in the box gains formatting (see
 // stripPhoneFormatting below, used before updateFormData).
+const isInternational = (digits) => digits.startsWith('+971') || digits.startsWith('971');
+
 const formatPhoneDisplay = (digits) => {
-    if (digits.startsWith('+')) {
-        // +971 50 123 4567 — country code, then 2, then 3, then 4.
-        const d = digits.slice(1);
+    if (isInternational(digits)) {
+        const hasPlus = digits.startsWith('+');
+        const d = hasPlus ? digits.slice(1) : digits;
+        // 971 50 123 4567 — country code, then 2, then 3, then 4.
         const parts = [d.slice(0, 3), d.slice(3, 5), d.slice(5, 8), d.slice(8, 12)].filter(Boolean);
-        return '+' + parts.join(' ');
+        return (hasPlus ? '+' : '') + parts.join(' ');
     }
     // 050 123 4567 — leading zero + 2, then 3, then 4.
     const parts = [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 10)].filter(Boolean);
@@ -216,11 +228,19 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                 const digitsBeforeCaret = stripPhoneFormatting(el.value.slice(0, caretPos)).length;
 
                 let digits = el.value;
-                // Allow + at the start for country code, then only digits
-                if (digits.startsWith('+')) {
-                    digits = '+' + digits.slice(1).replace(/\D/g, '').slice(0, 12);
+                // A leading "+" is kept as-is; a bare "971" prefix (no "+")
+                // is now ALSO recognized as international rather than
+                // falling into the local-number branch, which previously
+                // capped at 10 digits and silently truncated it
+                // (971501234567 -> 9715012345). Both international shapes
+                // cap at 12 digits after any "+" (971 + 9-digit subscriber
+                // number); the local shape still caps at 10.
+                const hasPlus = digits.startsWith('+');
+                const strippedForCheck = digits.replace(/\D/g, '');
+                if (hasPlus || strippedForCheck.startsWith('971')) {
+                    digits = (hasPlus ? '+' : '') + strippedForCheck.slice(0, 12);
                 } else {
-                    digits = digits.replace(/\D/g, '').slice(0, 10);
+                    digits = strippedForCheck.slice(0, 10);
                 }
 
                 const formatted = formatPhoneDisplay(digits);
@@ -239,10 +259,11 @@ const Input = ({ label, type, name, fieldClasses = '' }) => {
                 el.setSelectionRange(newCaret, newCaret);
 
                 // Validate against the plain digits, not the display string
-                // with spaces in it.
-                const isLocalValid = /^0\d{9}$/.test(digits); // 05XXXXXXXX format
-                const isIntlValid = /^\+\d{10,14}$/.test(digits); // +971XXXXXXXXX format
-                if (digits.length > 0 && !isLocalValid && !isIntlValid) {
+                // with spaces in it. Three accepted shapes: local
+                // (05XXXXXXXX), international with + (+971XXXXXXXXX,
+                // 9-14 digits after the +), and international without +
+                // (971XXXXXXXXX, 971 followed by 9 digits).
+                if (digits.length > 0 && !isValidUaePhone(digits)) {
                     setFieldMissing('Mobile number - Must be 10 digits or country code + 9-13 digits');
                 }
                 break;

@@ -184,7 +184,7 @@ export const messages = {
             invalidEmail: "{field} is not a valid email",
             universityIdLength: "{field} must be exactly 8 digits",
             universityIdYear: "{field} - first 2 digits must be between 14 and 26",
-            mobileFormat: "{field} - must be 10 digits (05XXXXXXXX) or country code format (+971XXXXXXXXX)",
+            mobileFormat: "{field} - must be 10 digits (05XXXXXXXX) or country code format (+971XXXXXXXXX or 971XXXXXXXXX)",
             birthdateAge: "{field} - you must be at least 20 years old",
         },
         confirmation: {
@@ -380,7 +380,7 @@ export const messages = {
             invalidEmail: "{field} غير صالح",
             universityIdLength: "يجب أن يتكون {field} من 8 أرقام بالضبط",
             universityIdYear: "{field} - يجب أن يكون أول رقمين بين 14 و26",
-            mobileFormat: "{field} - يجب أن يتكون من 10 أرقام (05XXXXXXXX) أو بصيغة رمز الدولة (+971XXXXXXXXX)",
+            mobileFormat: "{field} - يجب أن يتكون من 10 أرقام (05XXXXXXXX) أو بصيغة رمز الدولة (+971XXXXXXXXX أو 971XXXXXXXXX)",
             birthdateAge: "{field} - يجب أن يكون عمرك 20 عامًا على الأقل",
         },
         confirmation: {
